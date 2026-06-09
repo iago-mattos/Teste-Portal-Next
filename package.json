@@ -1,0 +1,19 @@
+{
+  "name": "portalnext",
+  "version": "1.0.0",
+  "description": "Testes automatizados do PortalNext com Cypress e TypeScript",
+  "scripts": {
+    "cy:open": "cypress open --config baseUrl=http://localhost:3000",
+    "cy:run": "cypress run --config baseUrl=http://localhost:3000",
+    "test": "cypress run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "cypress": "^15.17.0",
+    "typescript": "^6.0.3"
+  }
+}
