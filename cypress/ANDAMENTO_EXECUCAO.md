@@ -1,0 +1,248 @@
+# Andamento da execucao Cypress - PortalNext
+
+Data: 17/06/2026
+
+## Massa atual
+
+- Link/token: token `186463`
+- CPF do link: `91025405684`
+- Proposta: `000000081`
+- Cliente: `NEXT CYPRESS V4`
+- Dados principais validados manualmente no portal:
+  - valor do imovel: `R$ 2.150.000,00`
+  - valor do financiamento: `R$ 700.000,00`
+  - prazo: `36 meses`
+  - data limite: `17/07/2026`
+
+## Registro
+
+- Atualizado `cypress/config/connect.ts` para a massa da proposta `000000081`.
+- Validado acesso pelo navegador: listagem abriu em `/propostas` sem HTTP 429.
+- Validado cadastro pelo navegador: rota `/propostas/000000081` carregou com as abas Sobre Voce, Composicao de Renda, Motivo da Contratacao e Imovel.
+- `npx tsc --noEmit` executado com sucesso antes de iniciar a nova rodada.
+- Primeira execucao Cypress de `04-cadastro-participantes.cy.ts` caiu em HTTP 429 no `portalSession()` ao abrir o magic link pela UI.
+- Conferido no codigo do portal que o magic link chama `POST /api/auth/token` com `codigo`, `cpfCnpj` e `semLogin`.
+- Chamada direta via Node para `/api/auth/token` retornou HTTP 200 com `{"status":"AUTENTICADO"}`.
+- Ajustado `portalSession()` para criar a sessao Cypress pelo endpoint `/api/auth/token`, evitando reabrir o magic link pela tela.
+- Execucao completa de `04-cadastro-participantes.cy.ts` apos o ajuste ficou presa sem gerar novo `mochawesome`; processos Cypress foram encerrados manualmente.
+- Criado `cypress/e2e/00-auth-smoke.cy.ts` para validar somente a criacao de sessao antes de retomar os blocos funcionais.
+- `00-auth-smoke.cy.ts` executado em Chrome headless: 1 teste aprovado, sessao criada e `/api/auth/me` autenticado.
+- Execucao completa de `04-cadastro-participantes.cy.ts` em Chrome headless tambem ficou presa e nao gerou novo relatorio; estrategia alterada para execucao por `caseId`.
+- `PART-01` isolado tambem ficou preso antes de gerar relatorio; suspeita deslocada para o caminho comum `openDefaultProposal()`.
+- Criado `cypress/e2e/00-open-proposal-smoke.cy.ts` para diagnosticar somente a abertura da proposta padrao.
+- Rodada em Chrome do smoke instrumentado falhou antes do teste: Cypress nao conectou no Chrome DevTools Protocol (`ECONNREFUSED 127.0.0.1:<porta>`). Classificado como problema do browser Chrome no ambiente, nao da regra testada.
+- `00-open-proposal-smoke.cy.ts` executado em Electron headless: aprovado, confirmando que `openDefaultProposal()` funciona com a proposta `000000081`.
+- `PART-01` executado isoladamente em Electron headless: aprovado.
+- `04-cadastro-participantes.cy.ts` executado completo em Electron headless: 7 aprovados, 4 falhas, 2 pendentes por massa.
+- `PART-03` falhou por erro do teste: o valor mascarado `R$ 1,23` contem a letra `R` da moeda, embora as letras digitadas `abc` tenham sido rejeitadas. Ajustado para validar ausencia de `abc`.
+- `PART-03` reexecutado isoladamente apos ajuste: aprovado.
+- `PART-07` confirmou divergencia funcional: Nacionalidade inicia vazia, nao como `Brasileira`.
+- `PART-12` confirmou divergencia funcional ou pendencia de persistencia: ao trocar de aba e recarregar, a renda voltou para `R$ 84.849,00` em vez de manter `R$ 1.234,56`.
+- `PART-13` confirmou divergencia funcional: ao confirmar com obrigatorios pendentes, a mensagem de critica esperada nao apareceu.
+- `06-composicao-renda.cy.ts` executado: `RENDA-01` aprovado; `RENDA-02` e `RENDA-03` falharam por seletores/interacao Cypress.
+- Confirmado no componente `CampoRadio` que o radio e o `label` sao irmaos ligados por `for`/`id`; o teste procurava o radio dentro do label.
+- Ajustados `RENDA-02` e `RENDA-03` para resolver o `id` pelo atributo `for`, clicar diretamente no radio e reconsulta-lo apos o re-render.
+- Nova execucao mostrou que o `for` aponta para um `input type=radio` nativo sem `aria-checked`, e que o ID muda no re-render.
+- Ajuste refinado: validar com `be.checked` e resolver novamente o `for` depois do clique.
+- `RENDA-02` reexecutado isoladamente: aprovado.
+- `RENDA-03` teve uma tentativa presa no runner; apos limpar os processos Cypress, foi reexecutado e aprovado.
+- Bloco `06-composicao-renda` concluido com `RENDA-01`, `RENDA-02` e `RENDA-03` aprovados.
+- `07-composicao-renda-conjuge.cy.ts` executado: `RENDA-CONJ-01` aprovado; `RENDA-CONJ-02` falhou pelo mesmo falso positivo da mascara `R$`; o `beforeEach` dos demais falhou por clique no label do radio durante re-render.
+- Aplicadas ao bloco `07` as mesmas correcoes validadas no bloco `06`: ausencia das letras digitadas e radio resolvido por `for`/`id`, com reconsulta apos o clique.
+- Bloco `07-composicao-renda-conjuge` reexecutado apos as correcoes: 6 de 6 casos aprovados.
+- Primeira execucao de `08-composicao-renda-terceiros.cy.ts`: `RENDA-TERC-01` a `RENDA-TERC-05` aprovados; `RENDA-TERC-06` falhou porque os campos condicionais nao estavam montados apos o reload; os casos `07` a `11` foram interrompidos por clique em label removido durante re-render.
+- Aplicado ao bloco `08` o helper de radio ja validado nos blocos `06` e `07`.
+- Ajustado `RENDA-TERC-06` para reabrir a composicao por terceiros apos o reload e exigir que nome/e-mail tenham sido realmente persistidos, evitando aprovacao indevida por campo vazio.
+- Ajustado `RENDA-TERC-07` para validar a ausencia de `abc`, sem interpretar o `R` da mascara `R$` como letra digitada.
+- Nova tentativa do bloco `08` parou no `beforeEach`: o clique forcado no `input` de `Sim` nao alterou o radio controlado pelo React e `Nao` permaneceu marcado.
+- O helper do bloco `08` passou a usar `check({ force: true })` somente quando o radio ainda nao esta marcado, disparando a interacao nativa esperada pelo componente.
+- A rodada seguinte avancou ate `RENDA-TERC-06`: cinco casos aprovados; o nome/e-mail voltaram vazios apos reload e o caso seguinte iniciou antes de o estado anterior estar estabilizado.
+- Identificado erro de sincronizacao do Cypress: o texto `Rascunho salvo` ja podia estar visivel antes da nova gravacao e nao comprovava a conclusao do `PUT`.
+- O bloco `08` passou a aguardar o `GET` inicial do cadastro e os `PUTs` reais de gravacao/limpeza no `RENDA-TERC-06`.
+- A espera pelo `GET` inicial foi removida porque a SPA nem sempre refaz essa chamada ao abrir a proposta; os dados podem vir do estado ja carregado.
+- A selecao de radio do bloco `08` passou a acionar o clique nativo do `label`, reproduzindo o fluxo real do componente React, e os `PUTs` usam correspondencia ampla para `**/cadastro*`.
+- `RENDA-TERC-07`, `RENDA-TERC-08` e `RENDA-TERC-09` executados isoladamente e aprovados.
+- `RENDA-TERC-10` falhou por erro do Cypress: o spec tentou usar `click()` em um `<select>` nativo.
+- Ajustado `RENDA-TERC-10` para validar diretamente os elementos `option` do campo de tipo de profissao.
+- A nova leitura de `RENDA-TERC-10` encontrou as oito opcoes esperadas mais o placeholder `Selecione`; a comparacao foi ajustada para ignorar somente essa opcao neutra.
+- A reexecucao de `RENDA-TERC-10` nao chegou ao teste: o endpoint de autenticacao voltou a responder HTTP 429 apos as varias rodadas isoladas.
+- Decisao: interromper novas autenticacoes durante o cooldown e concentrar as proximas validacoes em uma unica execucao Cypress, reaproveitando `cy.session` entre os specs.
+- Implementado cache local do cookie `__Host-session` em `.codex-tmp/portal-session-cookie.json`: cada nova execucao valida primeiro o cookie em `/api/auth/me` e so consome o token quando a sessao nao existe ou expirou.
+- Adicionado `.codex-tmp/` ao `.gitignore`, pois o cache contem credencial de sessao temporaria.
+- Revisao estatica encontrou o mesmo erro de componente em `CONJ-10`; a lista de regime de comunhao agora e validada pelas `option` do `<select>` nativo, ignorando somente o placeholder.
+- Os `afterEach` dos blocos `05`, `11` e `12` passaram a aguardar o `PUT` real de limpeza da massa, evitando que o caso seguinte abra antes da restauracao do estado no backend.
+- A massa da proposta `81` permite concluir `MOTIVO-01`; adicionados `interestType: Pre-fixado` e validacoes dos campos de valor solicitado, prazo e tipo de juros pela associacao real entre label e input.
+- Rodada consolidada dos blocos `05`, `08`, `09`, `10`, `11` e `12`: 18 aprovados, 8 falhas e 24 ignorados por hooks interrompidos.
+- Bloco `09-motivo-contratacao` concluido com 3 de 3 aprovados, incluindo o novo `MOTIVO-01`.
+- Divergencias funcionais confirmadas no conjuge: `CONJ-03` nao sinaliza Data da Comunhao como opcional; `CONJ-09` aceita espaco final no nome.
+- `CONJ-10` era um combobox customizado, nao `<select>` nativo; restaurada a validacao pelo listbox.
+- `RENDA-TERC-06` continuou retornando nome/e-mail vazios apos `PUT 200` e reload; removida apenas a limpeza antecipada que bloqueava os casos seguintes.
+- O bloco de imovel foi interrompido por demora/ausencia temporaria do card da proposta; a espera do card passou de 10 para 30 segundos.
+- Os blocos de garantidor foram bloqueados por oscilacao DNS (`ENOTFOUND portal-desenv.prognum.com.br`), nao por regra funcional. O DNS voltou a resolver para `10.3.98.108`.
+- As limpezas de garantidor agora so executam quando o setup do proprio caso foi concluido, evitando uma segunda falha artificial no `afterEach`.
+- Segunda rodada consolidada: conjuge `8/10`, imovel `8 aprovados/3 falhas/1 pendente`, garantidor PF `3/6` e garantidor PJ `2/8`.
+- Divergencias funcionais confirmadas em imovel: lista de uso possui `Nao Informado` e diferencas de catalogo; municipio residencial nao foi exibido; instituicao financeira nao foi habilitada na condicao alienada.
+- Divergencias funcionais confirmadas em garantidor PF: complemento sem indicacao de opcional. Em PJ: campos opcionais sem indicacao, orientacao/lista de socios ausente e, por consequencia, validacoes dos socios indisponiveis.
+- Erros tecnicos identificados nos garantidores: UF e combobox pesquisavel e a busca de CEP ocorre no `blur`, sem botao visivel. Specs ajustados para esses componentes.
+- O filtro `caseId` agora aceita varios IDs separados por virgula, permitindo reexecutar grupos independentes sem novas sessoes.
+- Como o parser de `--env` do Cypress consome virgulas, o filtro tambem aceita `|` como separador para execucoes em linha de comando.
+- A execucao agrupada de `RENDA-TERC-07` a `11` ainda perdeu o estado de `Sim` durante a hidratacao da aba; o setup agora aguarda estabilizacao curta e usa o clique Cypress no label visivel.
+- `RENDA-TERC-07` a `RENDA-TERC-11` reexecutados em grupo apos estabilizacao: 5 de 5 aprovados. Bloco `08` fica com 10 aprovados e apenas `RENDA-TERC-06` como divergencia.
+- `GAR-PF-02` aprovado apos usar o combobox pesquisavel de UF.
+- `GAR-PJ-02` avancou apos o ajuste de UF e confirmou divergencia funcional: o campo Estado Civil exigido pelo caso nao existe na tela PJ.
+- Nos casos de CEP PF/PJ, nenhum request foi disparado ao digitar e sair do campo e nao existe botao de busca na tela implantada. A espera de rede foi removida para a falha apontar diretamente os campos que permanecem vazios.
+- `GAR-PF-05` e `GAR-PJ-04` reexecutados apos o ajuste: ambos confirmaram divergencia funcional, pois o endereco permaneceu vazio apos informar o CEP valido `01001-000`.
+- Confirmado pelo responsavel pelas massas que todas as propostas e links fornecidos sao fakes, descartaveis e exclusivos do ambiente de desenvolvimento.
+- `PROP-02` deixou de depender de massa adicional: a proposta `000000081` pode ser usada para validar que endereco do imovel, valor do imovel, valor do emprestimo e prazo solicitado estao desabilitados no perfilamento.
+- O teste `PROP-02` foi implementado, mas sua execucao foi interrompida imediatamente porque o ambiente foi informado como fora do ar. Aguardando restabelecimento antes de novas chamadas ao portal.
+- Iniciada revisao caso a caso das evidencias em video. O `LOGIN-01` manteve a logica existente e recebeu pausas antes e depois da validacao final, para a pagina de propostas permanecer legivel no video. Alteracao ainda nao executada porque o ambiente esta fora do ar.
+- Para a validacao do bloco `02-minhas-propostas`, adicionadas pausas de evidencia em cada caso executado: 2 segundos apos a abertura/estabilizacao da listagem e 3 segundos ao final da validacao.
+- `02-minhas-propostas.cy.ts` executado em Electron headless com evidencia em video: 6 aprovados, 2 divergencias funcionais e 11 pendentes de automacao/massa.
+- A interpretacao de `PROP-01` foi corrigida: o endereco nao deve aparecer no card. O teste agora abre a proposta, acessa a aba Imovel e valida que o endereco recebido do lead esta preenchido.
+- `PROP-01` reexecutado isoladamente apos a correcao: aprovado. O endereco do imovel esta preenchido dentro da proposta, na aba Imovel.
+- `PROP-14` deve permanecer falhando: a contagem por dias corridos e um problema conhecido do SCCI e a falha do Cypress serve como evidencia da divergencia.
+- `PROP-14` confirmou divergencia funcional: para o vencimento em `17/07/2026`, o portal exibe `29 dias restantes` (dias corridos), enquanto a regra de dias uteis resulta em `21 dias` na data da execucao.
+- `PROP-16` teve falso negativo corrigido: o navegador acrescenta `/` ao final de `https://c6imobiliario.com.br/`; a validacao passou a comparar a origem da URL. Como o redirecionamento externo interfere no caso seguinte, ele passou a ser executado por ultimo no arquivo e foi aprovado.
+- `PROP-19` foi validado isoladamente e na rodada completa apos o ajuste de ordem; aprovado.
+- Video consolidado: `cypress/videos/02-minhas-propostas.cy.ts.mp4` (1min08s). Screenshots das duas divergencias foram gerados automaticamente.
+- Recebidas massas especificas para `PROP-07` a `PROP-12`, `PROP-17` e `PROP-18`; `PROP-06` reutiliza a massa com duas propostas do `PROP-18`. `PROP-03` e `PROP-05` permanecem fora da rodada por orientacao do responsavel.
+- O cache local passou a armazenar varias sessoes por `accessUrl`, evitando consumir novamente cada token ao alternar entre CPFs e casos.
+- Videos de execucoes isoladas passaram a ser preservados por ID em `cypress/evidencias/videos/`, fora da pasta limpa automaticamente pelo Cypress a cada execucao.
+- `PROP-06` aprovado: a massa possui ao menos duas propostas com datas-limite distintas.
+- `PROP-07` confirmou divergencia funcional: a massa vencida exibe `Vencida` e mantem `Fase Atual: Cadastro`, sem o texto esperado `Proposta expirada`.
+- `PROP-08` confirmou divergencia funcional: a massa esta em `Credito Reprovado`, mas exibe `Desculpe, infelizmente seu credito foi reprovado` em vez de `Verifique seu e-mail ou entre em contato com o consultor`.
+- `PROP-09` aprovado: proposta em fase de Credito ou posterior exibe a orientacao esperada.
+- `PROP-10` aprovado: a proposta cancelada ha mais de 30 dias nao aparece na listagem. Removida do teste a exigencia indevida de mensagem de lista vazia.
+- `PROP-11` e `PROP-12` foram implementados, mas a autenticacao de ambas as massas retornou HTTP 429 antes da abertura da listagem. Nao houve novas tentativas com esses tokens.
+- `PROP-17` foi implementado para validar, sem alteracao, a massa ja em Credito fornecida pelo responsavel. Execucao adiada por causa do limite HTTP 429 ativo.
+- `PROP-18` aprovado: duas propostas distintas foram exibidas e cada card abriu uma rota de proposta diferente.
+- Evidencias individuais regeneradas a partir das sessoes em cache e preservadas em `cypress/evidencias/videos/`: `PROP-06`, `PROP-07`, `PROP-08`, `PROP-09`, `PROP-10` e `PROP-18`.
+- Iniciada validacao caso a caso de `03-linha-do-tempo-alertas.cy.ts`, com pausas de 2 segundos apos a abertura e 3 segundos no resultado final de cada evidencia.
+- Bloco `03-linha-do-tempo-alertas`: `TIMELINE-01`, `TIMELINE-02`, `TIMELINE-03`, `TIMELINE-07`, `TIMELINE-08` e `TIMELINE-12` aprovados.
+- `TIMELINE-09` confirmou divergencia funcional: apos fechar o aviso de cadastro obrigatorio e recarregar, a mensagem reaparece.
+- `TIMELINE-11` confirmou divergencia funcional: o botao `Ver Detalhes da Operacao` nao existe na tela.
+- `TIMELINE-06` foi automatizado com a massa vencida do `PROP-07` e confirmou divergencia: ao clicar, o portal mostra o modal `Proposta vencida` e impede abrir a tela para visualizacao, enquanto a regra exige visualizacao com edicao bloqueada.
+- `TIMELINE-10` foi automatizado com a massa de duas propostas do `PROP-18`: as datas distintas aparecem nos cards, mas a jornada de documentos da proposta `18` nao exibe sua data-limite. Mantido falhando ate confirmar se a regra exige a data dentro da jornada ou apenas no card.
+- `TIMELINE-04` permanece pendente por exigir uma mesma proposta com mais de uma acao disponivel. `TIMELINE-05` permanece pendente por exigir alteracao controlada da fase na Prognum.
+- Uma tentativa de `TIMELINE-12` travou no runner sem relatorio; os processos foram encerrados e a reexecucao isolada foi aprovada.
+- Regras do bloco `03` refinadas pelo responsavel: `TIMELINE-04` deve verificar a linha do tempo nas jornadas de cadastro e documentos; `TIMELINE-05` usa proposta em Credito; `TIMELINE-10` exige as datas nos cards; `TIMELINE-11` exige ausencia do botao removido.
+- `TIMELINE-04` aprovado com a massa de duas propostas: a linha do tempo existe tanto no cadastro quanto nos documentos.
+- `TIMELINE-05` aprovado com proposta em Credito: o item ativo da linha do tempo e `Credito`.
+- `TIMELINE-10` aprovado apos alinhar a assercao aos cards: todas as propostas exibem data-limite e a massa possui datas distintas.
+- `TIMELINE-11` aprovado apos alinhar a regra de retirada: o botao `Ver Detalhes da Operacao` nao existe.
+- `TIMELINE-09` reexecutado com pausa apos o clique no X: o aviso fecha, mas reaparece depois do reload; divergencia funcional mantida.
+- Consolidacao final do bloco `03-linha-do-tempo-alertas`: 10 aprovados e 2 divergencias funcionais (`TIMELINE-06`, `TIMELINE-09`), sem casos pendentes.
+- Correcao de interpretacao em `TIMELINE-09`: o X apenas abre a confirmacao; o teste deve clicar tambem em `Nao mostrar novamente` antes de recarregar.
+- `TIMELINE-09` reexecutado com o fluxo completo e aprovado: apos confirmar `Nao mostrar novamente`, o aviso nao reaparece no reload.
+- Consolidacao corrigida do bloco `03-linha-do-tempo-alertas`: 11 aprovados e 1 divergencia funcional (`TIMELINE-06`), sem pendentes.
+- Iniciada validacao caso a caso de `04-cadastro-participantes.cy.ts`, com pausas de 2 segundos apos a abertura e 3 segundos no resultado final de cada evidencia.
+- Bloco `04-cadastro-participantes`: `PART-01`, `PART-02`, `PART-03`, `PART-06`, `PART-08`, `PART-09`, `PART-10` e `PART-11` aprovados.
+- `PART-07` confirmou divergencia funcional: o campo Nacionalidade inicia vazio, em vez de `Brasileira`.
+- `PART-12` confirmou divergencia funcional: apos informar `R$ 1.234,56`, trocar de aba e recarregar, a renda retornou para `R$ 84.849,00`.
+- `PART-13` confirmou divergencia funcional: ao salvar com campos obrigatorios pendentes, nenhuma mensagem de critica foi exibida.
+- `PART-04` e `PART-05` permanecem pendentes por exigirem massas de origem WEB, APP e API.
+- Consolidacao do bloco `04-cadastro-participantes`: 8 aprovados, 3 divergencias funcionais e 2 pendentes por massa.
+- Regras do bloco `04` refinadas pelo responsavel: Nacionalidade deve ser obrigatoria e editavel, sem default; `PART-12` valida apenas o indicador `Rascunho salvo` apos trocar de aba; `PART-13` valida rascunho e critica ao confirmar na aba Imovel; `PART-04` e `PART-05` validam renda preenchida e editavel.
+- `PART-04` e `PART-05` implementados com a regra unificada e aprovados: renda veio preenchida e o campo permite edicao.
+- `PART-07` aprovado apos alinhar a regra: Nacionalidade possui `*`, e combobox editavel.
+- `PART-12` aprovado: ao alterar a renda e trocar de aba, `Rascunho salvo` aparece ao lado de `Cadastro da Proposta`.
+- `PART-13` aprovado: o rascunho e salvo, a aba Imovel e aberta, o botao `Confirmar` e acionado e a critica `Ainda faltam campos obrigatorios` permanece visivel.
+- Consolidacao corrigida do bloco `04-cadastro-participantes`: 13 aprovados, sem falhas e sem pendentes.
+- Iniciada validacao caso a caso de `05-cadastro-conjuge.cy.ts`, com pausas de 2 segundos apos abrir a aba Conjuge e 3 segundos antes da limpeza da massa.
+- Bloco `05-cadastro-conjuge`: `CONJ-01`, `CONJ-02`, `CONJ-04`, `CONJ-05`, `CONJ-06`, `CONJ-07`, `CONJ-08` e `CONJ-10` aprovados.
+- `CONJ-03` confirmou divergencia funcional: o rotulo `Data da Comunhao` nao apresenta a indicacao `(opcional)`.
+- `CONJ-09` confirmou divergencia funcional: o campo Nome aceita espaco no final.
+- Consolidacao do bloco `05-cadastro-conjuge`: 8 aprovados e 2 divergencias funcionais, sem pendentes.
+- Iniciada validacao caso a caso de `06-composicao-renda.cy.ts`, com pausas de 2 segundos apos abrir a aba e 3 segundos no resultado final.
+- `RENDA-01`, `RENDA-02` e `RENDA-03` aprovados. Uma tentativa em lote travou antes de `RENDA-02`; os processos orfaos foram encerrados e `RENDA-02`/`RENDA-03` passaram isoladamente.
+- Consolidacao do bloco `06-composicao-renda`: 3 aprovados, sem falhas e sem pendentes.
+- Iniciada validacao caso a caso de `07-composicao-renda-conjuge.cy.ts`, com pausas de 2 segundos apos exibir os campos do conjuge e 3 segundos no resultado final.
+- `RENDA-CONJ-01` a `RENDA-CONJ-06` aprovados. A primeira tentativa de `RENDA-CONJ-02` foi interrompida no setup porque o radio `Sim` perdeu o estado durante a hidratacao; a reexecucao isolada passou.
+- Consolidacao do bloco `07-composicao-renda-conjuge`: 6 aprovados, sem falhas e sem pendentes.
+- Iniciada validacao caso a caso de `08-composicao-renda-terceiros.cy.ts`, com pausas de 2 segundos apos exibir os campos de terceiro e 3 segundos no resultado final.
+- Na rodada atual do bloco `08`, `RENDA-TERC-01` e `RENDA-TERC-02` foram executados e aprovados.
+- `RENDA-TERC-03` a `RENDA-TERC-05` nao chegaram ao teste porque o card da proposta `81` nao apareceu no setup. Em seguida, `RENDA-TERC-06` e a tentativa isolada de `RENDA-TERC-03` falharam antes da tela porque `POST /api/auth/token` nao respondeu em 30 segundos.
+- Novas autenticacoes foram interrompidas para evitar consumo ou bloqueio do token. `RENDA-TERC-03` a `RENDA-TERC-11` aguardam o endpoint de autenticacao voltar.
+- Apos o servidor voltar, `RENDA-TERC-03` foi reexecutado e aprovado; `RENDA-TERC-04`, `05`, `07`, `08`, `09`, `10` e `11` tambem foram aprovados.
+- `RENDA-TERC-06` confirmou divergencia funcional: apos salvar e recarregar, o nome do terceiro voltou vazio em vez de `Terceiro Cypress`.
+- Consolidacao do bloco `08-composicao-renda-terceiros`: 10 aprovados e 1 divergencia funcional (`RENDA-TERC-06`), sem pendentes.
+- `RENDA-TERC-06` foi realinhado: removido o reload e adicionada a validacao de `Rascunho salvo` antes de retornar a composicao e verificar os espacos finais.
+- `RENDA-TERC-06` reexecutado com o criterio correto: `Rascunho salvo` apareceu, mas o Nome manteve espaco no final. Divergencia funcional mantida, agora sem depender de reload.
+- Criado `cypress/config/connect.ht.ts` separado para as massas de HT. A selecao passa por `PORTAL_ENV=ht`; sem a variavel, desenvolvimento continua sendo o padrao. Evidencias futuras ficam separadas por ambiente.
+- Nova massa padrao recebida para continuar a partir do bloco `09`: proposta `95`, CPF final `04`, cadastro em `19/06/2026`, imovel `R$ 2.250.000,00`, financiamento `R$ 800.000,00`, prazo `36 meses` e vencimento `19/07/2026`.
+- Iniciada validacao caso a caso de `09-motivo-contratacao.cy.ts`, com pausas de 2 segundos apos abrir a aba e 3 segundos no resultado final.
+- `MOTIVO-01`, `MOTIVO-02` e `MOTIVO-03` aprovados com a proposta `95`.
+- Consolidacao do bloco `09-motivo-contratacao`: 3 aprovados, sem falhas e sem pendentes.
+- Iniciada validacao caso a caso de `10-imovel.cy.ts` com a proposta `95`, mantendo `IMOVEL-10` separado por depender da integracao com a Prognum.
+- Bloco `10-imovel` com a proposta `95`: `IMOVEL-01`, `02`, `03`, `05`, `06`, `07`, `08` e `11` aprovados.
+- `IMOVEL-04` confirmou divergencia funcional: Uso do Imovel apresenta 13 opcoes, enquanto a regra define 12.
+- `IMOVEL-09` confirmou divergencia funcional: ao selecionar que nao reside no imovel, o campo Municipio (`PESSOA.CO_MUNICIPIO`) nao aparece.
+- `IMOVEL-12` confirmou divergencia funcional: na condicao alienada, o campo Instituicao Financeira (`IMOVEL_OPERACAO.NO_INSTITUICAO_FINANCEIRA`) nao aparece.
+- `IMOVEL-10` permanece pendente por depender da verificacao do formato concatenado enviado para a Prognum.
+- Consolidacao do bloco `10-imovel`: 8 aprovados, 3 divergencias funcionais e 1 pendente de integracao.
+- Regras do bloco `10` refinadas com evidencias de tela: `Nao Informado` integra a lista valida de Uso do Imovel; Municipio e validado no endereco do imovel; Instituicao Financeira e validada para empresa PJ alienada/financiada; `IMOVEL-10` valida a presenca do numero do imovel no endereco.
+- `IMOVEL-04` reexecutado e aprovado com 13 opcoes, incluindo `Nao Informado`; a validacao considera o conteudo da lista sem exigir uma ordem especifica.
+- `IMOVEL-09` reexecutado e aprovado ao validar o Municipio no endereco do imovel.
+- `IMOVEL-10` automatizado e aprovado ao confirmar a presenca do numero do imovel no endereco, sem exigir virgula ou formato especifico.
+- `IMOVEL-12` passou a selecionar `Em nome de empresa (PJ) alienado/financiado` e encontrou o campo `Interveniente Quitante`, mas permaneceu como divergencia funcional porque o rotulo nao apresenta o indicador obrigatorio `*`.
+- Consolidacao atualizada do bloco `10-imovel`: 11 aprovados e 1 divergencia funcional (`IMOVEL-12`), sem pendentes.
+- Iniciada nova validacao caso a caso de `11-garantidor-pf.cy.ts` com a proposta `95`, adicionando pausa de 2 segundos na abertura da aba e 3 segundos antes da limpeza final.
+- Na primeira rodada, `GAR-PF-01`, `02`, `03`, `05` e `06` foram aprovados. `GAR-PF-04` falhou por exigir literalmente `(opcional)`, enquanto a tela apresenta `Complemento opcional`; identificado como ajuste do Cypress.
+- `GAR-PF-04` foi corrigido para validar o indicador `opcional` sem exigir parenteses, reexecutado e aprovado.
+- Consolidacao atualizada do bloco `11-garantidor-pf`: 6 aprovados, sem falhas e sem pendentes.
+- Iniciada nova validacao caso a caso de `12-garantidor-pj.cy.ts` com a proposta `95`, adicionando as pausas de evidencia e alinhando o indicador `opcional` ao formato real apresentado pela tela.
+- Na primeira rodada do bloco `12`, `GAR-PJ-01`, `03`, `04` e `05` foram aprovados. `GAR-PJ-02` confirmou ausencia do campo `Estado Civil`; `GAR-PJ-06`, `07` e `08` falharam inicialmente por textos e conteineres antigos usados pelo Cypress.
+- A tela atual possui a secao `Lista de Socios`, mas sem o antigo `role="group"`. `GAR-PJ-07` e `GAR-PJ-08` foram ajustados para os nomes reais dos campos, reexecutados e aprovados.
+- `GAR-PJ-06` permaneceu como divergencia funcional: a lista existe, mas nao apresenta orientacao de preenchimento quando aplicavel ou quando houver apenas um dono.
+- Consolidacao atualizada do bloco `12-garantidor-pj`: 6 aprovados e 2 divergencias funcionais (`GAR-PJ-02`, `GAR-PJ-06`), sem pendentes.
+- Regras de `GAR-PJ-02` e `GAR-PJ-06` corrigidas com orientacao funcional: empresa nao possui Estado Civil; para socios, deve existir a lista e ser possivel adicionar um novo socio pelo botao da tela.
+- `GAR-PJ-02` foi reexecutado sem exigir Estado Civil e aprovado com todos os campos aplicaveis da empresa marcados como obrigatorios.
+- `GAR-PJ-06` foi reexecutado e aprovado: a Lista de Socios foi exibida, o botao de adicionar foi acionado e um novo conjunto de campos de socio foi criado.
+- Consolidacao final do bloco `12-garantidor-pj`: 8 aprovados, sem falhas e sem pendentes.
+- Iniciada validacao do bloco `13-detalhamento`, adicionando pausas de evidencia antes e depois da verificacao do cadastro incompleto.
+- `DETALHE-01` aprovado: o aviso de campos obrigatorios foi exibido e o botao `Ver Detalhes da Operacao` nao apareceu enquanto o cadastro estava incompleto.
+- Consolidacao do bloco `13-detalhamento`: 1 aprovado, sem falhas e sem pendentes.
+
+## Consolidacao desta rodada
+
+- Bloco `05-cadastro-conjuge`: 8 aprovados e 2 divergencias funcionais (`CONJ-03`, `CONJ-09`).
+- Bloco `06-composicao-renda`: 3 aprovados.
+- Bloco `07-composicao-renda-conjuge`: 6 aprovados.
+- Bloco `08-composicao-renda-terceiros`: 10 aprovados e 1 divergencia funcional (`RENDA-TERC-06`).
+- Bloco `09-motivo-contratacao`: 3 aprovados.
+- Bloco `10-imovel`: 11 aprovados e 1 divergencia funcional (`IMOVEL-12`), sem pendentes.
+- Bloco `11-garantidor-pf`: 6 aprovados, sem falhas e sem pendentes.
+- Bloco `12-garantidor-pj`: 8 aprovados, sem falhas e sem pendentes.
+- Bloco `13-detalhamento`: 1 aprovado, sem falhas e sem pendentes.
+- O HTTP 429 foi mitigado com autenticacao direta, `cy.session` entre specs e cache local validado do cookie entre processos Cypress.
+- Chrome headless permaneceu instavel por falha de conexao CDP; as validacoes foram concluídas em Electron headless.
+
+## Integracoes Portal x SCCI
+
+- Catalogadas as 59 regras de integracao do XLSX e recuperadas as verificacoes AEJS existentes em `Portal-antigo`.
+- Definido cenario de maior cobertura para a proposta `95`: titular casado, composicao com conjuge, motivo, imovel PJ alienado/financiado, interveniente quitante, garantidor PJ e dois socios.
+- Criados configuracao local ignorada do AEJS, massa fake centralizada e o caso `INT-PREPARE`, que salva todas as etapas sem finalizar a proposta.
+- Primeira execucao de `INT-PREPARE` preencheu e salvou todas as abas; a falha final mostrou que a tarefa atual oferece apenas `Confirmar`. O `Cancelar` sera procurado somente depois do avanco da etapa. O telefone opcional da empresa tambem foi alinhado para um celular valido com DDD.
+- `INT-PREPARE` aprovado apos adicionar fallback manual para o endereco da empresa quando a consulta repetida do mesmo CEP nao preencher os campos automaticamente.
+- Criados casos separados `INT-CONFIRM`, `INT-CANCEL` e `INT-AEJS`, permitindo validar e retomar cada transicao sem repetir a acao anterior.
+- Primeira tentativa de `INT-CONFIRM` nao acionou finalizacao: ao reabrir, o portal indicou campos obrigatorios vazios e nao exibiu Garantidor. A preparacao foi alterada para usar o fluxo oficial `Confirmar e avancar cadastro` em cada etapa, em vez de depender apenas do rascunho por troca de aba.
+- Mesmo com o avanco oficial, a proposta reabriu sem os valores obrigatorios e sem a aba Garantidor. Para preservar o estado valido enviado pelo front, `INT-CONFIRM` passou a executar preenchimento e finalizacao na mesma sessao Cypress; a persistencia sera comprovada no AEJS.
+
+## Rodada funcional em HT - proposta 436007
+
+- Configurada a massa HT recebida: proposta `436007`, proponente `Teste Cypress 1`, CPF final `11`, cadastro em `19/06/2026`, imovel `R$ 1.950.000,00`, financiamento `R$ 700.000,00`, prazo `96 meses` e vencimento `19/07/2026`.
+- Executados somente os 93 casos funcionais aplicaveis dos blocos `01` a `13`; os casos de integracao nao foram executados.
+- Resultado final apos os alinhamentos e reexecucoes: 86 aprovados e 7 reprovados.
+- Falhas ligadas a dados ausentes na massa/lead: `PROP-01`, `IMOVEL-01`, `IMOVEL-09` e `IMOVEL-10`. O endereco, municipio e numero do imovel chegaram vazios em HT.
+- Divergencias conhecidas mantidas: `PROP-02` e `MOTIVO-01` nao encontram Valor solicitado do Credito, Prazo estimado e Tipo de juros; `PROP-14` continua exibindo dias corridos em vez de dias uteis.
+- `CONJ-03` foi alinhado para aceitar a indicacao `opcional` sem exigir parenteses e passou.
+- `CONJ-09` passou a trocar para a aba Motivo da Contratacao, aguardar o salvamento, voltar para Conjuge e validar os valores persistidos sem espaco final; o caso passou.
+- `IMOVEL-12` foi reexecutado apos a correcao do portal e passou com os dois campos obrigatorios marcados com `*`.
+- `GAR-PJ-08` falhou inicialmente por erro do Cypress: havia dois socios e o seletor tentou digitar nos dois celulares. O teste foi limitado ao primeiro socio visivel, reexecutado e aprovado.
+- Nao houve HTTP 429 durante a bateria funcional em HT. Os videos e relatorios Mochawesome foram gerados normalmente.
+- A nova massa HT do CPF final `43` reuniu seis propostas e passou a atender as massas de multipla proposta, expirada, Credito, Credito Reprovado e cancelada recente.
+- Confirmado pelo navegador que a proposta `436009` abre a jornada `Documentos da proposta`, enquanto a `436012` abre o cadastro; `TIMELINE-04` foi alinhado a essas duas jornadas e aprovado.
+- Apos a correcao das datas, `PROP-06` e `TIMELINE-10` foram aprovados com prazos distintos (`10/07/2026` e `20/07/2026`).
+- `PROP-10` foi alinhado para examinar as operacoes canceladas exibidas e garantir que nenhuma tenha data de cadastro superior a 30 dias; caso aprovado.
+- O comando `openProposalList` passou a aguardar o fim dos skeletons antes de liberar o teste, eliminando falsos resultados durante o carregamento.
+- Videos e screenshots brutos sao limpos no inicio de uma nova execucao por `trashAssetsBeforeRuns`; videos executados com `caseId` sao copiados para `cypress/evidencias/videos/<ambiente>` e permanecem preservados.

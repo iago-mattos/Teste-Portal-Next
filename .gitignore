@@ -1,8 +1,14 @@
 node_modules/
+cypress/config/connect.ts
+cypress/config/connect.ht.ts
+cypress/config/aejs.ts
 cypress/downloads/
+cypress/results/
 cypress/screenshots/
 cypress/videos/
 .env
 .env.local
+.codex-tmp/
+evidencias/
 
 portal-cadastro-prognum

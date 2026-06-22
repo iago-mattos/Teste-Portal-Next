@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "Testes automatizados do PortalNext com Cypress e TypeScript",
   "scripts": {
-    "cy:open": "cypress open --config baseUrl=http://localhost:3000",
-    "cy:run": "cypress run --config baseUrl=http://localhost:3000",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:report": "npm run cy:run && npm run report:mochawesome",
+    "report:merge": "mochawesome-merge \"cypress/results/*.json\" -o cypress/results/mochawesome.json",
+    "report:generate": "marge cypress/results/mochawesome.json --reportDir cypress/results --reportFilename mochawesome-report",
+    "report:mochawesome": "npm run report:merge && npm run report:generate",
     "test": "cypress run"
   },
   "keywords": [],
@@ -14,6 +18,9 @@
   "devDependencies": {
     "@types/node": "^25.9.2",
     "cypress": "^15.17.0",
+    "mochawesome": "^7.1.4",
+    "mochawesome-merge": "^5.1.1",
+    "mochawesome-report-generator": "^6.3.2",
     "typescript": "^6.0.3"
   }
 }
