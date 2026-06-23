@@ -103,6 +103,10 @@ export default defineConfig({
           );
           return null;
         },
+        aejsLog(message: unknown) {
+          console.log(`[AEJS] ${String(message)}`);
+          return null;
+        },
       });
 
       const caseId = config.env.caseId;
@@ -135,7 +139,7 @@ export default defineConfig({
         });
 
         config.testingType = "e2e";
-        config.env = { portalEnvironment };
+        config.env = { ...config.env, portalEnvironment };
         config.excludeSpecPattern = [];
         config.reporterOptions = {
           ...config.reporterOptions,

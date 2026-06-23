@@ -246,3 +246,37 @@ Data: 17/06/2026
 - `PROP-10` foi alinhado para examinar as operacoes canceladas exibidas e garantir que nenhuma tenha data de cadastro superior a 30 dias; caso aprovado.
 - O comando `openProposalList` passou a aguardar o fim dos skeletons antes de liberar o teste, eliminando falsos resultados durante o carregamento.
 - Videos e screenshots brutos sao limpos no inicio de uma nova execucao por `trashAssetsBeforeRuns`; videos executados com `caseId` sao copiados para `cypress/evidencias/videos/<ambiente>` e permanecem preservados.
+
+## Preparacao das integracoes em DEV - 22/06/2026
+
+- O link DEV do CPF final `43` foi atualizado e passou a listar as quatro propostas descartaveis destinadas as integracoes.
+- `000436021` confirmada com conjuge, composicao de renda do conjuge, garantidor PJ, dois socios e interveniente quitante. Evidencia: `mochawesome_294.json`.
+- `000436020` confirmada com terceiro na composicao de renda e garantidor PF. Evidencia final: `mochawesome_302.json`.
+- `000436019` confirmada sem composicao de renda e com imovel quitado. Evidencia: `mochawesome_303.json`.
+- `000436018` confirmada como massa de fluxo, documentos e cancelamento. Evidencia: `mochawesome_304.json`.
+- A confirmacao passou a aguardar o fim da gravacao e a localizar o segundo botao `Confirmar` dentro do `data-slot` do dialogo, evitando selecionar o botao da pagina coberto pelo modal.
+- Em todos os quatro cenarios, o cadastro retornou HTTP 200 e a finalizacao retornou HTTP 200 com `sucesso = true`.
+- Os valores enviados e os caminhos iniciais de verificacao foram registrados em `Docs/scci.md`. A proxima etapa e explorar essas operacoes no AEJS/SCCI e so entao implementar as assercoes definitivas de `INT-AEJS`, documentos, SCR, tarefa e cancelamento.
+
+## Exploracao AEJS/SCCI HT - 23/06/2026
+
+- Acesso validado em `https://c6ht.prognum.com.br/` pelo fluxo `Acesso via Plataforma`.
+- Caminho confirmado para abrir a massa: `Originação > Cadastro de operações`, filtro `operacao`, botao `Pesquisar` e duplo clique na linha da operacao.
+- A operacao `000436021` foi localizada e abriu apos espera longa depois do duplo clique.
+- A ficha abriu com os menus `Pretendente`, `Dados da Operação`, `Documentos`, `Tarefas`, `Andamento do processo` e a aba interna `Imóvel Operação`, entre outras.
+- Primeiros `name` estaveis observados para a futura automacao: `OPERACAO_CREDITO$NU_PROPOSTA_EXTERNO`, `NO_PESSOA` e `IMOVEL_OPERACAO$VA_AVALIACAO_PROVISORIA`.
+- Na mesma operacao foram mapeados campos de titular, conjuge, imovel, garantidor PJ, socios e interveniente quitante. Os nomes e valores foram registrados em `Docs/scci.md`.
+- Para validar o saldo do interveniente, foi necessario clicar em `Alterar`, desmarcar `IMOVEL_OPERACAO$IN_ALIENADO_PROPRIO` na aba `Interveniente quitante` e abrir `Dados do contrato com o Interveniente Quitante`; o saldo apareceu em `OPERACAO_CREDITO$VA_INTERVENIENTE` com valor `250.000,00`.
+- A alteracao temporaria foi descartada clicando em `Cancelar` e confirmando `Sim`; nada foi salvo no AEJS.
+- Recebidos prints complementares para garantidor PF e terceiro na composicao de renda. Ambos seguem o mesmo padrao de tela PF ja mapeado; para automacao muda principalmente o ponto de abertura: subaba `Garantidor Pessoa Física` para o garantidor e duplo clique no nome do componente para a composicao de renda.
+- Os valores de referencia de garantidor PF e terceiro foram adicionados em `Docs/scci.md` para orientar a montagem do Cypress sem exigir nova exploracao manual agora.
+
+## Integracoes AEJS/SCCI HT - 23/06/2026
+
+- Implementada a verificacao Cypress `16-verificar-aejs.cy.ts` apontando para o AEJS/SCCI HT em `https://c6ht.prognum.com.br/`.
+- A automacao acessa `Acesso via Plataforma`, abre `Originacao > Cadastro de operacoes`, pesquisa a operacao e aguarda a abertura por duplo clique.
+- `INT-AEJS-PJ` aprovado com a operacao `000436021`, validando titular, conjuge, imovel, garantidor PJ, socios e interveniente quitante.
+- No interveniente, o Cypress clica em `Alterar`, desmarca `IMOVEL_OPERACAO$IN_ALIENADO_PROPRIO`, valida o saldo `OPERACAO_CREDITO$VA_INTERVENIENTE = 250.000,00` e cancela a alteracao para nao salvar mudanca no AEJS.
+- `INT-AEJS-PF` aprovado com a operacao `000436020`, validando terceiro na composicao de renda e garantidor PF.
+- Ajustes tecnicos feitos no Cypress: validacao de checkboxes ExtJS ocultos pelo estado real do input, log `aejsLog` para rastrear etapas lentas do AEJS e preservacao de `config.env` ao usar `caseId`.
+- Resultado final da execucao: `2 passing`, `0 failing`, duracao `13m31s`, evidencia `cypress/results/mochawesome_312.json` e video preservado em `cypress/evidencias/videos/ht/integracoes/INT-AEJS-HT.mp4`.
