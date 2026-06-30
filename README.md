@@ -77,8 +77,49 @@ npm run cy:run:integration
 
 A preparacao grava um contexto temporario com o caso, perfil e operacao
 efetivamente usados. O spec do AEJS le esse contexto, pesquisa exatamente a
-mesma operacao e confirma o numero aberto antes de validar os campos. Atualmente
-os perfis AEJS completos sao `INT-CONFIRM-PJ` e `INT-CONFIRM-PF`.
+mesma operacao e confirma o numero aberto antes de validar os campos.
+
+O fluxo automatizado esta dividido em:
+
+- `14-preparar-integracao.cy.ts`: preenche o Portal, confirma a proposta e
+  grava `.codex-tmp/integration-run-context.json`;
+- `16-verificar-aejs.cy.ts`: abre a mesma operacao no AEJS e valida os dados
+  persistidos;
+- `integration-data.ts`: centraliza os valores esperados e as operacoes de
+  cada perfil.
+
+Massas de integracao conhecidas:
+
+| Caso | Operacao | Cobertura |
+| --- | --- | --- |
+| `INT-CONFIRM-PJ` | `000436021` | Titular, conjuge, garantidor PJ, socios e interveniente |
+| `INT-CONFIRM-PF` | `000436020` | Terceiro na renda e garantidor PF |
+| `INT-CONFIRM-QUITADO` | `000436019` | Sem composicao de renda e imovel quitado |
+| `INT-CONFIRM-WORKFLOW` | `000436018` | Tarefas, documentos, fluxo e cancelamento |
+
+As operacoes acima ja foram confirmadas e devem ser preservadas. Nao execute a
+preparacao novamente sem uma massa descartavel ou sem a intencao explicita de
+alterar seu estado.
+
+### Resultado das integracoes
+
+As integracoes representam 59 regras da planilha:
+
+- 54 regras possuem validacao completa aprovada no AEJS;
+- regra 4 possui validacao parcial, pois o AEJS exibe a autorizacao SCR e a
+  data, mas nao a hora;
+- regras 1, 2 e 5 falham por divergencias de tarefas/documentos no fluxo;
+- regra 23 falha porque a operacao `000436019`, preparada sem composicao de
+  renda, chegou ao AEJS com `PESSOA$IN_EADQUIRENTE` marcado.
+
+Essas quatro falhas sao divergencias funcionais comprovadas, nao falhas de
+seletor do Cypress. Os caminhos e campos do AEJS estao detalhados em
+`Docs/scci.md`; o estado completo e as evidencias estao em
+`cypress/ANDAMENTO_EXECUCAO.md` e `Docs/HANDOFF_CODEX.md`.
+
+No total, a cobertura do projeto e composta por 108 casos funcionais, 59 regras
+de integracao e 2 transicoes controladas (`Confirmar` e `Cancelar`), totalizando
+169 casos.
 
 ## Organizacao
 
