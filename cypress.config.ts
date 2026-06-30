@@ -12,9 +12,19 @@ import {
   portalEnvironment,
 } from "./cypress/config/active-connect";
 
+if (existsSync(".env.local")) {
+  process.loadEnvFile(".env.local");
+} else if (existsSync(".env")) {
+  process.loadEnvFile(".env");
+}
+
 const portalSessionCachePath = resolve(
   ".codex-tmp",
   "portal-session-cookie.json",
+);
+const integrationRunContextPath = resolve(
+  ".codex-tmp",
+  "integration-run-context.json",
 );
 
 export default defineConfig({
@@ -52,6 +62,26 @@ export default defineConfig({
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
     setupNodeEvents(on, config) {
       on("task", {
+        readPortalAdminConfig() {
+          const values = {
+            url: process.env.PORTAL_ADMIN_URL?.trim() ?? "",
+            username: process.env.PORTAL_ADMIN_USER ?? "",
+            password: process.env.PORTAL_ADMIN_PASSWORD ?? "",
+            cpf:
+              process.env.PORTAL_TEST_CPF?.replace(/\D/g, "") ??
+              portalConnect.testData.cpfComPropostas,
+          };
+
+          return Object.values(values).every(Boolean) ? values : null;
+        },
+        readIntegrationSettings() {
+          return {
+            caseId: process.env.PORTAL_INTEGRATION_CASE_ID?.trim() ?? "",
+            operation:
+              process.env.PORTAL_INTEGRATION_OPERATION?.replace(/\D/g, "") ??
+              "",
+          };
+        },
         readPortalSessionCookie(accessUrl: unknown) {
           if (!existsSync(portalSessionCachePath)) {
             return null;
@@ -74,8 +104,35 @@ export default defineConfig({
 
           return cache.accessUrl === accessUrl ? cache : null;
         },
+        readLatestPortalSession(request: unknown) {
+          if (!existsSync(portalSessionCachePath)) {
+            return null;
+          }
+
+          const expected = request as { portalUrl?: string; cpf?: string };
+          const cache = JSON.parse(
+            readFileSync(portalSessionCachePath, "utf8"),
+          ) as {
+            latestPortalSession?: {
+              accessUrl?: string;
+              cpf?: string;
+            };
+          };
+          const latest = cache.latestPortalSession;
+
+          if (
+            !latest?.accessUrl ||
+            !expected.portalUrl ||
+            !latest.accessUrl.startsWith(`${expected.portalUrl}/?`) ||
+            (expected.cpf && latest.cpf !== expected.cpf)
+          ) {
+            return null;
+          }
+
+          return latest;
+        },
         writePortalSessionCookie(value: unknown) {
-          const session = value as { accessUrl?: string };
+          const session = value as { accessUrl?: string; cpf?: string };
           if (!session.accessUrl) {
             throw new Error("Sessao sem accessUrl nao pode ser armazenada.");
           }
@@ -98,7 +155,23 @@ export default defineConfig({
           mkdirSync(dirname(portalSessionCachePath), { recursive: true });
           writeFileSync(
             portalSessionCachePath,
-            JSON.stringify({ sessions }, null, 2),
+            JSON.stringify({ sessions, latestPortalSession: value }, null, 2),
+            "utf8",
+          );
+          return null;
+        },
+        readIntegrationRunContext() {
+          if (!existsSync(integrationRunContextPath)) {
+            return null;
+          }
+
+          return JSON.parse(readFileSync(integrationRunContextPath, "utf8"));
+        },
+        writeIntegrationRunContext(value: unknown) {
+          mkdirSync(dirname(integrationRunContextPath), { recursive: true });
+          writeFileSync(
+            integrationRunContextPath,
+            JSON.stringify(value, null, 2),
             "utf8",
           );
           return null;
@@ -109,7 +182,8 @@ export default defineConfig({
         },
       });
 
-      const caseId = config.env.caseId;
+      const caseId =
+        process.env.PORTAL_INTEGRATION_CASE_ID ?? config.env.caseId;
 
       if (typeof caseId === "string" && caseId.trim()) {
         const evidenceCaseId = caseId.trim().replace(/[^A-Za-z0-9_-]/g, "_");

@@ -260,13 +260,14 @@ const implementations = {
     });
   },
   "RENDA-TERC-09": () => {
-    cy.getByName("PESSOA.CO_PROFISSAO").click().type("ADMIN");
+    cy.getByName("PESSOA.CO_PROFISSAO").click().clear().type("ADMIN");
     cy.get('[role="listbox"]:visible').within(() => {
       cy.contains('[role="option"]', "ADMINISTRADOR").should("be.visible");
       cy.get('[role="option"]').each(($option) => {
         expect($option.text().toUpperCase()).to.contain("ADMIN");
       });
     });
+    cy.getByName("PESSOA.CO_PROFISSAO").clear();
   },
   "RENDA-TERC-10": () => {
     cy.getByName("PESSOA.CO_ATIVIDADE_PROFISSIONAL")

@@ -57,6 +57,7 @@ const implementations = {
     ).should("be.visible");
   },
   "RENDA-02": () => {
+    chooseRadio("Não");
     radioSelector("Não").then((selector) => {
       cy.get(selector).should("be.checked");
     });

@@ -278,5 +278,44 @@ Data: 17/06/2026
 - `INT-AEJS-PJ` aprovado com a operacao `000436021`, validando titular, conjuge, imovel, garantidor PJ, socios e interveniente quitante.
 - No interveniente, o Cypress clica em `Alterar`, desmarca `IMOVEL_OPERACAO$IN_ALIENADO_PROPRIO`, valida o saldo `OPERACAO_CREDITO$VA_INTERVENIENTE = 250.000,00` e cancela a alteracao para nao salvar mudanca no AEJS.
 - `INT-AEJS-PF` aprovado com a operacao `000436020`, validando terceiro na composicao de renda e garantidor PF.
+
+## 29/06/2026 - Bootstrap automatico pelo Admin e operacao rastreavel
+
+- Validado manualmente no Admin DEV o caminho `Backend > Gerar link de acesso` para o CPF de teste.
+- Confirmado que o botao `Copiar link` entrega o magic link e que o acesso abre `Minhas propostas`.
+- Credenciais administrativas movidas para `.env.local`, ignorado pelo Git; o codigo versionado contem somente placeholders.
+- `portalSession()` passou a restaurar a sessao valida e, quando necessario, entrar no Admin, gerar/copiar um link novo e autenticar o Portal automaticamente.
+- Incluido bloqueio para impedir geracao automatica quando Admin e Portal nao estiverem no mesmo host DEV/HT.
+- Removida a dependencia das URLs antigas por caso em `02-minhas-propostas` e `03-linha-do-tempo-alertas`.
+- A preparacao da integracao agora grava `caseId`, perfil e operacao em `.codex-tmp/integration-run-context.json`.
+- A verificacao AEJS usa o contexto gravado e pesquisa exatamente a operacao preparada; sem contexto, preserva os cenarios PJ e PF conhecidos.
+- Smoke automatico de autenticacao aprovado: `mochawesome_346.json`, 1 passando e 0 falhando.
+- Smoke de reaproveitamento da sessao e abertura da proposta aprovado: `mochawesome_347.json`, 1 passando e 0 falhando.
+- Comando final `npm run cy:run:smoke` aprovado: `mochawesome_348.json` e `mochawesome_349.json`, 2 passando e 0 falhando; nova restauracao isolada aprovada em `mochawesome_350.json`.
 - Ajustes tecnicos feitos no Cypress: validacao de checkboxes ExtJS ocultos pelo estado real do input, log `aejsLog` para rastrear etapas lentas do AEJS e preservacao de `config.env` ao usar `caseId`.
 - Resultado final da execucao: `2 passing`, `0 failing`, duracao `13m31s`, evidencia `cypress/results/mochawesome_312.json` e video preservado em `cypress/evidencias/videos/ht/integracoes/INT-AEJS-HT.mp4`.
+
+## 29/06/2026 - Revalidacao funcional e AEJS
+
+- A checagem TypeScript `npx tsc --noEmit` foi aprovada apos os ajustes.
+- `PROP-18` passou a aceitar as jornadas que abrem o detalhe da proposta ou um modal de situacao e foi limitado a duas propostas distintas, evitando percorrer toda a paginacao sem aumentar a cobertura da regra. Caso aprovado na reexecucao.
+- `TIMELINE-06` passou a abrir explicitamente a massa expirada `000436008`, aguardar o fim dos skeletons e aceitar o botao de confirmacao oculto ou desabilitado. Caso aprovado na reexecucao.
+- Resultado focado dos specs `02` e `03`: 31 casos registrados, 24 aprovados, 5 reprovados e 2 pendentes. Evidencias: `mochawesome_360.json`, `mochawesome_361.json` e videos atualizados dos dois specs.
+- Divergencias mantidas: `PROP-02` sem os campos retirados da interface, `PROP-14` com dias corridos, `PROP-16` redirecionando internamente para `/menu-simulacao` em vez de `https://c6imobiliario.com.br` e `TIMELINE-10` com data limite em apenas 7 das 11 propostas marcadas como em andamento.
+- `PROP-01` apresentou uma intermitencia de carregamento da proposta `436012`; o timeout do card foi ampliado de 10 para 30 segundos, mas esse ajuste ainda nao foi reexecutado isoladamente.
+- A verificacao `16-verificar-aejs.cy.ts` foi aprovada: `INT-AEJS-PJ` e `INT-AEJS-PF` passaram, sem screenshots de falha, em `9m25s`. Evidencia: `cypress/results/mochawesome_362.json` e `cypress/videos/16-verificar-aejs.cy.ts.mp4`.
+- A preparacao das propostas no Portal nao foi repetida nesta rodada para preservar as operacoes ja confirmadas.
+
+## 30/06/2026 - Consolidacao funcional e integracoes
+
+- Os 108 casos funcionais ficaram representados no Cypress: 106 aprovados, `PROP-14` reprovado pela divergencia conhecida de dias corridos em vez de dias uteis e `PROP-03` pendente por exigir alteracao da massa diretamente no SCCI.
+- `PROP-02` e `MOTIVO-01` foram alinhados ao comportamento aprovado: os campos removidos de credito, prazo e juros nao devem aparecer.
+- `PROP-05` foi automatizado com as jornadas de Cadastro (`436012`) e Documentos (`436009`) e aprovado em `mochawesome_393.json`.
+- `PROP-16` foi reexecutado apos o ajuste do portal e aprovado. `TIMELINE-10` agora compara a data limite do card com `prazoCadastroLimite` retornado pela API somente nas propostas em Cadastro ou Documentos; os 12 casos do bloco passaram em `mochawesome_372.json`.
+- Os ajustes de estabilidade de `PART-01`, `PART-09`, `PART-13`, `RENDA-02` e `RENDA-TERC-09` foram reexecutados e aprovados. Os blocos funcionais restantes tambem foram aprovados sem HTTP 429.
+- A verificacao AEJS passou a cobrir finalidade e defesa do credito, flags de composicao com conjuge e terceiro, contatos dos socios e o cenario sem composicao de renda.
+- As 59 regras de integracao ficaram representadas: 54 com validacao completa aprovada, 1 parcial (`regra 4`, pois o AEJS exibe a autorizacao SCR e a data, mas nao a hora) e 4 falhas funcionais comprovadas (`regras 1`, `2`, `5` e `23`).
+- Na operacao `000436018`, a tarefa `000 - Analise da Simulacao` nao foi pulada, nao existem as tarefas esperadas de inclusao/validacao e nao ha documento recebido no AEJS. Essas divergencias correspondem as regras 1, 2 e 5.
+- Na operacao `000436019`, preparada sem composicao de renda, a flag `PESSOA$IN_EADQUIRENTE` aparece marcada no AEJS. A regra 23 foi reexecutada isoladamente e falhou por divergencia funcional em `mochawesome_395.json`.
+- `INT-AEJS-PJ` e `INT-AEJS-PF` continuaram aprovados no lote completo `mochawesome_394.json`. A navegacao de `openOperation` foi endurecida para suportar o menu Originação tanto expandido quanto recolhido.
+- A conta dos 169 casos permanece: 108 funcionais, 59 regras de integracao da planilha e 2 transicoes controladas (`Confirmar` e `Cancelar`). As massas confirmadas nao foram recriadas nesta rodada para preservar o estado utilizado nas verificacoes do AEJS.

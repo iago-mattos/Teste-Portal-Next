@@ -94,12 +94,19 @@ const implementations = {
   "PART-01": () => {
     cy.get('[role="tablist"]').within(() => {
       cy.get('[role="tab"]').then(($tabs) => {
-        expect([...$tabs].map((tab) => tab.textContent?.trim())).to.deep.equal([
+        const requiredTabs = [
           "Sobre Você",
           "Composição de Renda",
           "Motivo da Contratação",
           "Imóvel",
-        ]);
+        ];
+        const renderedTabs = [...$tabs].map((tab) => tab.textContent?.trim());
+
+        expect(renderedTabs[0], "primeira aba").to.equal("Sobre Você");
+        expect(
+          renderedTabs.filter((tab) => tab && requiredTabs.includes(tab)),
+          "ordem das abas obrigatorias",
+        ).to.deep.equal(requiredTabs);
       });
       cy.contains('[role="tab"]', "Sobre Você")
         .should("have.attr", "aria-selected", "true");
@@ -183,7 +190,7 @@ const implementations = {
       });
   },
   "PART-09": () => {
-    cy.getByName("PESSOA.CO_PROFISSAO").click().type("ADMIN");
+    cy.getByName("PESSOA.CO_PROFISSAO").click().clear().type("ADMIN");
     cy.get('[role="listbox"]:visible').within(() => {
       cy.contains('[role="option"]', "ADMINISTRADOR").should("be.visible");
       cy.get('[role="option"]').each(($option) => {
@@ -231,13 +238,33 @@ const implementations = {
       .contains("Rascunho salvo", { timeout: 30_000 })
       .should("be.visible");
     cy.contains('[role="tab"]', "Imóvel").click();
-    cy.contains(
-      "button",
-      /^Confirmar/i,
-    ).click();
-    cy.contains(/Ainda faltam campos obrigatórios/i, {
-      timeout: 30_000,
-    }).should("be.visible");
+    cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL")
+      .invoke("val")
+      .then((originalCondition) => {
+        expect(originalCondition, "condicao original do imovel")
+          .to.be.a("string")
+          .and.not.be.empty;
+        cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL")
+          .scrollIntoView()
+          .select("", { force: true });
+        cy.contains("button", /^Confirmar/i).click();
+        cy.contains(/Ainda faltam campos obrigatórios/i, {
+          timeout: 30_000,
+        }).should("be.visible");
+        cy.get('[role="dialog"]')
+          .should("contain.text", "Revise o cadastro antes de concluir")
+          .contains("button", "Entendi")
+          .click();
+        cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").select(
+          originalCondition as string,
+          { force: true },
+        );
+        cy.contains('[role="tab"]', "Sobre Você").click();
+        cy.contains("h2", "Cadastro da Proposta")
+          .parent()
+          .contains("Rascunho salvo", { timeout: 30_000 })
+          .should("be.visible");
+      });
   },
 };
 

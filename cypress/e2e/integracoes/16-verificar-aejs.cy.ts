@@ -1,14 +1,16 @@
 import { aejsConnect } from "../../config/aejs";
-
-const operations = {
-  pj: "000436021",
-  pf: "000436020",
-} as const;
+import {
+  integrationData,
+  resolveIntegrationScenario,
+  type IntegrationCaseId,
+  type IntegrationRunContext,
+  type ResolvedIntegrationScenario,
+} from "../../config/integration-data";
 
 const rowSelector =
   ".x-grid-cell-inner:visible, [role='gridcell']:visible, td:visible, .x-grid-item:visible, .x-grid-row:visible, [role='rowgroup']:visible, tr:visible";
 const buttonSelector =
-  'a:visible, button:visible, .x-btn:visible, .x-btn-inner:visible';
+  "a:visible, button:visible, .x-btn:visible, .x-btn-inner:visible";
 const menuItemSelector =
   'a[role="menuitem"]:visible, .x-menu-item:visible, .x-menu-item-text:visible, a:visible, span:visible';
 
@@ -70,10 +72,22 @@ function expectFieldChecked(name: string): void {
   });
 }
 
+function expectFieldUnchecked(name: string): void {
+  cy.get(`input[name="${name}"]`, { timeout: 20_000 }).then(($inputs) => {
+    const hasCheckedInput = $inputs
+      .toArray()
+      .some((input) => (input as HTMLInputElement).checked);
+
+    expect(hasCheckedInput, `${name} desmarcado no AEJS`).to.eq(false);
+  });
+}
+
 function uncheckField(name: string): void {
   cy.get(`input[name="${name}"]`, { timeout: 20_000 }).then(($inputs) => {
     const input =
-      $inputs.toArray().find((element) => (element as HTMLInputElement).checked) ??
+      $inputs
+        .toArray()
+        .find((element) => (element as HTMLInputElement).checked) ??
       $inputs.toArray().at(-1);
 
     expect(input, `${name} encontrado no AEJS`).to.exist;
@@ -114,7 +128,10 @@ function loginAejs(): void {
   });
   mark("login: acesso via plataforma selecionado");
 
-  cy.get("input:visible", { timeout: 30_000 }).should("have.length.at.least", 2);
+  cy.get("input:visible", { timeout: 30_000 }).should(
+    "have.length.at.least",
+    2,
+  );
   cy.get('input[name="name"]:visible, input:visible')
     .first()
     .clear({ force: true })
@@ -140,11 +157,22 @@ function loginAejs(): void {
 
 function openOperation(operation: string): void {
   mark(`operacao ${operation}: abrindo menu de cadastro`);
-  cy.get(".x-toolbar .x-btn:visible, a:visible", { timeout: 20_000 })
-    .filter((_, element) => !(element.textContent ?? "").trim())
-    .last()
-    .click({ force: true });
-  clickVisibleMenuItem("Originação");
+  cy.get("body").then(($body) => {
+    const $origination = $body
+      .find(menuItemSelector)
+      .filter((_, element) => (element.textContent ?? "").trim() === "Originação");
+
+    if ($origination.length > 0) {
+      cy.wrap($origination.last()).click({ force: true });
+      return;
+    }
+
+    cy.get(".x-toolbar .x-btn:visible, a:visible", { timeout: 20_000 })
+      .filter((_, element) => !(element.textContent ?? "").trim())
+      .last()
+      .click({ force: true });
+    clickVisibleMenuItem("Originação");
+  });
   clickVisibleMenuItem("Cadastro de operações");
   waitExtJs(2_500);
 
@@ -175,6 +203,8 @@ function validateTitularAndConjuge(): void {
   expectFieldValue("PESSOA$CO_REGIME_CASAMENTO", "Comunhão Universal de Bens");
   expectFieldValue("PESSOA$DT_CASAMENTO", "01/Jan/2025");
   expectFieldValue("PESSOA$CO_UFNASC", "RJ");
+  expectFieldChecked("PESSOA$IN_EADQUIRENTE");
+  expectFieldChecked("PESSOA$IN_E_PRINCIPAL");
   expectFieldChecked("PESSOA$IN_AUTORZC");
   expectFieldValue("PESSOA$DT_AUTORZC", "22/Jun/2026");
 
@@ -202,6 +232,7 @@ function validateTitularAndConjuge(): void {
   expectFieldValue("CONJUGE$CO_REGIME_CASAMENTO", "Comunhão Universal de Bens");
   expectFieldValue("CONJUGE$DT_CASAMENTO", "01/Jan/2025");
   expectFieldValue("CONJUGE$CO_UFNASC", "RJ");
+  expectFieldChecked("CONJUGE$IN_EADQUIRENTE");
   expectFieldChecked("CONJUGE$IN_AUTORZC");
   expectFieldValue("CONJUGE$DT_AUTORZC", "22/Jun/2026");
 
@@ -218,6 +249,16 @@ function validateTitularAndConjuge(): void {
   closeCurrentWindow();
 }
 
+function validateFinalidadeCredito(): void {
+  mark("PJ: validando finalidade e defesa do credito");
+  clickVisibleTab("Finalidade do Crédito");
+  cy.contains("Investir", { timeout: 20_000 }).should("be.visible");
+  expectFieldContains(
+    "OPERACAO_CREDITO$TE_OBS_MOTIVO_EMPRESTIMO",
+    integrationData.motivo.descricao,
+  );
+}
+
 function validateImovel(): void {
   mark("PJ: validando imovel");
   clickVisibleTab("Imóvel Operação");
@@ -225,7 +266,10 @@ function validateImovel(): void {
 
   expectFieldValue("IMOVEL_OPERACAO$VA_AVALIACAO_PROVISORIA", "1.950.000,00");
   expectFieldValue("IMOVEL_OPERACAO$NU_CEP", "24120440");
-  expectFieldContains("IMOVEL_OPERACAO$NO_ENDERECO", "Rua Doutor Carlos Imbassahy");
+  expectFieldContains(
+    "IMOVEL_OPERACAO$NO_ENDERECO",
+    "Rua Doutor Carlos Imbassahy",
+  );
   expectFieldContains("IMOVEL_OPERACAO$NO_ENDERECO", "99");
   expectFieldValue("IMOVEL_OPERACAO$NO_COMPLEMENTO", "casa 3");
   expectFieldValue("IMOVEL_OPERACAO$NO_BAIRRO", "Fonseca");
@@ -267,6 +311,10 @@ function validateGarantidorPj(): void {
   expectFieldValue("NU_CPFCNPJ", "529.982.247-25");
   expectFieldValue("NO_PESSOA", "SOCIO CYPRESS UM");
   expectFieldValue("DT_NASCIMENTO", "01/Jan/1990");
+  clickVisibleTab("Dados de Contato");
+  expectFieldValue("NU_DDD_CEL", "11");
+  expectFieldValue("NU_CELULAR", "98765-4321");
+  expectFieldValue("NO_EMAIL", "socio.um@teste.com");
 
   closeCurrentWindow();
   closeCurrentWindow();
@@ -297,6 +345,8 @@ function validateTerceiroComposicao(): void {
   expectFieldValue("PESSOA$NO_PESSOA", "TERCEIRO CYPRESS INTEGRACAO");
   expectFieldValue("PESSOA$DT_NASCIMENTO", "03/Mar/1993");
   expectFieldValue("PESSOA$CO_NACIONALIDADE", "Brasileira");
+  expectFieldChecked("PESSOA$IN_EADQUIRENTE");
+  expectFieldUnchecked("PESSOA$IN_E_PRINCIPAL");
   expectFieldChecked("PESSOA$IN_AUTORZC");
   expectFieldValue("PESSOA$DT_AUTORZC", "22/Jun/2026");
 
@@ -311,6 +361,53 @@ function validateTerceiroComposicao(): void {
   expectFieldValue("PESSOA$VA_RENDA_BRUTA", "9.000,00");
 
   closeCurrentWindow();
+}
+
+function validateSemComposicaoRenda(): void {
+  mark("SEM COMPOSICAO: validando titular principal e flag desmarcada");
+  clickVisibleTab("Pretendente");
+  openSelectedGridRow("PROPOSTA 8 -- MASSA", 8_000);
+  expectFieldChecked("PESSOA$IN_E_PRINCIPAL");
+  expectFieldUnchecked("PESSOA$IN_EADQUIRENTE");
+  closeCurrentWindow();
+}
+
+function openWorkflowScreen(screen: "Tarefas" | "Documentos"): void {
+  clickVisibleButton(screen);
+  waitExtJs(4_000);
+}
+
+function validateIntermediateTask(): void {
+  mark("WORKFLOW: validando tarefa intermediaria");
+  openWorkflowScreen("Tarefas");
+  cy.contains(rowSelector, /^000$/i).should("not.exist");
+  cy.contains(
+    rowSelector,
+    /Integração|Validação de informações/i,
+    { timeout: 20_000 },
+  ).should("be.visible");
+}
+
+function validateTaskComposition(): void {
+  mark("WORKFLOW: validando composicao das tarefas de cadastro");
+  openWorkflowScreen("Tarefas");
+  for (const task of [
+    /Inclusão de dados/i,
+    /Inclusão de documentos/i,
+    /Validação de informações/i,
+  ]) {
+    cy.contains(rowSelector, task, { timeout: 20_000 }).should("be.visible");
+  }
+}
+
+function validateReceivedDocuments(): void {
+  mark("WORKFLOW: validando documento recebido no SCCI");
+  openWorkflowScreen("Documentos");
+  cy.contains(
+    rowSelector,
+    /\d{2}\/(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}/,
+    { timeout: 20_000 },
+  ).should("be.visible");
 }
 
 function validateGarantidorPf(): void {
@@ -339,22 +436,120 @@ function validateGarantidorPf(): void {
   closeCurrentWindow();
 }
 
+function validateIntegrationScenario(
+  scenario: ResolvedIntegrationScenario,
+): void {
+  openOperation(scenario.proposalId);
+
+  if (scenario.profile === "spouse-pj") {
+    validateTitularAndConjuge();
+    validateFinalidadeCredito();
+    validateImovel();
+    validateGarantidorPj();
+    validateInterveniente();
+    return;
+  }
+
+  if (scenario.profile === "third-party-pf") {
+    validateTerceiroComposicao();
+    validateGarantidorPf();
+    return;
+  }
+
+  if (scenario.profile === "single-quitado") {
+    validateSemComposicaoRenda();
+    return;
+  }
+
+  if (scenario.profile === "workflow") {
+    validateIntermediateTask();
+    return;
+  }
+
+  throw new Error(
+    `Perfil ${scenario.profile} ainda nao possui mapeamento de validacao no AEJS.`,
+  );
+}
+
+const configuredCaseId = String(
+  Cypress.config("reporterOptions")?.caseId ?? "",
+).trim() as IntegrationCaseId;
+const hasConfiguredScenario = Object.hasOwn(
+  integrationData.scenarios,
+  configuredCaseId,
+);
+
 describe("Integrações - verificação no SCCI/AEJS HT", () => {
   beforeEach(() => {
     loginAejs();
   });
 
-  it("INT-AEJS-PJ | valida titular, conjuge, imovel, garantidor PJ, socios e interveniente", () => {
-    openOperation(operations.pj);
-    validateTitularAndConjuge();
-    validateImovel();
-    validateGarantidorPj();
-    validateInterveniente();
+  const dynamicIt = hasConfiguredScenario ? it : it.skip;
+  const defaultIt = hasConfiguredScenario ? it.skip : it;
+
+  dynamicIt(
+    `${configuredCaseId} | valida no AEJS a mesma operacao preparada no Portal`,
+    () => {
+      cy.task<IntegrationRunContext | null>(
+        "readIntegrationRunContext",
+        undefined,
+        { log: false },
+      ).then((context) => {
+        if (context?.caseId === configuredCaseId) {
+          validateIntegrationScenario(context);
+          return;
+        }
+
+        cy.task<{ operation: string }>("readIntegrationSettings", null, {
+          log: false,
+        }).then((settings) => {
+          validateIntegrationScenario(
+            resolveIntegrationScenario(configuredCaseId, settings.operation),
+          );
+        });
+      });
+    },
+  );
+
+  defaultIt(
+    "INT-AEJS-PJ | valida titular, conjuge, imovel, garantidor PJ, socios e interveniente",
+    () => {
+      validateIntegrationScenario(resolveIntegrationScenario("INT-CONFIRM-PJ"));
+    },
+  );
+
+  defaultIt("INT-AEJS-PF | valida terceiro na renda e garantidor PF", () => {
+    validateIntegrationScenario(resolveIntegrationScenario("INT-CONFIRM-PF"));
   });
 
-  it("INT-AEJS-PF | valida terceiro na renda e garantidor PF", () => {
-    openOperation(operations.pf);
-    validateTerceiroComposicao();
-    validateGarantidorPf();
+  defaultIt(
+    "INT-AEJS-SEM-COMPOSICAO | valida titular principal sem composicao de renda",
+    () => {
+      validateIntegrationScenario(
+        resolveIntegrationScenario("INT-CONFIRM-QUITADO"),
+      );
+    },
+  );
+
+  defaultIt("INT-AEJS-FLUXO | valida tarefa intermediaria apos o cadastro", () => {
+    openOperation(
+      resolveIntegrationScenario("INT-CONFIRM-WORKFLOW").proposalId,
+    );
+    validateIntermediateTask();
+  });
+
+  defaultIt(
+    "INT-AEJS-TAREFAS | valida inclusao de dados, documentos e informacoes",
+    () => {
+      openOperation(
+        resolveIntegrationScenario("INT-CONFIRM-WORKFLOW").proposalId,
+      );
+      validateTaskComposition();
+    },
+  );
+
+  defaultIt("INT-AEJS-DOCUMENTOS | valida documento recebido no SCCI", () => {
+    openOperation("000436009");
+    validateReceivedDocuments();
   });
 });

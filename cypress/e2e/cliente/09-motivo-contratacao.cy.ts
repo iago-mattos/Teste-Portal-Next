@@ -1,5 +1,4 @@
 import { registerClientCases, type ClientCase } from "../../support/client-cases";
-import { portalConnect } from "../../config/active-connect";
 
 const cases = [
   {
@@ -32,28 +31,11 @@ afterEach(() => {
   cy.wait(3_000);
 });
 
-function getByLabel(label: string): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .contains("label", label)
-    .invoke("attr", "for")
-    .then((id) => {
-      expect(id, `campo ${label}`).to.be.a("string").and.not.be.empty;
-      return cy.get(`#${CSS.escape(id as string)}`);
-    });
-}
-
 const implementations = {
   "MOTIVO-01": () => {
-    const expected = portalConnect.testData.expectedProposal;
-
-    getByLabel("Valor solicitado do Crédito").should(
-      "have.value",
-      expected.financedValue,
-    );
-    getByLabel("Prazo estimado")
-      .invoke("val")
-      .should("match", new RegExp(`^${expected.term.replace(/\D/g, "")}`));
-    getByLabel("Tipo de Juros").should("have.value", expected.interestType);
+    cy.contains("label", "Valor solicitado do Crédito").should("not.exist");
+    cy.contains("label", "Prazo estimado").should("not.exist");
+    cy.contains("label", "Tipo de Juros").should("not.exist");
   },
   "MOTIVO-02": () => {
     const expected = [

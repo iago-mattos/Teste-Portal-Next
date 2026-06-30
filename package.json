@@ -5,6 +5,9 @@
   "scripts": {
     "cy:open": "cypress open",
     "cy:run": "cypress run",
+    "cy:run:smoke": "cypress run --spec \"cypress/e2e/00-auth-smoke.cy.ts,cypress/e2e/00-open-proposal-smoke.cy.ts\"",
+    "cy:run:functional": "cypress run --spec \"cypress/e2e/cliente/**/*.cy.ts\"",
+    "cy:run:integration": "cypress run --spec \"cypress/e2e/integracoes/14-preparar-integracao.cy.ts,cypress/e2e/integracoes/16-verificar-aejs.cy.ts\"",
     "cy:run:report": "npm run cy:run && npm run report:mochawesome",
     "report:merge": "mochawesome-merge \"cypress/results/*.json\" -o cypress/results/mochawesome.json",
     "report:generate": "marge cypress/results/mochawesome.json --reportDir cypress/results --reportFilename mochawesome-report",

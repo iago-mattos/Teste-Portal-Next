@@ -123,6 +123,47 @@ export const integrationData = {
     },
   ],
   cancelamento: {
-    justificativa: "Cancelamento controlado para validacao automatizada das integracoes em desenvolvimento",
+    justificativa:
+      "Cancelamento controlado para validacao automatizada das integracoes em desenvolvimento",
   },
 } as const;
+
+export type IntegrationCaseId = keyof typeof integrationData.scenarios;
+export type IntegrationProfile =
+  (typeof integrationData.scenarios)[IntegrationCaseId]["profile"];
+
+export interface ResolvedIntegrationScenario {
+  caseId: IntegrationCaseId;
+  proposalId: string;
+  visibleNumber: string;
+  profile: IntegrationProfile;
+  description: string;
+}
+
+export interface IntegrationRunContext extends ResolvedIntegrationScenario {
+  environment: string;
+  preparedAt: string;
+}
+
+export function resolveIntegrationScenario(
+  caseId: IntegrationCaseId,
+  operationOverride?: string,
+): ResolvedIntegrationScenario {
+  const configured = integrationData.scenarios[caseId];
+  const operation = String(
+    operationOverride?.trim() || configured.proposalId,
+  ).replace(/\D/g, "");
+
+  if (!operation) {
+    throw new Error(`Operacao nao informada para ${caseId}.`);
+  }
+
+  const proposalId = operation.padStart(9, "0");
+  return {
+    caseId,
+    proposalId,
+    visibleNumber: proposalId.replace(/^0+/, ""),
+    profile: configured.profile,
+    description: configured.description,
+  };
+}

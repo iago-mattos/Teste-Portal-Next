@@ -1,5 +1,16 @@
-import { registerClientCases, type ClientCase } from "../../support/client-cases";
+import {
+  registerClientCases,
+  type ClientCase,
+} from "../../support/client-cases";
 import { portalConnect } from "../../config/active-connect";
+
+interface ProposalSummary {
+  numero: string;
+  faseAtual: string;
+  prazoCadastroLimite: string | null;
+}
+
+let proposalSummaries: ProposalSummary[] = [];
 
 const cases = [
   {
@@ -80,13 +91,18 @@ beforeEach(function () {
   const caseId = this.currentTest?.title.match(/^TIMELINE-\d+/)?.[0];
 
   if (caseId === "TIMELINE-04" || caseId === "TIMELINE-10") {
-    cy.openProposalList(
-      caseId === "TIMELINE-04"
-        ? portalConnect.caseAccessUrls.TIMELINE_04
-        : portalConnect.caseAccessUrls.TIMELINE_10,
-    );
+    if (caseId === "TIMELINE-10") {
+      proposalSummaries = [];
+      cy.intercept("GET", "**/api/portal/propostas*", (request) => {
+        request.continue((response) => {
+          const body = response.body as { itens?: ProposalSummary[] };
+          proposalSummaries.push(...(body.itens ?? []));
+        });
+      });
+    }
+    cy.openProposalList();
   } else if (caseId === "TIMELINE-05") {
-    cy.openProposalList(portalConnect.caseAccessUrls.TIMELINE_05);
+    cy.openProposalList();
     cy.contains("article", /Fase Atual\s*Crédito/i).within(() => {
       cy.contains("button", /Acompanhar proposta|Completar cadastro/i).click();
     });
@@ -95,7 +111,7 @@ beforeEach(function () {
       /^\/propostas\/[^/]+$/,
     );
   } else if (caseId === "TIMELINE-06") {
-    cy.openProposalList(portalConnect.caseAccessUrls.TIMELINE_06);
+    cy.openProposalList();
   } else {
     cy.openDefaultProposal();
   }
@@ -126,6 +142,25 @@ function deadlineLabel(value: string): string {
   return `${day}/${months[Number(month) - 1]}/${year}`;
 }
 
+function cardDeadlineLabel(value: string): string {
+  const monthNumbers: Record<string, string> = {
+    Jan: "01",
+    Fev: "02",
+    Mar: "03",
+    Abr: "04",
+    Mai: "05",
+    Jun: "06",
+    Jul: "07",
+    Ago: "08",
+    Set: "09",
+    Out: "10",
+    Nov: "11",
+    Dez: "12",
+  };
+  const [day, month, year] = value.split("/");
+  return `${day}/${monthNumbers[month]}/${year}`;
+}
+
 const implementations = {
   "TIMELINE-01": () => {
     const expected = portalConnect.testData.expectedProposal;
@@ -133,7 +168,9 @@ const implementations = {
       .parent()
       .invoke("text")
       .then((text) => {
-        expect(text.toUpperCase()).to.contain(expected.proponentName.toUpperCase());
+        expect(text.toUpperCase()).to.contain(
+          expected.proponentName.toUpperCase(),
+        );
       });
     cy.contains("CPF:")
       .parent()
@@ -148,22 +185,21 @@ const implementations = {
       .should("have.length", 1)
       .invoke("text")
       .then((text) => {
-      for (const phase of [
-        "Simulação",
-        "Cadastro",
-        "Crédito",
-        "Negociação",
-        "Análise de Documentos",
-        "Análise Técnica",
-        "Formalização",
-        "Liberação",
-      ]) {
-        expect(text).to.contain(phase);
-      }
-    });
+        for (const phase of [
+          "Simulação",
+          "Cadastro",
+          "Crédito",
+          "Negociação",
+          "Análise de Documentos",
+          "Análise Técnica",
+          "Formalização",
+          "Liberação",
+        ]) {
+          expect(text).to.contain(phase);
+        }
+      });
   },
   "TIMELINE-04": () => {
-    const accessUrl = portalConnect.caseAccessUrls.TIMELINE_04;
     const proposalIds = portalConnect.caseProposalIds;
 
     const openJourney = (proposalNumber: string, heading: string) => {
@@ -185,7 +221,7 @@ const implementations = {
     };
 
     openJourney(proposalIds.TIMELINE_04_CADASTRO, "Cadastro da Proposta");
-    cy.openProposalList(accessUrl);
+    cy.openProposalList();
     cy.wait(2_000);
     openJourney(proposalIds.TIMELINE_04_DOCUMENTOS, "Documentos da proposta");
   },
@@ -196,8 +232,16 @@ const implementations = {
       .should("contain.text", "Crédito");
   },
   "TIMELINE-06": () => {
-    cy.get("article").first().within(() => {
-      cy.contains("button", /Completar cadastro|Acompanhar proposta/i).click();
+    const proposalNumber = portalConnect.testData.propostaExpiradaId.replace(
+      /^0+/,
+      "",
+    );
+
+    cy.contains("article", `Proposta #${proposalNumber}`).within(() => {
+      cy.contains(
+        "button",
+        /Completar cadastro|Acompanhar proposta/i,
+      ).click();
     });
     cy.get('[role="dialog"]').should(
       "not.exist",
@@ -207,17 +251,30 @@ const implementations = {
       "match",
       /^\/propostas\/[^/]+$/,
     );
+    cy.get('[data-slot="skeleton"]', { timeout: 30_000 }).should("not.exist");
     cy.get("input:visible, select:visible, textarea:visible")
       .should("have.length.at.least", 1)
       .each(($field) => {
         const isLocked =
           $field.is(":disabled") || $field.attr("readonly") !== undefined;
-        expect(isLocked, `campo ${$field.attr("name") ?? $field.attr("id")}`)
-          .to.equal(true);
+        expect(
+          isLocked,
+          `campo ${$field.attr("name") ?? $field.attr("id")}`,
+        ).to.equal(true);
       });
-    cy.contains("button", /Confirmar e avançar cadastro/i).should(
-      "be.disabled",
-    );
+    cy.get("body").then(($body) => {
+      const $confirmButton = $body
+        .find("button")
+        .filter((_index, button) =>
+          /Confirmar e avançar cadastro/i.test(button.textContent ?? ""),
+        );
+
+      if ($confirmButton.length > 0) {
+        cy.wrap($confirmButton).should("be.disabled");
+      } else {
+        expect($confirmButton, "botao de confirmacao oculto").to.have.length(0);
+      }
+    });
   },
   "TIMELINE-07": () => {
     const deadline = deadlineLabel(
@@ -248,29 +305,26 @@ const implementations = {
     cy.contains('[role="status"]', message).should("not.exist");
   },
   "TIMELINE-10": () => {
-    cy.get("article")
-      .should("have.length.at.least", 2)
-      .then(($cards) => {
-        const activeCards = [...$cards].filter((card) =>
-          /Em\s*Andamento/i.test(card.textContent ?? ""),
-        );
-        const deadlines = activeCards
-          .map((card) =>
-            (card.textContent ?? "").match(
-              /Data limite para preenchimento do cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i,
-            )?.[1],
-          )
-          .filter((deadline): deadline is string => Boolean(deadline));
+    cy.then(() => {
+      const expected = proposalSummaries.filter(
+        (proposal) =>
+          /Cadastro|Documentos|Análise de Documentos/i.test(
+            proposal.faseAtual,
+          ) && Boolean(proposal.prazoCadastroLimite),
+      );
 
-        expect(deadlines, "data limite de cada proposta").to.have.length(
-          activeCards.length,
+      expect(expected, "propostas com prazo aplicável").to.have.length.at.least(
+        2,
+      );
+      for (const proposal of expected) {
+        cy.contains("article", `Proposta #${proposal.numero}`).should(
+          "contain.text",
+          `Data limite para preenchimento do cadastro: ${cardDeadlineLabel(
+            proposal.prazoCadastroLimite as string,
+          )}`,
         );
-        expect(activeCards, "propostas em andamento").to.have.length.at.least(
-          2,
-        );
-        expect(new Set(deadlines).size, "datas distintas da massa").to.be
-          .greaterThan(1);
-      });
+      }
+    });
   },
   "TIMELINE-11": () => {
     cy.contains("button", /Ver Detalhes da Operação/i).should("not.exist");

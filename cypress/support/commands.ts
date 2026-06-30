@@ -1,18 +1,22 @@
 import { portalConnect } from "../config/active-connect";
 
-interface PortalAccessPayload {
-  cpf: string;
-  token: string;
-  proposta?: string;
-}
-
 interface PortalSessionCookieCache {
   accessUrl: string;
+  cpf?: string;
+  generatedAt?: string;
   cookie: Cypress.Cookie;
+}
+
+interface PortalAdminConfig {
+  url: string;
+  username: string;
+  password: string;
+  cpf: string;
 }
 
 function cacheCurrentPortalCookie(
   accessUrl: string,
+  cpf?: string,
 ): Cypress.Chainable<unknown> {
   return cy.getCookie("__Host-session").then((cookie) => {
     if (!cookie) {
@@ -21,10 +25,16 @@ function cacheCurrentPortalCookie(
       );
     }
 
-    return cy.task("writePortalSessionCookie", {
-      accessUrl,
-      cookie,
-    } satisfies PortalSessionCookieCache);
+    return cy.task(
+      "writePortalSessionCookie",
+      {
+        accessUrl,
+        cpf,
+        generatedAt: new Date().toISOString(),
+        cookie,
+      } satisfies PortalSessionCookieCache,
+      { log: false },
+    );
   });
 }
 
@@ -38,25 +48,100 @@ function requireValue(value: string, field: string): string {
   return value;
 }
 
-function parsePortalAccessUrl(accessUrl: string): PortalAccessPayload {
-  const encoded = new URL(accessUrl).search.slice(1);
-
-  if (!encoded) {
-    throw new Error("O accessUrl nao contem payload tokenizado na query string.");
-  }
-
-  const json = decodeURIComponent(escape(atob(encoded)));
-  const payload = JSON.parse(json) as Partial<PortalAccessPayload>;
-
-  if (!payload.cpf || !payload.token) {
-    throw new Error("O payload do accessUrl nao contem cpf e token.");
-  }
-
-  return {
-    cpf: payload.cpf,
-    token: payload.token,
-    proposta: payload.proposta,
+function validateAdminConfig(
+  rawConfig: PortalAdminConfig | null,
+): PortalAdminConfig {
+  const config = {
+    url: String(rawConfig?.url ?? "").replace(/\/$/, ""),
+    username: String(rawConfig?.username ?? ""),
+    password: String(rawConfig?.password ?? ""),
+    cpf: String(rawConfig?.cpf ?? "").replace(/\D/g, ""),
   };
+  const configuredValues = Object.values(config).filter(Boolean).length;
+
+  if (configuredValues === 0) {
+    throw new Error(
+      "Geracao automatica indisponivel: configure o Admin no .env.local.",
+    );
+  }
+  if (configuredValues !== Object.keys(config).length) {
+    throw new Error(
+      "Preencha PORTAL_ADMIN_URL, PORTAL_ADMIN_USER, PORTAL_ADMIN_PASSWORD e PORTAL_TEST_CPF no .env.local.",
+    );
+  }
+
+  const adminUrl = new URL(config.url);
+  const portalUrl = new URL(portalConnect.portalUrl);
+  const safeEnvironment = /(^|[.-])(dev|hml|homolog|localhost)([.-]|$)/i.test(
+    adminUrl.hostname,
+  );
+
+  if (!safeEnvironment || adminUrl.hostname !== portalUrl.hostname) {
+    throw new Error(
+      `Geracao automatica de link bloqueada fora de DEV/HT: ${adminUrl.hostname}`,
+    );
+  }
+
+  return config;
+}
+
+function getInputByLabel(
+  labelText: string,
+): Cypress.Chainable<JQuery<HTMLInputElement>> {
+  return cy
+    .get("label")
+    .filter((_, label) => label.textContent?.trim() === labelText)
+    .should("have.length", 1)
+    .then(($label) => {
+      const inputId = $label.attr("for");
+
+      if (inputId) {
+        return cy.get<HTMLInputElement>(`#${CSS.escape(inputId)}`);
+      }
+
+      return cy.wrap($label).find<HTMLInputElement>("input");
+    });
+}
+
+function restorePortalCookie(
+  cached: PortalSessionCookieCache,
+): Cypress.Chainable<boolean> {
+  cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.login}`);
+  const { name, value, path, secure, httpOnly, sameSite, expiry } =
+    cached.cookie;
+  cy.setCookie(name, value, {
+    path,
+    secure,
+    httpOnly,
+    sameSite,
+    expiry,
+  });
+
+  return cy
+    .request({
+      url: `${portalConnect.portalUrl}/api/auth/me`,
+      failOnStatusCode: false,
+      log: false,
+    })
+    .then(
+      (response) =>
+        response.status === 200 && response.body?.autenticado === true,
+    );
+}
+
+function authenticateWithAccessUrl(
+  accessUrl: string,
+  cpf?: string,
+): Cypress.Chainable<unknown> {
+  cy.visit(accessUrl, { log: false });
+  cy.location("pathname", { timeout: 30_000 }).should(
+    "equal",
+    portalConnect.paths.propostas,
+  );
+  cy.contains("h1", "Minhas propostas", { timeout: 30_000 }).should(
+    "be.visible",
+  );
+  return cacheCurrentPortalCookie(accessUrl, cpf);
 }
 
 Cypress.Commands.add("portalVisit", (path = "/") => {
@@ -65,102 +150,106 @@ Cypress.Commands.add("portalVisit", (path = "/") => {
 });
 
 Cypress.Commands.add("openPortalAccess", () => {
-  const accessUrl = requireValue(portalConnect.accessUrl, "accessUrl");
-  return cy.visit(accessUrl);
+  cy.portalSession();
+  return cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.propostas}`);
+});
+
+Cypress.Commands.add("generatePortalAccess", () => {
+  return cy
+    .task<PortalAdminConfig | null>("readPortalAdminConfig", null, {
+      log: false,
+    })
+    .then((rawConfig) => {
+      const admin = validateAdminConfig(rawConfig);
+
+      cy.visit(`${admin.url}/login`);
+      cy.location("pathname").then((pathname) => {
+        if (pathname !== "/admin/login") return;
+
+        getInputByLabel("Usuário").type(admin.username, { log: false });
+        getInputByLabel("Senha").type(admin.password, { log: false });
+        cy.contains("button", "Entrar").click();
+        cy.location("pathname", { timeout: 30_000 }).should("equal", "/admin");
+      });
+
+      cy.visit(`${admin.url}/pascal`);
+      cy.contains("h1", "Backend", { timeout: 30_000 }).should("be.visible");
+      cy.contains("h4", "Gerar link de acesso")
+        .scrollIntoView()
+        .should("be.visible");
+      getInputByLabel("CPF/CNPJ para o link")
+        .clear({ log: false })
+        .type(admin.cpf, { log: false });
+      cy.contains("button", "Gerar link").should("be.enabled").click();
+
+      return getInputByLabel("Link de acesso")
+        .should("be.visible")
+        .then(($input) => {
+          const accessUrl = String($input.val() ?? "");
+          const parsed = new URL(accessUrl);
+
+          expect(
+            parsed.origin === portalConnect.portalUrl &&
+              parsed.search.length > 1,
+            "link gerado para o Portal DEV/HT",
+          ).to.equal(true);
+
+          cy.contains("button", "Copiar link").click();
+          cy.wrap($input).invoke("css", "filter", "blur(12px)");
+          cy.contains(/^Token:/).invoke("css", "filter", "blur(12px)");
+
+          return cy.wrap(accessUrl, { log: false });
+        });
+    });
 });
 
 Cypress.Commands.add("portalSession", (accessUrlOverride?: string) => {
-  const accessUrl = requireValue(
-    accessUrlOverride ?? portalConnect.accessUrl,
-    "accessUrl",
-  );
-  const access = parsePortalAccessUrl(accessUrl);
-  const authenticateWithToken = (): Cypress.Chainable<unknown> =>
+  const fallbackAccessUrl = accessUrlOverride ?? portalConnect.accessUrl;
+  const sessionId = ["portal-access-managed", portalConnect.portalUrl];
+
+  const createFreshSession = (): Cypress.Chainable<unknown> =>
     cy
-      .request({
-        method: "POST",
-        url: "/api/auth/token",
-        failOnStatusCode: false,
-        body: {
-          codigo: access.token,
-          cpfCnpj: access.cpf,
-          ...(access.proposta ? { nuPretendente: access.proposta } : {}),
-          semLogin: true,
-        },
+      .task<PortalAdminConfig | null>("readPortalAdminConfig", null, {
+        log: false,
       })
-      .then((response) => {
-        if (response.status === 429) {
-          throw new Error(
-            "O portal bloqueou novas tentativas para este CPF/token temporariamente (HTTP 429). Aguarde o cooldown ou gere um novo link antes de rodar mais specs.",
+      .then((rawConfig) => {
+        if (!rawConfig) {
+          return authenticateWithAccessUrl(
+            requireValue(fallbackAccessUrl, "accessUrl"),
           );
         }
 
-        if (response.status === 401) {
-          cy.visit(accessUrl);
-          cy.location("pathname", { timeout: 30_000 }).should(
-            "equal",
-            portalConnect.paths.propostas,
-          );
-          cy.contains("h1", "Minhas propostas", { timeout: 30_000 }).should(
-            "be.visible",
-          );
-          return cacheCurrentPortalCookie(accessUrl);
-        }
-
-        if (response.status !== 200) {
-          throw new Error(
-            `Nao foi possivel autenticar com o accessUrl. HTTP ${response.status}. Atualize accessUrl em cypress/config/connect.ts.`,
-          );
-        }
-
-        return cacheCurrentPortalCookie(accessUrl);
+        const admin = validateAdminConfig(rawConfig);
+        return cy
+          .generatePortalAccess()
+          .then((accessUrl) => authenticateWithAccessUrl(accessUrl, admin.cpf));
       });
 
   return cy.session(
-    ["portal-access", accessUrl],
+    sessionId,
     () => {
-      cy.task<PortalSessionCookieCache | null>(
-        "readPortalSessionCookie",
-        accessUrl,
-      ).then((cached) => {
-        if (!cached || cached.accessUrl !== accessUrl) {
-          return authenticateWithToken();
-        }
+      const cachedSession = cy.task<PortalSessionCookieCache | null>(
+        "readLatestPortalSession",
+        { portalUrl: portalConnect.portalUrl },
+        { log: false },
+      );
 
-        const { name, value, path, secure, httpOnly, sameSite, expiry } =
-          cached.cookie;
-        cy.setCookie(name, value, {
-          path,
-          secure,
-          httpOnly,
-          sameSite,
-          expiry,
+      cachedSession.then((cached) => {
+        if (!cached) return createFreshSession();
+
+        return restorePortalCookie(cached).then((valid) => {
+          if (valid) return;
+          return createFreshSession();
         });
-
-        return cy
-          .request({
-            url: "/api/auth/me",
-            failOnStatusCode: false,
-          })
-          .then((response) => {
-            if (
-              response.status === 200 &&
-              response.body?.autenticado === true
-            ) {
-              return;
-            }
-
-            return authenticateWithToken();
-          });
       });
-      cy.visit(portalConnect.paths.propostas);
+      cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.propostas}`);
       cy.contains("h1", "Minhas propostas").should("be.visible");
       cy.location("pathname").should("equal", portalConnect.paths.propostas);
     },
     {
       cacheAcrossSpecs: true,
       validate() {
-        cy.request("/api/auth/me")
+        cy.request(`${portalConnect.portalUrl}/api/auth/me`)
           .its("body.autenticado")
           .should("equal", true);
       },
@@ -177,6 +266,28 @@ Cypress.Commands.add("openProposalList", (accessUrl?: string) => {
   cy.get('article [data-slot="skeleton"]', { timeout: 30_000 }).should(
     "not.exist",
   );
+
+  const loadRemainingProposals = (): Cypress.Chainable<null> =>
+    cy.get("body").then(($body) => {
+      const $loadMoreButton = $body
+        .find("button")
+        .filter(
+          (_index, button) => button.textContent?.trim() === "Carregar mais",
+        );
+
+      if ($loadMoreButton.length === 0) return cy.wrap(null);
+
+      cy.wrap($loadMoreButton)
+        .should("have.length", 1)
+        .and("be.enabled")
+        .click();
+      cy.contains("button", "Carregando...", { timeout: 30_000 }).should(
+        "not.exist",
+      );
+      return loadRemainingProposals();
+    });
+
+  loadRemainingProposals();
   return cy.wrap(null);
 });
 
@@ -190,10 +301,7 @@ Cypress.Commands.add("openDefaultProposal", () => {
   cy.contains("article", `Proposta #${proposalNumber}`, {
     timeout: 30_000,
   }).within(() => {
-    cy.contains(
-      "button",
-      /Completar cadastro|Acompanhar proposta/i,
-    ).click();
+    cy.contains("button", /Completar cadastro|Acompanhar proposta/i).click();
   });
   cy.location("pathname", { timeout: 30_000 }).should(
     "match",
@@ -209,24 +317,22 @@ Cypress.Commands.add("getByName", (name: string) => {
   return cy.get(`[name="${CSS.escape(name)}"]`);
 });
 
-Cypress.Commands.add(
-  "selectSearchOption",
-  (name: string, option: string) => {
-    cy.getByName(name).click();
-    cy.get('[role="listbox"]:visible').within(() => {
-      cy.contains(
-        '[role="option"]',
-        new RegExp(`^${Cypress._.escapeRegExp(option)}$`, "i"),
-      ).click();
-    });
-  },
-);
+Cypress.Commands.add("selectSearchOption", (name: string, option: string) => {
+  cy.getByName(name).click();
+  cy.get('[role="listbox"]:visible').within(() => {
+    cy.contains(
+      '[role="option"]',
+      new RegExp(`^${Cypress._.escapeRegExp(option)}$`, "i"),
+    ).click();
+  });
+});
 
 declare global {
   namespace Cypress {
     interface Chainable {
       portalVisit(path?: string): Chainable<AUTWindow>;
       openPortalAccess(): Chainable<AUTWindow>;
+      generatePortalAccess(): Chainable<string>;
       portalSession(accessUrl?: string): Chainable<null>;
       openProposalList(accessUrl?: string): Chainable<null>;
       openDefaultProposal(): Chainable<null>;

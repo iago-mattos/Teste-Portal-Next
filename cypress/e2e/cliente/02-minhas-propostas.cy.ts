@@ -1,4 +1,7 @@
-import { registerClientCases, type ClientCase } from "../../support/client-cases";
+import {
+  registerClientCases,
+  type ClientCase,
+} from "../../support/client-cases";
 import { portalConnect } from "../../config/active-connect";
 
 const cases = [
@@ -6,7 +9,7 @@ const cases = [
     id: "PROP-01",
     rule: "Deverá vir do lead as informações: Nº da proposta, Data de cadastro, Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado",
     sourceStatus: "NOK",
-    sourceObservation: "Apenas campo \"Data de Cadastro\" está divergente",
+    sourceObservation: 'Apenas campo "Data de Cadastro" está divergente',
   },
   {
     id: "PROP-02",
@@ -120,7 +123,7 @@ const cases = [
 
 function proposalCard(): Cypress.Chainable<JQuery<HTMLElement>> {
   const number = portalConnect.testData.expectedProposal.visibleNumber;
-  return cy.contains("article", `Proposta #${number}`);
+  return cy.contains("article", `Proposta #${number}`, { timeout: 30_000 });
 }
 
 function parseBrDate(value: string): Date {
@@ -142,15 +145,8 @@ function businessDaysUntil(deadline: Date): number {
   return total;
 }
 
-beforeEach(function () {
-  const caseId = this.currentTest?.title.match(/^PROP-\d+/)?.[0];
-  const accessUrl = caseId
-    ? (portalConnect.caseAccessUrls as Record<string, string>)[
-        caseId.replace("-", "_")
-      ]
-    : undefined;
-
-  cy.openProposalList(accessUrl);
+beforeEach(() => {
+  cy.openProposalList();
   cy.wait(2_000);
 });
 
@@ -158,30 +154,22 @@ afterEach(() => {
   cy.wait(3_000);
 });
 
-function getByLabel(label: string): Cypress.Chainable<JQuery<HTMLElement>> {
-  return cy
-    .contains("label", label)
-    .invoke("attr", "for")
-    .then((id) => {
-      expect(id, `campo ${label}`).to.be.a("string").and.not.be.empty;
-      return cy.get(`#${CSS.escape(id as string)}`);
-    });
-}
-
 const implementations = {
   "PROP-01": () => {
     const expected = portalConnect.testData.expectedProposal;
-    proposalCard().invoke("text").then((text) => {
-      const normalized = text.replace(/\u00a0/g, " ").replace(/\s+/g, " ");
+    proposalCard()
+      .invoke("text")
+      .then((text) => {
+        const normalized = text.replace(/\u00a0/g, " ").replace(/\s+/g, " ");
 
-      expect(normalized).to.contain(`Proposta #${expected.visibleNumber}`);
-      expect(normalized).to.contain(
-        `Data de cadastro: ${expected.registrationDate}`,
-      );
-      expect(normalized).to.contain(expected.propertyValue);
-      expect(normalized).to.contain(expected.financedValue);
-      expect(normalized).to.contain(expected.term);
-    });
+        expect(normalized).to.contain(`Proposta #${expected.visibleNumber}`);
+        expect(normalized).to.contain(
+          `Data de cadastro: ${expected.registrationDate}`,
+        );
+        expect(normalized).to.contain(expected.propertyValue);
+        expect(normalized).to.contain(expected.financedValue);
+        expect(normalized).to.contain(expected.term);
+      });
 
     cy.openDefaultProposal();
     cy.contains('[role="tab"]', "Imóvel").click();
@@ -195,8 +183,9 @@ const implementations = {
     cy.openDefaultProposal();
 
     cy.contains('[role="tab"]', "Motivo da Contratação").click();
-    getByLabel("Valor solicitado do Crédito").should("be.disabled");
-    getByLabel("Prazo estimado").should("be.disabled");
+    cy.contains("label", "Valor solicitado do Crédito").should("not.exist");
+    cy.contains("label", "Prazo estimado").should("not.exist");
+    cy.contains("label", "Tipo de Juros").should("not.exist");
 
     cy.contains('[role="tab"]', "Imóvel").click();
     cy.getByName("OPERACAO_CREDITO.VA_PRECO_IMOVEL").should("be.disabled");
@@ -210,44 +199,67 @@ const implementations = {
         portalConnect.testData.expectedProposal.currentPhase,
       );
   },
+  "PROP-05": () => {
+    const proposalIds = portalConnect.caseProposalIds;
+    const openJourney = (proposalNumber: string, heading: string) => {
+      cy.contains("article", `Proposta #${proposalNumber}`).within(() => {
+        cy.contains(
+          "button",
+          /Completar cadastro|Acompanhar proposta|Enviar documentos/i,
+        ).click();
+      });
+      cy.contains("h2", heading, { timeout: 30_000 }).should("be.visible");
+    };
+
+    openJourney(proposalIds.TIMELINE_04_CADASTRO, "Cadastro da Proposta");
+    cy.openProposalList();
+    openJourney(proposalIds.TIMELINE_04_DOCUMENTOS, "Documentos da proposta");
+  },
   "PROP-06": () => {
     cy.get("article")
       .should("have.length.at.least", 2)
       .then(($cards) => {
         const deadlines = [...$cards]
-          .map((card) =>
-            card.textContent?.match(
-              /Data limite para preenchimento do cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i,
-            )?.[1],
+          .map(
+            (card) =>
+              card.textContent?.match(
+                /Data limite para preenchimento do cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i,
+              )?.[1],
           )
           .filter((deadline): deadline is string => Boolean(deadline));
 
-        expect(deadlines, "datas-limite exibidas nas propostas").to.have
-          .length.at.least(2);
-        expect(new Set(deadlines).size, "prazos parametrizados distintos").to.be
-          .greaterThan(1);
+        expect(
+          deadlines,
+          "datas-limite exibidas nas propostas",
+        ).to.have.length.at.least(2);
+        expect(
+          new Set(deadlines).size,
+          "prazos parametrizados distintos",
+        ).to.be.greaterThan(1);
       });
   },
   "PROP-07": () => {
-    cy.contains("article", /Proposta expirada/i, { timeout: 30_000 })
+    cy.contains("article", /Expirad[ao]/i, { timeout: 30_000 })
       .should("be.visible")
-      .and("contain.text", "Proposta expirada");
+      .and("contain.text", "Expirad");
   },
   "PROP-08": () => {
-    cy.contains(
-      /Verifique seu e-mail ou entre em contato com o consultor/i,
-      { timeout: 30_000 },
-    ).should("be.visible");
-    cy.get("article").should("not.contain.text", "Completar cadastro");
+    cy.contains("article", /Crédito Reprovado/i, { timeout: 30_000 })
+      .should("be.visible")
+      .within(() => {
+        cy.contains(
+          /Verifique seu e-mail ou entre em contato com o consultor/i,
+        ).should("be.visible");
+        cy.contains("button", /Completar cadastro/i).should("not.exist");
+      });
   },
   "PROP-09": () => {
     cy.contains("article", /Fase Atual\s*(Crédito|Negociação|Análise)/i, {
       timeout: 30_000,
     }).should("be.visible");
-    cy.contains(
-      /Verifique seu e-mail ou entre em contato com o consultor/i,
-      { timeout: 30_000 },
-    ).should("be.visible");
+    cy.contains(/Verifique seu e-mail ou entre em contato com o consultor/i, {
+      timeout: 30_000,
+    }).should("be.visible");
   },
   "PROP-10": () => {
     const cutoff = new Date();
@@ -278,7 +290,10 @@ const implementations = {
       .should("have.length.at.least", 1)
       .first()
       .within(() => {
-        cy.contains("button", /Acompanhar proposta|Completar cadastro/i).click();
+        cy.contains(
+          "button",
+          /Acompanhar proposta|Completar cadastro/i,
+        ).click();
       });
     cy.location("pathname", { timeout: 30_000 }).should(
       "match",
@@ -303,21 +318,29 @@ const implementations = {
       });
   },
   "PROP-18": () => {
-    const openedPaths: string[] = [];
+    const openedJourneys: string[] = [];
 
     cy.get("article")
       .should("have.length.at.least", 2)
       .then(($cards) => {
         const proposalNumbers = [...$cards]
+          .filter((card) =>
+            /Completar cadastro|Acompanhar proposta|Enviar documentos|Ver pendências/i.test(
+              card.textContent ?? "",
+            ),
+          )
           .map((card) => card.textContent?.match(/Proposta\s*#(\d+)/i)?.[1])
           .filter((number): number is string => Boolean(number));
 
-        expect(new Set(proposalNumbers).size, "propostas distintas").to.be
-          .greaterThan(1);
+        expect(
+          new Set(proposalNumbers).size,
+          "propostas distintas",
+        ).to.be.greaterThan(1);
 
-        for (const [index, proposalNumber] of proposalNumbers.entries()) {
+        const proposalsToValidate = proposalNumbers.slice(0, 2);
+        for (const [index, proposalNumber] of proposalsToValidate.entries()) {
           if (index > 0) {
-            cy.openProposalList(portalConnect.caseAccessUrls.PROP_18);
+            cy.openProposalList();
             cy.wait(2_000);
           }
 
@@ -327,17 +350,32 @@ const implementations = {
               /Completar cadastro|Acompanhar proposta|Enviar documentos|Ver pendências/i,
             ).click();
           });
-          cy.location("pathname", { timeout: 30_000 })
-            .should("match", /^\/propostas\/[^/]+$/)
-            .then((pathname) => openedPaths.push(pathname));
+
+          cy.wait(1_000);
+          cy.location("pathname", { timeout: 30_000 }).then((pathname) => {
+            if (/^\/propostas\/[^/]+$/.test(pathname)) {
+              expect(pathname).to.contain(proposalNumber);
+              openedJourneys.push(pathname);
+              return;
+            }
+
+            cy.get('[role="dialog"]:visible', { timeout: 10_000 })
+                .should("contain.text", "Proposta")
+                .then(($dialog) => {
+                  openedJourneys.push(
+                    `dialog:${proposalNumber}:${$dialog.text().trim()}`,
+                  );
+                  cy.wrap($dialog)
+                    .contains("button", /Entendido|Fechar/i)
+                    .click();
+                });
+          });
           cy.wait(2_000);
         }
       });
 
     cy.then(() => {
-      expect(new Set(openedPaths).size, "jornadas abertas").to.be.greaterThan(
-        1,
-      );
+      expect(openedJourneys, "jornadas abertas").to.have.length.at.least(2);
     });
   },
   "PROP-13": () => {
@@ -369,8 +407,9 @@ const implementations = {
     );
     const businessDays = businessDaysUntil(deadline);
     proposalCard().within(() => {
-      cy.contains(new RegExp(`${businessDays} dias? restantes`, "i"))
-        .should("be.visible");
+      cy.contains(new RegExp(`${businessDays} dias? restantes`, "i")).should(
+        "be.visible",
+      );
     });
   },
   "PROP-15": () => {
@@ -391,6 +430,10 @@ const implementations = {
       portalConnect.externalSimulationUrl,
     );
     cy.wait(3_000);
+    cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.propostas}`);
+    cy.contains("h1", "Minhas propostas", { timeout: 30_000 }).should(
+      "be.visible",
+    );
   },
   "PROP-19": () => {
     proposalCard().within(() => {

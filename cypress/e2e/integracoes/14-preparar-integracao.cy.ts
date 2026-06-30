@@ -1,7 +1,13 @@
-import { integrationData } from "../../config/integration-data";
+import {
+  integrationData,
+  resolveIntegrationScenario,
+  type IntegrationCaseId,
+  type IntegrationRunContext,
+  type ResolvedIntegrationScenario,
+} from "../../config/integration-data";
+import { portalEnvironment } from "../../config/active-connect";
 
-type IntegrationScenario =
-  (typeof integrationData.scenarios)[keyof typeof integrationData.scenarios];
+type IntegrationScenario = ResolvedIntegrationScenario;
 
 function fill(name: string, value: string, index = 0): void {
   cy.getByName(name)
@@ -14,10 +20,7 @@ function fill(name: string, value: string, index = 0): void {
 }
 
 function chooseRadio(label: string): void {
-  cy.contains(
-    "label",
-    new RegExp(`^${Cypress._.escapeRegExp(label)}$`, "i"),
-  )
+  cy.contains("label", new RegExp(`^${Cypress._.escapeRegExp(label)}$`, "i"))
     .invoke("attr", "for")
     .then((inputId) => {
       expect(inputId, `radio ${label}`).to.be.a("string").and.not.be.empty;
@@ -113,11 +116,13 @@ function fillGuarantorPj(): void {
   fill("NU_CELULAR", firstPartner.celular, 0);
   fill("NO_EMAIL", firstPartner.email, 0);
 
-  cy.getByName("NO_PESSOA").its("length").then((partnerCount) => {
-    if (partnerCount < 2) {
-      cy.contains("button", /adicionar.*sócio/i).click();
-    }
-  });
+  cy.getByName("NO_PESSOA")
+    .its("length")
+    .then((partnerCount) => {
+      if (partnerCount < 2) {
+        cy.contains("button", /adicionar.*sócio/i).click();
+      }
+    });
   cy.getByName("NO_PESSOA").should("have.length.at.least", 2);
   const secondPartner = integrationData.socios[1];
   fill("NO_PESSOA", secondPartner.nome, 1);
@@ -147,9 +152,7 @@ function fillThirdParty(): void {
   fill("PESSOA.DT_NASCIMENTO", data.dataNascimento);
   fill("PESSOA.VA_RENDA_BRUTA", data.renda);
   cy.selectSearchOption("PESSOA.CO_PROFISSAO", data.profissao);
-  cy.getByName("PESSOA.CO_ATIVIDADE_PROFISSIONAL").select(
-    data.tipoProfissao,
-  );
+  cy.getByName("PESSOA.CO_ATIVIDADE_PROFISSIONAL").select(data.tipoProfissao);
   fill("PESSOA.NU_DDD_CEL", data.ddd);
   fill("PESSOA.NU_CELULAR", data.celular);
   fill("PESSOA.NO_EMAIL", data.email);
@@ -255,11 +258,7 @@ function fillProperty(profile: IntegrationScenario["profile"]): void {
   );
 
   const condition =
-    profile === "spouse-pj"
-      ? "6"
-      : profile === "third-party-pf"
-        ? "4"
-        : "1";
+    profile === "spouse-pj" ? "6" : profile === "third-party-pf" ? "4" : "1";
   cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").select(condition);
 
   if (condition === "6" || condition === "4") {
@@ -271,9 +270,7 @@ function fillProperty(profile: IntegrationScenario["profile"]): void {
       "INTERVENIENTE.CODIGO",
       integrationData.imovel.interveniente,
     );
-    cy.getByName("INTERVENIENTE.CODIGO")
-      .invoke("val")
-      .should("not.be.empty");
+    cy.getByName("INTERVENIENTE.CODIGO").invoke("val").should("not.be.empty");
   }
 
   cy.getByName("IMOVEL_OPERACAO.NO_ENDERECO")
@@ -359,11 +356,17 @@ function confirmIntegrationProposal(): void {
 }
 
 describe("Integrações - preparação da proposta", () => {
-  const selectedCaseId = Cypress.config("reporterOptions")?.caseId as
-    | keyof typeof integrationData.scenarios
-    | undefined;
+  const configuredCaseId = String(
+    Cypress.config("reporterOptions")?.caseId || "",
+  ).trim() as IntegrationCaseId;
+  const selectedCaseId = Object.hasOwn(
+    integrationData.scenarios,
+    configuredCaseId,
+  )
+    ? configuredCaseId
+    : undefined;
   const scenario = selectedCaseId
-    ? integrationData.scenarios[selectedCaseId]
+    ? resolveIntegrationScenario(selectedCaseId)
     : undefined;
 
   if (!selectedCaseId || !scenario) {
@@ -374,8 +377,25 @@ describe("Integrações - preparação da proposta", () => {
     });
   } else {
     it(`${selectedCaseId} | preenche e confirma ${scenario.proposalId}`, () => {
-      prepareIntegrationProposal(scenario);
-      confirmIntegrationProposal();
+      cy.task<{ operation: string }>("readIntegrationSettings", null, {
+        log: false,
+      }).then((settings) => {
+        const runtimeScenario = resolveIntegrationScenario(
+          selectedCaseId,
+          settings.operation,
+        );
+        prepareIntegrationProposal(runtimeScenario);
+        confirmIntegrationProposal();
+        cy.task(
+          "writeIntegrationRunContext",
+          {
+            ...runtimeScenario,
+            environment: portalEnvironment,
+            preparedAt: new Date().toISOString(),
+          } satisfies IntegrationRunContext,
+          { log: false },
+        );
+      });
     });
   }
 });
