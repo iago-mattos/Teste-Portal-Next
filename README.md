@@ -3,6 +3,10 @@
 Suite Cypress + TypeScript baseada nos casos de
 `Docs/TestesPortalC6(1).xlsx`.
 
+Para continuar o trabalho em outro computador ou em uma nova conversa, leia
+primeiro `Docs/HANDOFF_CODEX.md`. Ele registra o estado dos 169 casos, as
+massas que devem ser preservadas e o ponto exato de retomada.
+
 ## Configurar a conexao
 
 Copie `.env.example` para `.env.local` e informe apenas dados dos ambientes
