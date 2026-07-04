@@ -115,11 +115,6 @@ beforeEach(function () {
   } else {
     cy.openDefaultProposal();
   }
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
 });
 
 function deadlineLabel(value: string): string {
@@ -222,7 +217,6 @@ const implementations = {
 
     openJourney(proposalIds.TIMELINE_04_CADASTRO, "Cadastro da Proposta");
     cy.openProposalList();
-    cy.wait(2_000);
     openJourney(proposalIds.TIMELINE_04_DOCUMENTOS, "Documentos da proposta");
   },
   "TIMELINE-05": () => {
@@ -300,7 +294,6 @@ const implementations = {
     });
     cy.contains("button", /^Não mostrar novamente$/i).click();
     cy.contains('[role="status"]', message).should("not.exist");
-    cy.wait(2_000);
     cy.reload();
     cy.contains('[role="status"]', message).should("not.exist");
   },

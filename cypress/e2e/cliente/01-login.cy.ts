@@ -30,13 +30,17 @@ const cases = [
 
 const implementations = {
   "LOGIN-01": () => {
-    expect(portalConnect.accessUrl).to.match(
-      new RegExp(`^${Cypress._.escapeRegExp(portalConnect.portalUrl)}/?\\?.+`),
+    cy.env<{ portalConnect: typeof portalConnect }>(["portalConnect"]).then(
+      ({ portalConnect: secureConnect }) => {
+        expect(secureConnect.accessUrl).to.match(
+          new RegExp(
+            `^${Cypress._.escapeRegExp(secureConnect.portalUrl)}/?\\?.+`,
+          ),
+        );
+      },
     );
     cy.openProposalList();
-    cy.wait(2_000);
     cy.location("pathname").should("equal", portalConnect.paths.propostas);
-    cy.wait(3_000);
   },
   "LOGIN-02": () => {
     cy.openProposalList();

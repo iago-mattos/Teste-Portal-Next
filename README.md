@@ -10,8 +10,11 @@ massas que devem ser preservadas e o ponto exato de retomada.
 ## Configurar a conexao
 
 Copie `.env.example` para `.env.local` e informe apenas dados dos ambientes
-DEV/HT:
+DEV/HT. A configuracao e carregada antes da inicializacao do Cypress e validada
+em um unico ponto:
 
+- `PORTAL_ENV`: `dev` ou `ht`;
+- `PORTAL_URL`: URL base do Portal;
 - `PORTAL_ADMIN_URL`: URL do painel administrativo;
 - `PORTAL_ADMIN_USER` e `PORTAL_ADMIN_PASSWORD`: credenciais de QA;
 - `PORTAL_TEST_CPF`: CPF exclusivo da massa descartavel.
@@ -21,14 +24,16 @@ Portal e guarda a sessao automaticamente. Quando a sessao deixa de ser valida,
 um link novo e gerado. O fluxo e bloqueado quando Admin e Portal nao pertencem
 ao mesmo host DEV/HT.
 
-Edite `cypress/config/connect.ts` somente para informar:
+As massas podem ser fornecidas como objetos JSON nas variaveis:
 
-- `portalUrl`: endereco base do portal;
-- `accessUrl`: fallback para execucoes sem o Admin automatizado;
-- `testData`: IDs e CPFs das massas exclusivas de QA.
+- `PORTAL_TEST_DATA_JSON`;
+- `PORTAL_EXPECTED_PROPOSAL_JSON`;
+- `PORTAL_CASE_ACCESS_URLS_JSON`;
+- `PORTAL_CASE_PROPOSAL_IDS_JSON`.
 
-O arquivo `connect.ts` e ignorado pelo Git. O modelo versionavel fica em
-`cypress/config/connect.example.ts`.
+Os antigos `connect.ts`, `connect.ht.ts` e `aejs.ts` continuam aceitos somente
+como compatibilidade local. Eles sao opcionais, ignorados pelo Git e nao sao
+mais imports obrigatorios; um checkout limpo compila sem esses arquivos.
 
 Nao utilize credenciais, links ou dados de clientes reais.
 
@@ -40,6 +45,13 @@ npm run cy:open
 
 ```powershell
 npm run cy:run
+```
+
+O comando padrao executa apenas os smokes seguros. Verificacoes locais de
+qualidade, sem acesso a sistemas externos, podem ser executadas com:
+
+```powershell
+npm test
 ```
 
 Smokes de autenticacao e abertura da proposta:
@@ -62,11 +74,13 @@ npm run cy:run -- --spec "cypress/e2e/cliente/01-login.cy.ts" --env caseId=LOGIN
 
 ## Integracao Portal para AEJS
 
-Preencha no `.env.local`:
+O fluxo de preparacao confirma propostas e, por isso, exige massa descartavel e
+opt-in explicito. Preencha no `.env.local`:
 
 ```text
 PORTAL_INTEGRATION_CASE_ID=INT-CONFIRM-PJ
 PORTAL_INTEGRATION_OPERATION=000436021
+ALLOW_TEST_MUTATION=true
 ```
 
 Depois execute:
@@ -75,14 +89,15 @@ Depois execute:
 npm run cy:run:integration
 ```
 
-A preparacao grava um contexto temporario com o caso, perfil e operacao
-efetivamente usados. O spec do AEJS le esse contexto, pesquisa exatamente a
-mesma operacao e confirma o numero aberto antes de validar os campos.
+A preparacao mantem em memoria, apenas durante a execucao atual, o caso, perfil
+e operacao efetivamente usados. O spec do AEJS le esse contexto, pesquisa
+exatamente a mesma operacao e confirma o numero aberto antes de validar os
+campos. Cookies e magic links nao sao persistidos em disco.
 
 O fluxo automatizado esta dividido em:
 
 - `14-preparar-integracao.cy.ts`: preenche o Portal, confirma a proposta e
-  grava `.codex-tmp/integration-run-context.json`;
+  publica o contexto para o processo atual do Cypress;
 - `16-verificar-aejs.cy.ts`: abre a mesma operacao no AEJS e valida os dados
   persistidos;
 - `integration-data.ts`: centraliza os valores esperados e as operacoes de
@@ -144,8 +159,25 @@ funcional do documento:
 Cada caso possui ID, regra, status e observacao de origem.
 
 Casos automatizados sao executados normalmente. Casos ainda sem codigo
-aparecem como `[PENDENTE DE AUTOMACAO]`, evitando aprovacoes falsas enquanto
-as massas necessarias nao foram disponibilizadas.
+precisam estar declarados em `cypress/config/known-pending.json`, com motivo e
+data de revisao. `npm test` falha quando surge uma pendencia nao declarada.
 
-Arquivos `.env.local`, links, cookies, contextos temporarios, videos e
-relatorios nao sao versionados.
+Arquivos `.env.local`, links, videos e relatorios nao sao versionados.
+
+## Quality gate e CI
+
+O gate executado em toda pull request inclui TypeScript, ESLint e consistencia
+entre o catalogo de casos e suas implementacoes:
+
+```powershell
+npm test
+```
+
+O smoke com credenciais e executado manualmente pelo workflow `CI`, usando o
+ambiente protegido `qa`. Fluxos de confirmacao/cancelamento nunca fazem parte
+do gate padrao e exigem `ALLOW_TEST_MUTATION=true`.
+
+O defeito conhecido de hidratacao React #418 falha por padrao. Enquanto a
+correcao do frontend nao estiver implantada, uma execucao diagnostica pode usar
+`ALLOW_REACT_418_QUARANTINE=true`; a excecao fica explicita no log e deve ser
+revisada ate 31/08/2026.

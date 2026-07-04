@@ -83,11 +83,6 @@ const cases = [
 
 beforeEach(() => {
   cy.openDefaultProposal();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
 });
 
 const implementations = {

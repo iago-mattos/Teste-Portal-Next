@@ -1,16 +1,29 @@
-import { portalConnect as developmentConnect } from "./connect";
-import { portalConnect as htConnect } from "./connect.ht";
+import type {
+  PortalConnect,
+  PortalEnvironment,
+} from "./runtime-config";
 
-const browserHost =
-  typeof window !== "undefined" ? window.location.hostname : "";
-const runtimeEnvironment = browserHost.includes("hml")
-  ? "ht"
-  : process.env.PORTAL_ENV;
+let configuredPortalConnect: PortalConnect | undefined;
 
-export const portalEnvironment =
-  String(runtimeEnvironment ?? "").trim().toLowerCase() === "ht"
-    ? "ht"
-    : "dev";
+export let portalEnvironment: PortalEnvironment = "dev";
 
-export const portalConnect =
-  portalEnvironment === "ht" ? htConnect : developmentConnect;
+export function setPortalRuntimeConfig(
+  connect: PortalConnect,
+  environment: PortalEnvironment,
+): void {
+  configuredPortalConnect = connect;
+  portalEnvironment = environment;
+}
+
+export const portalConnect = new Proxy({} as PortalConnect, {
+  get(_target, property: keyof PortalConnect) {
+    const publicConnect = Cypress.expose("portalConnect") as
+      | PortalConnect
+      | undefined;
+    const connect = configuredPortalConnect ?? publicConnect;
+    if (!connect) {
+      throw new Error("Configuracao do Portal ainda nao foi inicializada.");
+    }
+    return connect[property];
+  },
+});

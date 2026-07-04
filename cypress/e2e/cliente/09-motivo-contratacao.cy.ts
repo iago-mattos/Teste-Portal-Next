@@ -24,11 +24,7 @@ const cases = [
 beforeEach(() => {
   cy.openDefaultProposal();
   cy.contains('[role="tab"]', "Motivo da Contratação").click();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
+  cy.getByName("CO_MOTIVO_EMPRESTIMO").should("be.visible");
 });
 
 const implementations = {

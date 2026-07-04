@@ -1,12 +1,5 @@
 import { portalConnect } from "../config/active-connect";
 
-interface PortalSessionCookieCache {
-  accessUrl: string;
-  cpf?: string;
-  generatedAt?: string;
-  cookie: Cypress.Cookie;
-}
-
 interface PortalAdminConfig {
   url: string;
   username: string;
@@ -14,34 +7,10 @@ interface PortalAdminConfig {
   cpf: string;
 }
 
-function cacheCurrentPortalCookie(
-  accessUrl: string,
-  cpf?: string,
-): Cypress.Chainable<unknown> {
-  return cy.getCookie("__Host-session").then((cookie) => {
-    if (!cookie) {
-      throw new Error(
-        "O portal autenticou, mas nao criou o cookie __Host-session.",
-      );
-    }
-
-    return cy.task(
-      "writePortalSessionCookie",
-      {
-        accessUrl,
-        cpf,
-        generatedAt: new Date().toISOString(),
-        cookie,
-      } satisfies PortalSessionCookieCache,
-      { log: false },
-    );
-  });
-}
-
 function requireValue(value: string, field: string): string {
   if (!value.trim()) {
     throw new Error(
-      `Preencha "${field}" em cypress/config/connect.ts antes de executar este caso.`,
+      `Configure "${field}" nas variaveis de ambiente ou no arquivo local de compatibilidade antes de executar este caso.`,
     );
   }
 
@@ -103,36 +72,9 @@ function getInputByLabel(
     });
 }
 
-function restorePortalCookie(
-  cached: PortalSessionCookieCache,
-): Cypress.Chainable<boolean> {
-  cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.login}`);
-  const { name, value, path, secure, httpOnly, sameSite, expiry } =
-    cached.cookie;
-  cy.setCookie(name, value, {
-    path,
-    secure,
-    httpOnly,
-    sameSite,
-    expiry,
-  });
-
-  return cy
-    .request({
-      url: `${portalConnect.portalUrl}/api/auth/me`,
-      failOnStatusCode: false,
-      log: false,
-    })
-    .then(
-      (response) =>
-        response.status === 200 && response.body?.autenticado === true,
-    );
-}
-
 function authenticateWithAccessUrl(
   accessUrl: string,
-  cpf?: string,
-): Cypress.Chainable<unknown> {
+): Cypress.Chainable<null> {
   cy.visit(accessUrl, { log: false });
   cy.location("pathname", { timeout: 30_000 }).should(
     "equal",
@@ -141,7 +83,8 @@ function authenticateWithAccessUrl(
   cy.contains("h1", "Minhas propostas", { timeout: 30_000 }).should(
     "be.visible",
   );
-  return cacheCurrentPortalCookie(accessUrl, cpf);
+  cy.getCookie("__Host-session").should("exist");
+  return cy.wrap(null, { log: false });
 }
 
 Cypress.Commands.add("portalVisit", (path = "/") => {
@@ -205,9 +148,14 @@ Cypress.Commands.add("generatePortalAccess", () => {
 
 Cypress.Commands.add("portalSession", (accessUrlOverride?: string) => {
   const fallbackAccessUrl = accessUrlOverride ?? portalConnect.accessUrl;
-  const sessionId = ["portal-access-managed", portalConnect.portalUrl];
+  const sessionId = [
+    "portal-access-managed",
+    portalConnect.portalUrl,
+    portalConnect.testData.cpfComPropostas,
+    Boolean(accessUrlOverride),
+  ];
 
-  const createFreshSession = (): Cypress.Chainable<unknown> =>
+  const createFreshSession = (): Cypress.Chainable<null> =>
     cy
       .task<PortalAdminConfig | null>("readPortalAdminConfig", null, {
         log: false,
@@ -219,29 +167,15 @@ Cypress.Commands.add("portalSession", (accessUrlOverride?: string) => {
           );
         }
 
-        const admin = validateAdminConfig(rawConfig);
         return cy
           .generatePortalAccess()
-          .then((accessUrl) => authenticateWithAccessUrl(accessUrl, admin.cpf));
+          .then((accessUrl) => authenticateWithAccessUrl(accessUrl));
       });
 
   return cy.session(
     sessionId,
     () => {
-      const cachedSession = cy.task<PortalSessionCookieCache | null>(
-        "readLatestPortalSession",
-        { portalUrl: portalConnect.portalUrl },
-        { log: false },
-      );
-
-      cachedSession.then((cached) => {
-        if (!cached) return createFreshSession();
-
-        return restorePortalCookie(cached).then((valid) => {
-          if (valid) return;
-          return createFreshSession();
-        });
-      });
+      createFreshSession();
       cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.propostas}`);
       cy.contains("h1", "Minhas propostas").should("be.visible");
       cy.location("pathname").should("equal", portalConnect.paths.propostas);

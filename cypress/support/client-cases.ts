@@ -1,3 +1,5 @@
+import knownPendingCases from "../config/known-pending.json";
+
 export interface ClientCase {
   id: string;
   rule: string;
@@ -7,6 +9,11 @@ export interface ClientCase {
 
 export type CaseImplementation = () => void;
 export type CaseImplementations = Record<string, CaseImplementation>;
+
+const pendingCases = knownPendingCases as Record<
+  string,
+  { reason: string; reviewBy: string }
+>;
 
 /**
  * Mantem o catalogo da cliente visivel no runner sem gerar falso positivo.
@@ -37,7 +44,16 @@ export function registerClientCases(
       if (implementation) {
         it(title, implementation);
       } else {
-        it.skip(`[PENDENTE DE AUTOMACAO] ${title}`, () => undefined);
+        const pending = pendingCases[testCase.id];
+        if (!pending) {
+          throw new Error(
+            `${testCase.id} nao possui implementacao nem justificativa em known-pending.json.`,
+          );
+        }
+        it.skip(
+          `[PENDENTE ATE ${pending.reviewBy}] ${title} | ${pending.reason}`,
+          () => undefined,
+        );
       }
     }
   });

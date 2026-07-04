@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_smoke:
+        description: Executar smoke no ambiente de QA
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_smoke
+    concurrency:
+      group: portal-next-qa
+      cancel-in-progress: false
+    environment: qa
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run cy:run:smoke
+        env:
+          PORTAL_ENV: ${{ vars.PORTAL_ENV }}
+          PORTAL_URL: ${{ vars.PORTAL_URL }}
+          PORTAL_ADMIN_URL: ${{ vars.PORTAL_ADMIN_URL }}
+          PORTAL_ADMIN_USER: ${{ secrets.PORTAL_ADMIN_USER }}
+          PORTAL_ADMIN_PASSWORD: ${{ secrets.PORTAL_ADMIN_PASSWORD }}
+          PORTAL_TEST_CPF: ${{ secrets.PORTAL_TEST_CPF }}
+          PORTAL_EXPECTED_PROPOSAL_JSON: ${{ secrets.PORTAL_EXPECTED_PROPOSAL_JSON }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-smoke
+          path: |
+            cypress/results
+            cypress/screenshots
+            cypress/videos

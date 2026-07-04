@@ -29,7 +29,7 @@ const implementations = {
   "INT-CONFIRM": () => {
     cy.openDefaultProposal();
     cy.contains('[role="tab"]', "Garantidor").click();
-    cy.wait(2_000);
+    cy.contains("button", /^Confirmar$/i).should("be.visible");
 
     cy.intercept("PUT", "**/cadastro*").as("saveBeforeConfirm");
     cy.intercept("POST", "**/finalizar").as("confirmIntegration");
@@ -54,7 +54,6 @@ const implementations = {
     cy.contains(/Etapa concluída|Cadastro concluído|sucesso/i, {
       timeout: 60_000,
     }).should("be.visible");
-    cy.wait(10_000);
     cy.get("body").then(($body) => {
       const continueButton = $body
         .find('[role="alertdialog"]:visible, [role="dialog"]:visible')
@@ -64,11 +63,9 @@ const implementations = {
         cy.wrap(continueButton.first()).click();
       }
     });
-    cy.wait(3_000);
   },
   "INT-CANCEL": () => {
     cy.openDefaultProposal();
-    cy.wait(2_000);
     cy.contains("button", /^Cancelar$/i, { timeout: 30_000 })
       .scrollIntoView()
       .should("be.visible")
@@ -86,7 +83,6 @@ const implementations = {
     cy.contains(/cancelad|etapa concluída|sucesso/i, { timeout: 60_000 }).should(
       "be.visible",
     );
-    cy.wait(3_000);
   },
 };
 

@@ -83,7 +83,6 @@ beforeEach(() => {
   cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").select("3");
   cy.contains('[role="tab"]', "Garantidor").click();
   cy.contains("Dados Pessoais").should("be.visible");
-  cy.wait(2_000);
   cy.then(() => {
     guarantorPfReady = true;
   });
@@ -94,7 +93,6 @@ afterEach(() => {
     return;
   }
 
-  cy.wait(3_000);
   cy.contains('[role="tab"]', "Imóvel").click();
   cy.intercept("PUT", "**/cadastro*").as("clearGuarantorPfState");
   cy.getByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").select("");

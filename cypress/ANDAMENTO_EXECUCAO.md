@@ -319,3 +319,12 @@ Data: 17/06/2026
 - Na operacao `000436019`, preparada sem composicao de renda, a flag `PESSOA$IN_EADQUIRENTE` aparece marcada no AEJS. A regra 23 foi reexecutada isoladamente e falhou por divergencia funcional em `mochawesome_395.json`.
 - `INT-AEJS-PJ` e `INT-AEJS-PF` continuaram aprovados no lote completo `mochawesome_394.json`. A navegacao de `openOperation` foi endurecida para suportar o menu Originação tanto expandido quanto recolhido.
 - A conta dos 169 casos permanece: 108 funcionais, 59 regras de integracao da planilha e 2 transicoes controladas (`Confirmar` e `Cancelar`). As massas confirmadas nao foram recriadas nesta rodada para preservar o estado utilizado nas verificacoes do AEJS.
+
+## 30/06/2026 - Preparacao do novo ambiente e smoke DEV
+
+- O arquivo local de ambiente foi corrigido de `env.local` para `.env.local`, permanecendo ignorado pelo Git.
+- As dependencias travadas em `package-lock.json` foram instaladas com Node.js `v24.14.0` e Cypress `15.17.0`.
+- A checagem TypeScript `tsc --noEmit` foi aprovada sem erros.
+- O smoke DEV foi aprovado em Electron headless: `00-auth-smoke.cy.ts` e `00-open-proposal-smoke.cy.ts`, totalizando 2 testes aprovados e 0 reprovados em 36 segundos.
+- Relatorios gerados em `cypress/results/mochawesome.json` e `cypress/results/mochawesome_001.json`; videos gerados para os dois specs em `cypress/videos/`.
+- Nenhuma das operacoes preservadas `000436018` a `000436021` foi recriada ou alterada.

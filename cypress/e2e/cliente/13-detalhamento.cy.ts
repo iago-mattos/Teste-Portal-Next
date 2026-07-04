@@ -11,11 +11,7 @@ const cases = [
 
 beforeEach(() => {
   cy.openDefaultProposal();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
+  cy.contains("h2", "Cadastro da Proposta").should("be.visible");
 });
 
 const implementations = {

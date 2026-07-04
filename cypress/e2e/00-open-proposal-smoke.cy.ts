@@ -1,5 +1,5 @@
 describe("Abertura da proposta padrao", () => {
-  it("abre a proposta configurada no connect.ts", () => {
+  it("abre a proposta configurada para o ambiente", () => {
     cy.writeFile(".codex-tmp/open-proposal-smoke.json", {
       step: "inicio",
       at: new Date().toISOString(),

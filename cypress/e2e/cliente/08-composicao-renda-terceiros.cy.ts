@@ -88,7 +88,7 @@ function chooseRadio(label: string): void {
   radioSelector(label).then((selector) => {
     cy.get(selector).then(($radio) => {
       if (!$radio.is(":checked")) {
-        cy.contains("label", labelPattern).click({ force: true });
+        cy.contains("label", labelPattern).should("be.visible").click();
       }
     });
     radioSelector(label).then((updatedSelector) => {
@@ -111,7 +111,6 @@ function expectRequired(name: string): void {
 beforeEach(() => {
   cy.openDefaultProposal();
   cy.contains('[role="tab"]', "Composição de Renda").click();
-  cy.wait(1_000);
   chooseRadio("Sim");
   cy.contains(
     "label",
@@ -119,11 +118,6 @@ beforeEach(() => {
   ).should("be.visible");
   chooseRadio("Outra Pessoa");
   cy.contains("Dados do Parente para Composição de Renda").should("be.visible");
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
 });
 
 const implementations = {

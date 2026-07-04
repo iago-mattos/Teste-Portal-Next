@@ -63,9 +63,10 @@ Nao houve HTTP 429 na ultima bateria funcional.
 
 ### Autenticacao do Portal
 
-`portalSession()` em `cypress/support/commands.ts` tenta restaurar a sessao
-local. Quando necessario, acessa o Admin, gera um magic link para o CPF de
-teste, entra no Portal e grava o cookie em `.codex-tmp`.
+`portalSession()` em `cypress/support/commands.ts` reutiliza a sessao apenas
+dentro da execucao atual do Cypress. Quando necessario, acessa o Admin, gera um
+magic link para o CPF de teste e entra no Portal. Cookie e magic link nao sao
+persistidos em disco.
 
 O Admin e o Portal devem pertencer ao mesmo ambiente. Evite varias invocacoes
 Cypress isoladas em sequencia: prefira um lote com token novo para reduzir o
@@ -78,13 +79,14 @@ risco de HTTP 429.
 - DEV por padrao;
 - HT quando `PORTAL_ENV=ht`.
 
-`connect.ts`, `connect.ht.ts` e `aejs.ts` sao arquivos locais ignorados pelo
-Git. Use os arquivos `*.example.ts` como modelo.
+A configuracao principal vem do `.env.local`. `connect.ts`, `connect.ht.ts` e
+`aejs.ts` permanecem opcionais apenas para compatibilidade com ambientes locais
+anteriores; um checkout limpo nao depende deles.
 
 ### Integracoes
 
-- `14-preparar-integracao.cy.ts` preenche/confirma o Portal e grava o caso,
-  perfil e operacao em `.codex-tmp/integration-run-context.json`;
+- `14-preparar-integracao.cy.ts` preenche/confirma o Portal e publica o caso,
+  perfil e operacao na memoria do processo atual do Cypress;
 - `16-verificar-aejs.cy.ts` le esse contexto, pesquisa exatamente a mesma
   operacao no AEJS e valida os valores persistidos;
 - `cypress/config/integration-data.ts` centraliza os valores esperados e os

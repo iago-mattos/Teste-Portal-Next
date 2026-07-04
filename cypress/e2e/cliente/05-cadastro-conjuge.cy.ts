@@ -89,11 +89,10 @@ beforeEach(() => {
   cy.openDefaultProposal();
   cy.getByName("PESSOA.CO_ESTCIV").select("2");
   cy.contains('[role="tab"]', "Cônjuge").click();
-  cy.wait(2_000);
+  cy.getByName("CONJUGE.NO_PESSOA").should("be.visible");
 });
 
 afterEach(() => {
-  cy.wait(3_000);
   cy.contains('[role="tab"]', "Sobre Você").click();
   cy.intercept("PUT", "**/cadastro*").as("clearSpouseState");
   cy.getByName("PESSOA.CO_ESTCIV").select("");

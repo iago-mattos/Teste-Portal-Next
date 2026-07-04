@@ -3,14 +3,18 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
-  readFileSync,
-  writeFileSync,
 } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { createRequire } from "node:module";
+import { resolve } from "node:path";
 import {
-  portalConnect,
-  portalEnvironment,
-} from "./cypress/config/active-connect";
+  loadAejsConnect,
+  loadPortalConnect,
+  resolvePortalEnvironment,
+  type AejsConnect,
+  type PortalConnect,
+} from "./cypress/config/runtime-config";
+
+const loadLocalModule = createRequire(__filename);
 
 if (existsSync(".env.local")) {
   process.loadEnvFile(".env.local");
@@ -18,17 +22,45 @@ if (existsSync(".env.local")) {
   process.loadEnvFile(".env");
 }
 
-const portalSessionCachePath = resolve(
-  ".codex-tmp",
-  "portal-session-cookie.json",
+function loadLocalExport<T>(
+  relativePath: string,
+  exportName: string,
+): Partial<T> | undefined {
+  const absolutePath = resolve(relativePath);
+  if (!existsSync(absolutePath)) return undefined;
+
+  const localModule = loadLocalModule(absolutePath) as Record<string, unknown>;
+  return localModule[exportName] as Partial<T> | undefined;
+}
+
+const portalEnvironment = resolvePortalEnvironment(process.env);
+const localPortalConnect = loadLocalExport<PortalConnect>(
+  portalEnvironment === "ht"
+    ? "cypress/config/connect.ht.ts"
+    : "cypress/config/connect.ts",
+  "portalConnect",
 );
-const integrationRunContextPath = resolve(
-  ".codex-tmp",
-  "integration-run-context.json",
+const portalConnect = loadPortalConnect(process.env, localPortalConnect);
+const publicPortalConnect: PortalConnect = {
+  ...portalConnect,
+  accessUrl: "",
+  caseAccessUrls: {},
+};
+const aejsConnect = loadAejsConnect(
+  process.env,
+  loadLocalExport<AejsConnect>("cypress/config/aejs.ts", "aejsConnect"),
 );
+const allowMutation = process.env.ALLOW_TEST_MUTATION === "true";
+const allowReact418Quarantine =
+  process.env.ALLOW_REACT_418_QUARANTINE === "true";
+let integrationRunContext: unknown = null;
 
 export default defineConfig({
   allowCypressEnv: false,
+  expose: {
+    portalConnect: publicPortalConnect,
+    portalEnvironment,
+  },
   retries: {
     // Magic links sao de uso unico; retry automatico pode consumir o token.
     runMode: 0,
@@ -51,6 +83,9 @@ export default defineConfig({
     reportPageTitle: "PortalNext - Testes E2E",
   },
   env: {
+    aejsConnect,
+    allowReact418Quarantine,
+    portalConnect,
     portalEnvironment,
   },
   video: true,
@@ -60,6 +95,10 @@ export default defineConfig({
     baseUrl: portalConnect.portalUrl || undefined,
     supportFile: "cypress/support/e2e.ts",
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
+    excludeSpecPattern: [
+      "cypress/e2e/integracoes/14-preparar-integracao.cy.ts",
+      "cypress/e2e/integracoes/15-finalizar-cancelar-integracao.cy.ts",
+    ],
     setupNodeEvents(on, config) {
       on("task", {
         readPortalAdminConfig() {
@@ -82,98 +121,11 @@ export default defineConfig({
               "",
           };
         },
-        readPortalSessionCookie(accessUrl: unknown) {
-          if (!existsSync(portalSessionCachePath)) {
-            return null;
-          }
-
-          const cache = JSON.parse(
-            readFileSync(portalSessionCachePath, "utf8"),
-          ) as {
-            accessUrl?: string;
-            sessions?: Record<string, unknown>;
-          };
-
-          if (typeof accessUrl !== "string") {
-            return null;
-          }
-
-          if (cache.sessions) {
-            return cache.sessions[accessUrl] ?? null;
-          }
-
-          return cache.accessUrl === accessUrl ? cache : null;
-        },
-        readLatestPortalSession(request: unknown) {
-          if (!existsSync(portalSessionCachePath)) {
-            return null;
-          }
-
-          const expected = request as { portalUrl?: string; cpf?: string };
-          const cache = JSON.parse(
-            readFileSync(portalSessionCachePath, "utf8"),
-          ) as {
-            latestPortalSession?: {
-              accessUrl?: string;
-              cpf?: string;
-            };
-          };
-          const latest = cache.latestPortalSession;
-
-          if (
-            !latest?.accessUrl ||
-            !expected.portalUrl ||
-            !latest.accessUrl.startsWith(`${expected.portalUrl}/?`) ||
-            (expected.cpf && latest.cpf !== expected.cpf)
-          ) {
-            return null;
-          }
-
-          return latest;
-        },
-        writePortalSessionCookie(value: unknown) {
-          const session = value as { accessUrl?: string; cpf?: string };
-          if (!session.accessUrl) {
-            throw new Error("Sessao sem accessUrl nao pode ser armazenada.");
-          }
-
-          let sessions: Record<string, unknown> = {};
-          if (existsSync(portalSessionCachePath)) {
-            const current = JSON.parse(
-              readFileSync(portalSessionCachePath, "utf8"),
-            ) as {
-              accessUrl?: string;
-              sessions?: Record<string, unknown>;
-            };
-            sessions = current.sessions ?? {};
-            if (current.accessUrl) {
-              sessions[current.accessUrl] = current;
-            }
-          }
-
-          sessions[session.accessUrl] = value;
-          mkdirSync(dirname(portalSessionCachePath), { recursive: true });
-          writeFileSync(
-            portalSessionCachePath,
-            JSON.stringify({ sessions, latestPortalSession: value }, null, 2),
-            "utf8",
-          );
-          return null;
-        },
         readIntegrationRunContext() {
-          if (!existsSync(integrationRunContextPath)) {
-            return null;
-          }
-
-          return JSON.parse(readFileSync(integrationRunContextPath, "utf8"));
+          return integrationRunContext;
         },
         writeIntegrationRunContext(value: unknown) {
-          mkdirSync(dirname(integrationRunContextPath), { recursive: true });
-          writeFileSync(
-            integrationRunContextPath,
-            JSON.stringify(value, null, 2),
-            "utf8",
-          );
+          integrationRunContext = value;
           return null;
         },
         aejsLog(message: unknown) {
@@ -183,7 +135,8 @@ export default defineConfig({
       });
 
       const caseId =
-        process.env.PORTAL_INTEGRATION_CASE_ID ?? config.env.caseId;
+        (allowMutation ? process.env.PORTAL_INTEGRATION_CASE_ID : undefined) ??
+        config.env.caseId;
 
       if (typeof caseId === "string" && caseId.trim()) {
         const evidenceCaseId = caseId.trim().replace(/[^A-Za-z0-9_-]/g, "_");
@@ -213,8 +166,15 @@ export default defineConfig({
         });
 
         config.testingType = "e2e";
-        config.env = { ...config.env, portalEnvironment };
-        config.excludeSpecPattern = [];
+        config.env = {
+          ...config.env,
+          aejsConnect,
+          portalConnect,
+          portalEnvironment,
+        };
+        if (allowMutation) {
+          config.excludeSpecPattern = [];
+        }
         config.reporterOptions = {
           ...config.reporterOptions,
           caseId: caseId.trim(),

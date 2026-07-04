@@ -1,4 +1,3 @@
-import { aejsConnect } from "../../config/aejs";
 import {
   integrationData,
   resolveIntegrationScenario,
@@ -6,6 +5,7 @@ import {
   type IntegrationRunContext,
   type ResolvedIntegrationScenario,
 } from "../../config/integration-data";
+import type { AejsConnect } from "../../config/runtime-config";
 
 const rowSelector =
   ".x-grid-cell-inner:visible, [role='gridcell']:visible, td:visible, .x-grid-item:visible, .x-grid-row:visible, [role='rowgroup']:visible, tr:visible";
@@ -15,7 +15,9 @@ const menuItemSelector =
   'a[role="menuitem"]:visible, .x-menu-item:visible, .x-menu-item-text:visible, a:visible, span:visible';
 
 function waitExtJs(timeout = 1_000): void {
-  cy.wait(timeout);
+  cy.get(".x-mask-msg:visible, .x-loading-mask:visible", { timeout }).should(
+    "not.exist",
+  );
 }
 
 function mark(message: string): void {
@@ -121,38 +123,42 @@ function closeCurrentWindow(): void {
 }
 
 function loginAejs(): void {
-  mark("login: acessando AEJS HT");
-  cy.visit(aejsConnect.baseUrl);
-  cy.contains("Acesso via Plataforma", { timeout: 30_000 }).click({
-    force: true,
-  });
-  mark("login: acesso via plataforma selecionado");
-
-  cy.get("input:visible", { timeout: 30_000 }).should(
-    "have.length.at.least",
-    2,
-  );
-  cy.get('input[name="name"]:visible, input:visible')
-    .first()
-    .clear({ force: true })
-    .type(aejsConnect.username, { force: true });
-  cy.get('input[type="password"]:visible')
-    .clear({ force: true })
-    .type(aejsConnect.password, { force: true, log: false });
-
-  cy.get("input:visible").then(($inputs) => {
-    if ($inputs.length >= 3 && aejsConnect.path) {
-      cy.wrap($inputs.eq(2)).clear({ force: true }).type(aejsConnect.path, {
+  cy.env<{ aejsConnect: AejsConnect }>(["aejsConnect"]).then(
+    ({ aejsConnect }) => {
+      mark("login: acessando AEJS HT");
+      cy.visit(aejsConnect.baseUrl);
+      cy.contains("Acesso via Plataforma", { timeout: 30_000 }).click({
         force: true,
-        log: false,
       });
-    }
-  });
+      mark("login: acesso via plataforma selecionado");
 
-  clickVisibleButton("Login");
-  cy.get(buttonSelector, { timeout: 40_000 }).should("exist");
-  mark("login: concluido");
-  waitExtJs(2_000);
+      cy.get("input:visible", { timeout: 30_000 }).should(
+        "have.length.at.least",
+        2,
+      );
+      cy.get('input[name="name"]:visible, input:visible')
+        .first()
+        .clear({ force: true })
+        .type(aejsConnect.username, { force: true });
+      cy.get('input[type="password"]:visible')
+        .clear({ force: true })
+        .type(aejsConnect.password, { force: true, log: false });
+
+      cy.get("input:visible").then(($inputs) => {
+        if ($inputs.length >= 3 && aejsConnect.path) {
+          cy.wrap($inputs.eq(2)).clear({ force: true }).type(aejsConnect.path, {
+            force: true,
+            log: false,
+          });
+        }
+      });
+
+      clickVisibleButton("Login");
+      cy.get(buttonSelector, { timeout: 40_000 }).should("exist");
+      mark("login: concluido");
+      waitExtJs(2_000);
+    },
+  );
 }
 
 function openOperation(operation: string): void {

@@ -4,26 +4,38 @@
   "description": "Testes automatizados do PortalNext com Cypress e TypeScript",
   "scripts": {
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "npm run cy:run:smoke",
     "cy:run:smoke": "cypress run --spec \"cypress/e2e/00-auth-smoke.cy.ts,cypress/e2e/00-open-proposal-smoke.cy.ts\"",
     "cy:run:functional": "cypress run --spec \"cypress/e2e/cliente/**/*.cy.ts\"",
-    "cy:run:integration": "cypress run --spec \"cypress/e2e/integracoes/14-preparar-integracao.cy.ts,cypress/e2e/integracoes/16-verificar-aejs.cy.ts\"",
+    "cy:run:integration": "node scripts/require-mutation-opt-in.mjs --require-operation && cypress run --spec \"cypress/e2e/integracoes/14-preparar-integracao.cy.ts,cypress/e2e/integracoes/16-verificar-aejs.cy.ts\"",
+    "cy:run:transitions": "node scripts/require-mutation-opt-in.mjs && cypress run --spec \"cypress/e2e/integracoes/15-finalizar-cancelar-integracao.cy.ts\"",
     "cy:run:report": "npm run cy:run && npm run report:mochawesome",
     "report:merge": "mochawesome-merge \"cypress/results/*.json\" -o cypress/results/mochawesome.json",
     "report:generate": "marge cypress/results/mochawesome.json --reportDir cypress/results --reportFilename mochawesome-report",
     "report:mochawesome": "npm run report:merge && npm run report:generate",
-    "test": "cypress run"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "check:test-contracts": "node scripts/check-test-contracts.mjs",
+    "check": "npm run typecheck && npm run lint && npm run check:test-contracts",
+    "test": "npm run check"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": "24.x"
+  },
+  "packageManager": "npm@11.9.0",
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/node": "^25.9.2",
     "cypress": "^15.17.0",
+    "eslint": "^9.39.4",
     "mochawesome": "^7.1.4",
     "mochawesome-merge": "^5.1.1",
     "mochawesome-report-generator": "^6.3.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1"
   }
 }

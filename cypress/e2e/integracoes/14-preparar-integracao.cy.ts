@@ -5,7 +5,7 @@ import {
   type IntegrationRunContext,
   type ResolvedIntegrationScenario,
 } from "../../config/integration-data";
-import { portalEnvironment } from "../../config/active-connect";
+import type { PortalEnvironment } from "../../config/runtime-config";
 
 type IntegrationScenario = ResolvedIntegrationScenario;
 
@@ -21,12 +21,15 @@ function fill(name: string, value: string, index = 0): void {
 
 function chooseRadio(label: string): void {
   cy.contains("label", new RegExp(`^${Cypress._.escapeRegExp(label)}$`, "i"))
+    .should("be.visible")
     .invoke("attr", "for")
     .then((inputId) => {
       expect(inputId, `radio ${label}`).to.be.a("string").and.not.be.empty;
-      cy.get(`#${CSS.escape(inputId as string)}`)
-        .click({ force: true })
-        .should("be.checked");
+      cy.contains(
+        "label",
+        new RegExp(`^${Cypress._.escapeRegExp(label)}$`, "i"),
+      ).click();
+      cy.get(`#${CSS.escape(inputId as string)}`).should("be.checked");
     });
 }
 
@@ -290,12 +293,10 @@ function fillProperty(profile: IntegrationScenario["profile"]): void {
   }
 
   cy.contains("button", /^Confirmar$/i).should("be.visible");
-  cy.wait(3_000);
 }
 
 function prepareIntegrationProposal(scenario: IntegrationScenario): void {
   openIntegrationProposal(scenario);
-  cy.wait(2_000);
 
   const hasSpouse = scenario.profile === "spouse-pj";
   fillTitular(hasSpouse);
@@ -352,7 +353,6 @@ function confirmIntegrationProposal(): void {
   cy.contains(/Etapa concluída|Cadastro concluído|sucesso/i, {
     timeout: 60_000,
   }).should("be.visible");
-  cy.wait(10_000);
 }
 
 describe("Integrações - preparação da proposta", () => {
@@ -390,7 +390,9 @@ describe("Integrações - preparação da proposta", () => {
           "writeIntegrationRunContext",
           {
             ...runtimeScenario,
-            environment: portalEnvironment,
+            environment: Cypress.expose(
+              "portalEnvironment",
+            ) as PortalEnvironment,
             preparedAt: new Date().toISOString(),
           } satisfies IntegrationRunContext,
           { log: false },

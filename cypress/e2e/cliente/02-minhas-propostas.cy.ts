@@ -147,11 +147,6 @@ function businessDaysUntil(deadline: Date): number {
 
 beforeEach(() => {
   cy.openProposalList();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
 });
 
 const implementations = {
@@ -177,7 +172,6 @@ const implementations = {
       .should("be.visible")
       .invoke("val")
       .should("not.be.empty");
-    cy.wait(2_000);
   },
   "PROP-02": () => {
     cy.openDefaultProposal();
@@ -341,7 +335,6 @@ const implementations = {
         for (const [index, proposalNumber] of proposalsToValidate.entries()) {
           if (index > 0) {
             cy.openProposalList();
-            cy.wait(2_000);
           }
 
           cy.contains("article", `Proposta #${proposalNumber}`).within(() => {
@@ -351,8 +344,17 @@ const implementations = {
             ).click();
           });
 
-          cy.wait(1_000);
-          cy.location("pathname", { timeout: 30_000 }).then((pathname) => {
+          cy.location("pathname", { timeout: 30_000 })
+            .should((pathname) => {
+              const openedProposal = /^\/propostas\/[^/]+$/.test(pathname);
+              const openedDialog =
+                Cypress.$('[role="dialog"]:visible').length > 0;
+              expect(
+                openedProposal || openedDialog,
+                "jornada ou dialogo aberto",
+              ).to.equal(true);
+            })
+            .then((pathname) => {
             if (/^\/propostas\/[^/]+$/.test(pathname)) {
               expect(pathname).to.contain(proposalNumber);
               openedJourneys.push(pathname);
@@ -369,8 +371,7 @@ const implementations = {
                     .contains("button", /Entendido|Fechar/i)
                     .click();
                 });
-          });
-          cy.wait(2_000);
+            });
         }
       });
 
@@ -422,14 +423,13 @@ const implementations = {
     cy.contains("button", "Fazer simulacao com outro imovel").should(
       "be.visible",
     );
-    cy.contains("button", "Fazer simulacao com outro imovel").click({
-      force: true,
-    });
+    cy.contains("button", "Fazer simulacao com outro imovel")
+      .should("be.enabled")
+      .click();
     cy.location("origin", { timeout: 15_000 }).should(
       "equal",
       portalConnect.externalSimulationUrl,
     );
-    cy.wait(3_000);
     cy.visit(`${portalConnect.portalUrl}${portalConnect.paths.propostas}`);
     cy.contains("h1", "Minhas propostas", { timeout: 30_000 }).should(
       "be.visible",

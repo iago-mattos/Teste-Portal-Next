@@ -78,11 +78,7 @@ const cases = [
 beforeEach(() => {
   cy.openDefaultProposal();
   cy.contains('[role="tab"]', "Imóvel").click();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
+  cy.getByName("IMOVEL_OPERACAO.NO_ENDERECO").should("be.visible");
 });
 
 const implementations = {

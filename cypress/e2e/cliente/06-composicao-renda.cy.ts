@@ -32,8 +32,10 @@ function radioSelector(label: string): Cypress.Chainable<string> {
 }
 
 function chooseRadio(label: string): void {
-  radioSelector(label).then((selector) => {
-    cy.get(selector).click({ force: true });
+  radioSelector(label).then(() => {
+    cy.contains("label", new RegExp(`^${Cypress._.escapeRegExp(label)}$`, "i"))
+      .should("be.visible")
+      .click();
     radioSelector(label).then((updatedSelector) => {
       cy.get(updatedSelector).should("be.checked");
     });
@@ -43,11 +45,7 @@ function chooseRadio(label: string): void {
 beforeEach(() => {
   cy.openDefaultProposal();
   cy.contains('[role="tab"]', "Composição de Renda").click();
-  cy.wait(2_000);
-});
-
-afterEach(() => {
-  cy.wait(3_000);
+  cy.contains(/Composição de Renda/i).should("be.visible");
 });
 
 const implementations = {
