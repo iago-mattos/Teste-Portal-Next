@@ -1355,6 +1355,19 @@ Registrar uma decisão quando houver:
 - **Critério de revisão:** após a migração dos smoke tests e novamente após o primeiro módulo funcional mutável.
 - **Substitui:** nenhuma decisão anterior.
 
+### ARCH-002 — Fronteira segura do setup de autenticação
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** magic links são de uso único, estados autenticados podem expirar ou pertencer a outro ambiente e artefatos automáticos do runner podem registrar dados sensíveis durante o login.
+- **Decisão:** o projeto `setup` valida primeiro o estado em `/api/auth/me`, associa-o a um fingerprint sem segredos, gera novo acesso somente quando necessário, salva estado e metadados privados em `playwright/.auth` com permissão restrita e não produz screenshot, vídeo ou trace. Durante a coexistência, a configuração local ignorada do Cypress pode ser lida apenas pela camada Node de configuração; variáveis de ambiente permanecem prioritárias e essa compatibilidade deverá ser removida no cutover.
+- **Alternativas:** autenticação em cada spec; reutilização sem validação; cópia permanente da configuração Cypress; artefatos completos no setup.
+- **Impacto nas camadas:** `tests/setup`, `tests/config`, configuração de projetos e diretório privado `playwright/.auth`.
+- **Impacto operacional:** menos magic links e menor risco de vazamento, com diagnóstico do setup restrito a mensagens sanitizadas.
+- **Riscos:** a primeira execução continua dependente do Admin ou de um access URL válido; sem artefatos visuais, o diagnóstico exige etapas de erro claras.
+- **Critério de revisão:** após a primeira execução E2E validada em DEV e antes da configuração de autenticação no CI.
+- **Substitui:** nenhuma decisão anterior.
+
 ## Revisões obrigatórias
 
 Este documento deve ser revisado:

@@ -1,5 +1,9 @@
 import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+import {
+  PORTAL_AUTH_STATE_PATH,
+  resolvePortalBaseUrl,
+} from "./tests/config/auth-config";
 
 for (const envFile of [".env.local", ".env"]) {
   if (existsSync(envFile)) {
@@ -8,7 +12,7 @@ for (const envFile of [".env.local", ".env"]) {
   }
 }
 
-const portalBaseUrl = process.env.PORTAL_URL?.trim() || undefined;
+const portalBaseUrl = resolvePortalBaseUrl();
 const desktopChromium = {
   ...devices["Desktop Chrome"],
   viewport: { width: 1440, height: 900 },
@@ -42,14 +46,21 @@ export default defineConfig({
       testDir: "./tests/setup",
       testMatch: "**/*.setup.ts",
       workers: 1,
-      use: desktopChromium,
+      use: {
+        ...desktopChromium,
+        screenshot: "off",
+        storageState: { cookies: [], origins: [] },
+        trace: "off",
+        video: "off",
+      },
     },
     {
       name: "smoke",
       testDir: "./tests/smoke",
       testMatch: "**/*.spec.ts",
       workers: 1,
-      use: desktopChromium,
+      dependencies: ["setup"],
+      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
     },
     {
       name: "functional-readonly",
@@ -57,7 +68,8 @@ export default defineConfig({
       testMatch: "**/*.spec.ts",
       grep: /@readonly/,
       workers: 1,
-      use: desktopChromium,
+      dependencies: ["setup"],
+      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
     },
     {
       name: "functional-mutation",
@@ -65,7 +77,8 @@ export default defineConfig({
       testMatch: "**/*.spec.ts",
       grep: /@mutation/,
       workers: 1,
-      use: desktopChromium,
+      dependencies: ["setup"],
+      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
     },
     {
       name: "integration",
@@ -74,7 +87,8 @@ export default defineConfig({
       workers: 1,
       retries: 0,
       timeout: 15 * 60_000,
-      use: desktopChromium,
+      dependencies: ["setup"],
+      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
     },
   ],
 });

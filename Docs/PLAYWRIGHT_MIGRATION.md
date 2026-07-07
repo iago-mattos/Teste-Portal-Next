@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fase 1 concluída; Fase 2 não iniciada.
+- **Estado geral:** ✅ Fases 1 e 2 concluídas; Fase 3 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -409,7 +409,7 @@ Adicionar a infraestrutura mínima do Playwright em coexistência com Cypress, s
 
 ## Fase 2 — Autenticação
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
@@ -418,8 +418,7 @@ Implementar autenticação segura e reutilizável com `storageState`, preservand
 ### Arquivos envolvidos
 
 - `tests/setup/auth.setup.ts`
-- fixtures de autenticação
-- configuração runtime
+- `tests/config/auth-config.ts`
 - `playwright.config.ts`
 - `.gitignore`
 
@@ -442,6 +441,25 @@ Implementar autenticação segura e reutilizável com `storageState`, preservand
 
 - Admin ou access URL válido.
 - Disponibilidade do Portal e endpoint de sessão.
+
+### Implementação realizada em 07/07/2026
+
+- setup nativo do Playwright configurado como dependência dos projetos autenticados;
+- carregamento e validação tipada da configuração de autenticação, com variáveis de ambiente prioritárias e compatibilidade local transitória;
+- validação de estado existente em `/api/auth/me` antes de solicitar novo magic link;
+- fingerprint de ambiente e usuário de teste para impedir reutilização cruzada de estado;
+- geração do magic link pelo Admin e captura somente em memória, sem logs ou artefatos;
+- persistência de `storageState` e metadados com permissão `0600` em diretório ignorado pelo Git;
+- limpeza de estado parcial quando qualquer etapa falha;
+- screenshots, vídeos e traces desativados no projeto `setup` para proteger credenciais, cookies e tokens.
+
+### Validação e classificação dos bloqueios
+
+- O Admin permaneceu inicialmente em `Gerando...` por mais de 120 segundos, inclusive fora do runner Playwright. Em nova verificação independente, concluiu a geração em aproximadamente 30 segundos, sem erros de console. O setup Playwright concluiu posteriormente em 10,8 segundos. Classificação: indisponibilidade ou lentidão temporária do ambiente, sem defeito na implementação Playwright.
+- O React `#418` continuou reproduzível no Electron do Cypress e já possuía quarentena explícita, responsável e prazo no projeto. A documentação oficial do React o identifica como mismatch entre HTML de servidor e cliente. No Chromium do Playwright, a lista de propostas abriu, `/api/auth/me` retornou `200` e `autenticado: true`, sem `pageerror`. Classificação: defeito conhecido do frontend manifestado no Cypress, anterior e independente desta migração.
+- Com a quarentena diagnóstica já documentada, os dois smokes Cypress passaram. Nenhuma alteração foi feita no tratamento Cypress.
+- O setup Playwright criou estado válido, reutilizou-o em 360 ms e, após expiração deliberada do cookie de sessão, regenerou-o em 10,1 segundos. A execução subsequente reutilizou o novo estado em 87 ms, sem gerar outro magic link e sem HTTP 429.
+- Typecheck, ESLint, contrato dos 108 casos, coleta Playwright e verificação binária do Cypress foram aprovados.
 
 ## Fase 3 — Fixtures
 
@@ -725,24 +743,24 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 ## Configuração e segurança
 
 - ⏳ Reaproveitar os tipos úteis de runtime config.
-- ⏳ Separar configuração pública de segredos.
-- ⏳ Preservar seleção DEV/HT.
-- ⏳ Validar todas as variáveis obrigatórias.
-- ⏳ Impedir logs de credenciais e tokens.
+- ✅ Separar configuração pública de segredos.
+- ✅ Preservar seleção DEV/HT.
+- ✅ Validar todas as variáveis obrigatórias.
+- ✅ Impedir logs de credenciais e tokens.
 - ⏳ Auditar campos de configuração sem uso.
-- ⏳ Manter configurações locais fora do Git.
+- ✅ Manter configurações locais fora do Git.
 
 ## Autenticação
 
-- ⏳ Criar setup de autenticação.
-- ⏳ Gerar magic link com segurança.
-- ⏳ Salvar `storageState`.
-- ⏳ Validar sessão em `/api/auth/me`.
-- ⏳ Suportar contexto não autenticado.
-- ⏳ Garantir que `storageState` não seja publicado.
-- ⏳ Verificar comportamento após expiração da sessão.
-- ⏳ Medir quantidade de autenticações por execução.
-- ⏳ Validar ausência de HTTP 429 causado pela suíte.
+- ✅ Criar setup de autenticação.
+- ✅ Gerar magic link com segurança.
+- ✅ Salvar `storageState`.
+- ✅ Validar sessão em `/api/auth/me`.
+- ✅ Suportar contexto não autenticado.
+- ✅ Garantir que `storageState` não seja publicado.
+- ✅ Verificar comportamento após expiração da sessão.
+- ✅ Medir quantidade de autenticações por execução.
+- ✅ Validar ausência de HTTP 429 causado pela suíte.
 
 ## Fixtures
 
@@ -1040,6 +1058,17 @@ Use esta seção para registrar futuras decisões arquiteturais. Nenhuma decisã
 - **Consequências negativas:** a coleta Playwright contém zero testes até o início das fases de autenticação e smoke.
 - **Fases afetadas:** 1, 2 e 5.
 
+### ADR-009 — Estado autenticado validado e vinculado ao contexto de execução
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** um `storageState` existente pode estar expirado ou ter sido criado para outro ambiente ou usuário de teste; arquivos de setup também podem expor segredos por meio de artefatos automáticos.
+- **Decisão:** validar `/api/auth/me` antes da reutilização, associar o estado a um fingerprint sem segredos do ambiente e usuário, recriar estado inválido, restringir os arquivos a `0600` e desativar screenshot, vídeo e trace apenas no projeto de autenticação.
+- **Alternativas consideradas:** reutilizar qualquer arquivo existente; regenerar em toda execução; manter artefatos de falha do setup.
+- **Consequências positivas:** reduz consumo de magic links, impede reutilização cruzada e diminui risco de vazamento.
+- **Consequências negativas:** adiciona um arquivo privado de metadados e torna o diagnóstico do setup deliberadamente mais textual e sanitizado.
+- **Fases afetadas:** 2, 3, 5, 6, 7 e 8.
+
 # Lições Aprendidas
 
 Esta seção deverá ser atualizada ao longo da migração com evidências concretas, evitando recomendações genéricas.
@@ -1087,3 +1116,23 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** a verificação foi executada com acesso apropriado ao cache.
 - **Resultado:** Cypress permaneceu íntegro; lint, typecheck e contrato dos 108 casos continuaram aprovados.
 - **Aplicação futura:** diferenciar falha de permissão do ambiente de falha real do runner durante as validações.
+
+## Lições da Fase 2 — Autenticação
+
+### 2026-07-07 — Geração assíncrona e falha segura
+
+- **Situação:** o setup precisou gerar um novo magic link pelo Admin para criar o primeiro estado autenticado.
+- **Problema ou descoberta:** a ação permaneceu em `Gerando...` por mais de 120 segundos; no mesmo período, os smokes Cypress falharam no Portal com o erro React `#418`.
+- **Causa:** indisponibilidade ou lentidão temporária do Admin, confirmada pela reprodução independente do runner; o serviço voltou a concluir a mesma operação sem mudança na implementação.
+- **Ação tomada:** a espera foi vinculada ao estado semântico `Copiar link`, limitada a 60 segundos, e qualquer estado parcial passou a ser removido.
+- **Resultado:** após a recuperação do ambiente, o setup criou e validou o estado; durante a falha, não expôs token, cookie ou credencial nem deixou `storageState` inválido.
+- **Aplicação futura:** diferenciar falhas do serviço de autenticação de defeitos da suíte e nunca contornar indisponibilidade consumindo silenciosamente um magic link possivelmente expirado.
+
+### 2026-07-07 — React 418 não pertence à autenticação Playwright
+
+- **Situação:** os smokes Cypress falhavam durante a criação da sessão com React `#418`.
+- **Problema ou descoberta:** o erro é um mismatch de hidratação conhecido, já documentado e colocado em quarentena opcional antes desta fase.
+- **Causa:** divergência entre HTML renderizado no servidor e no cliente do Portal/Admin, manifestada no Electron do Cypress; não ocorreu no Chromium do Playwright durante a mesma jornada autenticada.
+- **Ação tomada:** o defeito permaneceu visível por padrão e os smokes foram executados adicionalmente com a quarentena diagnóstica existente.
+- **Resultado:** ambos os smokes passaram com a única exceção conhecida isolada; nenhuma mudança no Cypress ou tolerância genérica foi adicionada ao Playwright.
+- **Aplicação futura:** a fixture de page errors da Fase 3 deverá preservar a política arquitetural: falhar em erros inesperados e tratar qualquer quarentena de forma exata, temporária e rastreável.
