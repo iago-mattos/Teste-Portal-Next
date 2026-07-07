@@ -1,0 +1,1057 @@
+# Migração Cypress para Playwright
+
+> Documento oficial de referência para a migração da suíte de testes do PortalNext.
+>
+> Este documento deve ser atualizado sempre que uma fase mudar de status, uma decisão arquitetural for tomada, um risco for identificado ou uma lição relevante for aprendida.
+
+## Status do programa
+
+- **Estado geral:** ⏳ Planejamento concluído; implementação não iniciada.
+- **Framework atual:** Cypress 15.17.0 com TypeScript.
+- **Framework alvo:** Playwright Test com TypeScript.
+- **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
+- **Última atualização:** 07/07/2026.
+
+## Legenda de status
+
+- ⏳ Não iniciado
+- 🚧 Em andamento
+- ✅ Concluído
+
+# Visão Geral
+
+## Objetivo da migração
+
+Migrar de forma gradual e verificável a suíte E2E do PortalNext de Cypress para Playwright, preservando a cobertura funcional existente e melhorando a arquitetura, a estabilidade, a rastreabilidade, a reutilização de código e a capacidade de crescimento da automação.
+
+A migração não será considerada concluída apenas porque os arquivos foram convertidos. A conclusão exige equivalência comprovada de casos, comportamentos, pré-condições, pendências conhecidas, integrações e evidências.
+
+## Motivação
+
+A suíte atual já representa 108 casos funcionais e inclui jornadas que atravessam o PortalNext, o Admin e o AEJS/SCCI. O crescimento sobre a arquitetura atual tende a ampliar problemas já observados:
+
+- autenticação baseada em magic link de uso único;
+- risco de HTTP 429 por autenticações repetidas;
+- retries globalmente desabilitados para não consumir tokens;
+- estado persistente compartilhado entre testes;
+- hooks complexos para restaurar propostas;
+- comandos globais e configuração acoplados ao Cypress;
+- estado em memória usado para ligar specs do Portal e do AEJS;
+- seletores amplos, uso de jQuery, `:visible`, `.last()` e `force: true`;
+- sincronização por mensagens visuais que podem representar uma gravação anterior;
+- diagnóstico de fluxos longos baseado principalmente em vídeos, screenshots e logs;
+- geração e consolidação manual de relatórios Mochawesome;
+- dificuldade de paralelizar com segurança os testes que alteram dados no servidor.
+
+O Playwright fornece recursos nativos que se encaixam nesses problemas: fixtures tipadas, contextos isolados, `storageState`, locators estritos, assertions web-first, espera de rede, projetos, annotations, múltiplos reporters e Trace Viewer.
+
+## Escopo da migração
+
+Estão incluídos no escopo:
+
+- os 20 specs ativos em `cypress/e2e`;
+- os 108 casos funcionais catalogados nos 13 specs de cliente;
+- os smoke tests de autenticação e abertura de proposta;
+- as rotinas auxiliares de descoberta de massa que continuarem necessárias;
+- os testes de preparação, confirmação e cancelamento de propostas;
+- as validações do Portal no AEJS/SCCI;
+- os comandos customizados atualmente mantidos em `cypress/support`;
+- o catálogo de casos e pendências conhecidas;
+- configuração DEV e HT;
+- carregamento e validação de variáveis de ambiente;
+- política de autorização para testes mutáveis;
+- relatórios, screenshots, vídeos, traces e evidências por caso;
+- scripts de lint, typecheck e validação do contrato de testes;
+- integração com GitHub Actions;
+- documentação operacional relacionada à execução da suíte.
+
+## Fora do escopo
+
+Não fazem parte desta migração, salvo decisão futura registrada neste documento:
+
+- alterar código funcional do PortalNext, Admin, AEJS ou SCCI;
+- corrigir defeitos funcionais identificados pelos testes;
+- substituir ou redesenhar APIs de produto;
+- criar massa de produção ou executar mutações fora de ambientes autorizados de QA;
+- migrar os arquivos históricos de `Portal-antigo` como suíte ativa;
+- ampliar imediatamente a matriz para todos os navegadores;
+- executar testes em paralelo antes de existir isolamento de massa comprovado;
+- reescrever documentação histórica apenas por mudança de terminologia;
+- remover Cypress antes da equivalência funcional e operacional da suíte Playwright;
+- introduzir testes de componente, performance, carga ou segurança como parte obrigatória desta iniciativa.
+
+# Situação Atual
+
+## Resumo da arquitetura Cypress
+
+A suíte atual está organizada da seguinte forma:
+
+- `cypress/e2e`: specs de smoke, diagnóstico, testes funcionais e integrações;
+- `cypress/support/commands.ts`: comandos globais de autenticação, navegação, abertura de propostas e interação com campos;
+- `cypress/support/e2e.ts`: inicialização de configuração e quarentena do erro React 418;
+- `cypress/support/client-cases.ts`: registro dinâmico dos casos funcionais e pendências;
+- `cypress/config/runtime-config.ts`: tipos e carregamento da configuração de Portal e AEJS;
+- `cypress/config/integration-data.ts`: cenários e dados usados nas integrações;
+- `cypress/config/known-pending.json`: pendências conhecidas;
+- `cypress.config.ts`: configuração do runner, tasks Node, reporter, evidências e filtros;
+- `scripts`: validação do contrato de testes e opt-in para mutações;
+- `.github/workflows/ci.yml`: quality gate e smoke manual.
+
+Não existe atualmente um diretório `cypress/fixtures`. Os dados são mantidos em módulos TypeScript, configurações locais ignoradas pelo Git e variáveis de ambiente.
+
+## Quantidade de testes
+
+Baseline confirmada antes do início da implementação:
+
+- **20 specs ativos** em `cypress/e2e`;
+- **13 specs funcionais** de cliente;
+- **3 specs de integração**;
+- **4 specs** de smoke, setup ou diagnóstico;
+- **108 casos funcionais catalogados**;
+- **107 casos funcionais implementados**;
+- **1 pendência conhecida:** `PROP-03`;
+- casos adicionais de smoke, preparação, transição e validação AEJS fora do catálogo funcional de 108 casos.
+
+## Principais componentes da suíte
+
+- Autenticação do Portal via magic link.
+- Geração de link pelo Admin quando as credenciais estão configuradas.
+- Cache de sessão Cypress entre specs.
+- Listagem e abertura de propostas por massa configurada.
+- Testes das jornadas de login, propostas, timeline e detalhamento.
+- Testes de participantes, cônjuge, renda, motivo, imóvel e garantidores.
+- Preparação controlada de propostas para integração.
+- Confirmação e cancelamento de propostas.
+- Login e navegação no AEJS/SCCI baseado em ExtJS.
+- Validação no AEJS da mesma operação preparada no Portal.
+- Catálogo de IDs funcionais e controle de pendências.
+- Preservação de vídeos por ambiente e ID de caso.
+
+## Dependências importantes
+
+- Node.js 24.x.
+- npm 11.9.0.
+- TypeScript com modo estrito.
+- Cypress 15.17.0.
+- Mochawesome, Mochawesome Merge e Mochawesome Report Generator.
+- ESLint e typescript-eslint.
+- Variáveis e segredos do Portal, Admin e AEJS.
+- Massas DEV/HT mantidas localmente ou pelo CI.
+- Disponibilidade dos ambientes PortalNext, Admin e AEJS/SCCI.
+
+## Pontos críticos identificados
+
+1. **Magic links de uso único:** impedem retries indiscriminados e tornam autenticações repetidas caras e arriscadas.
+2. **Massa compartilhada:** vários testes alteram a mesma proposta e dependem de restauração posterior.
+3. **Paralelismo inseguro:** testes mutáveis não podem ser paralelizados até existir massa independente.
+4. **Estado entre specs:** o fluxo Portal para AEJS usa contexto em memória no processo do runner.
+5. **Seletores frágeis:** o AEJS concentra seletores amplos e interações forçadas.
+6. **Sincronização:** mensagens antigas da UI podem gerar falso positivo sobre novas gravações.
+7. **Hooks complexos:** cônjuge e garantidores dependem de setup e teardown condicionais.
+8. **Relatórios fragmentados:** resultados Mochawesome precisam de merge e geração adicional.
+9. **Diagnóstico limitado:** vídeos ajudam visualmente, mas não preservam todo o contexto de DOM e rede.
+10. **Configuração acoplada:** globals, `Cypress.expose`, `cy.task` e `Chainable` espalham dependências do framework.
+11. **Defeitos conhecidos:** pendências e divergências funcionais precisam de representação mais explícita no runner.
+12. **Crescimento:** duplicação de navegação, locators e preenchimento aumentará o custo de cada novo caso.
+
+# Objetivos Técnicos
+
+## Melhorias esperadas
+
+- Estabelecer uma arquitetura baseada em fixtures tipadas e dependências explícitas.
+- Reutilizar autenticação sem consumir magic links em cada teste.
+- Separar testes de leitura, mutação, smoke e integração por projetos e tags.
+- Encapsular interações repetidas em Page Objects e componentes focados.
+- Adotar locators orientados ao usuário e contratos explícitos de automação.
+- Usar assertions web-first e espera de rede no lugar de sincronização indireta.
+- Produzir traces, relatórios e attachments úteis para diagnóstico.
+- Tornar o fluxo Portal para AEJS rastreável como uma única jornada lógica.
+- Preparar a suíte para paralelismo seletivo quando houver massa independente.
+- Reduzir o custo marginal de inclusão de novos casos.
+
+## Problemas que queremos eliminar
+
+- Consumo repetido de magic links.
+- Dependência de ordem ou memória compartilhada entre specs.
+- Seletores ambíguos que escolhem silenciosamente o primeiro ou último elemento.
+- Uso desnecessário de `force: true`.
+- Esperas fixas ou baseadas em indicadores que não comprovam a operação atual.
+- Comandos globais que escondem dependências.
+- Duplicação de preenchimento e navegação.
+- Hooks de limpeza difíceis de garantir.
+- Mistura entre seleção de caso e opções de reporter.
+- Scripts adicionais de merge de resultados quando reporters nativos forem suficientes.
+- Remoção prematura de evidências ou cobertura durante a transição.
+
+## Benefícios esperados
+
+- Maior estabilidade e menor flakiness de sincronização.
+- Menor tempo para diagnosticar falhas em CI e integrações longas.
+- Melhor legibilidade e manutenção do código de testes.
+- Tipagem TypeScript mais natural e segura.
+- Execução mais eficiente dos testes de leitura.
+- Evolução controlada para centenas de casos.
+- Relatórios mais claros sobre passed, failed, skipped, fixme e expected failures.
+- Menor acoplamento entre os testes e o framework anterior.
+- Maior segurança para executar testes mutáveis.
+
+# Decisões Arquiteturais
+
+## Estrutura de pastas
+
+A estrutura alvo será criada somente durante as fases correspondentes:
+
+```text
+playwright.config.ts
+playwright/
+  .auth/
+tests/
+  setup/
+  smoke/
+  functional/
+    proposal-form/
+  integrations/
+  fixtures/
+  pages/
+  components/
+  services/
+  config/
+  test-data/
+  helpers/
+  types/
+  reporters/
+```
+
+Decisões:
+
+- `playwright/.auth` será ignorado pelo Git.
+- Specs serão organizados por domínio e intenção, não por dependência técnica de setup.
+- Dados não serão chamados de fixtures quando forem apenas massa estática; ficarão em `test-data`.
+- Fixtures significarão dependências com lifecycle gerenciado pelo Playwright.
+- A definição detalhada das responsabilidades e dependências permitidas entre essas camadas está em `docs/PLAYWRIGHT_ARCHITECTURE.md`.
+
+## Organização dos testes
+
+- Smoke tests permanecerão pequenos e independentes.
+- Testes funcionais serão agrupados por domínio do Portal.
+- Testes de leitura e mutação serão identificados por tags ou projetos distintos.
+- Os projetos lógicos previstos são `setup`, `smoke`, `functional-readonly`, `functional-mutation` e `integration`.
+- Casos manterão seus IDs atuais, como `LOGIN-01`, `PROP-14` e `GAR-PJ-08`.
+- O título deverá preservar ID e descrição funcional.
+- Filtros serão feitos por tag, projeto ou `grep`, nunca por opções de reporter.
+- O catálogo funcional continuará validando duplicidades, implementações ausentes e pendências conhecidas.
+
+## Estratégia para autenticação
+
+- A autenticação será um setup explícito.
+- O magic link será consumido apenas quando necessário para criar uma sessão válida.
+- A sessão será validada pelo endpoint de autenticação antes de ser reutilizada.
+- A autenticação pelo Admin continuará protegida contra ambientes não autorizados.
+- Credenciais e tokens nunca serão registrados em logs, screenshots ou código versionado.
+- Se uma API oficial e segura permitir autenticação mais direta no futuro, a mudança exigirá registro de decisão.
+
+## Uso de `storageState`
+
+- O estado autenticado será salvo em diretório ignorado pelo Git.
+- Nenhum arquivo de `storageState` será publicado como artefato de CI.
+- Testes sem autenticação usarão contexto limpo.
+- Testes que alteram estado no servidor não compartilharão automaticamente a mesma conta ou massa em paralelo.
+- A validade do estado será comprovada antes do início do conjunto dependente.
+
+## Uso de fixtures
+
+- Fixtures deverão ter responsabilidade única e tipagem explícita.
+- Setup e teardown relacionados deverão permanecer na mesma fixture.
+- Fixtures serão criadas sob demanda, evitando setup global desnecessário.
+- Serão consideradas fixtures para configuração, sessão autenticada, Portal, proposta, captura de erros e cenários mutáveis.
+- Fixtures de worker só serão usadas quando o recurso puder ser compartilhado com segurança.
+
+## Uso de Page Objects
+
+- Page Objects encapsularão navegação e interação repetida.
+- Assertions funcionais específicas permanecerão preferencialmente nos specs.
+- Não será criado um Page Object diferente apenas para espelhar cada arquivo de teste.
+- Não será criado um único Page Object monolítico para todo o cadastro.
+- Os candidatos iniciais são Admin de acesso, lista de propostas, proposta e AEJS.
+
+## Componentes reutilizáveis
+
+Componentes serão usados quando um padrão de interação se repetir em mais de um domínio, especialmente:
+
+- tabs da proposta;
+- combobox pesquisável;
+- dialogs e alert dialogs;
+- campos obrigatórios e opcionais;
+- endereço e preenchimento por CEP;
+- grid ExtJS;
+- janela ExtJS;
+- tabs ExtJS;
+- ações de salvar e aguardar resposta.
+
+## Estratégia para Portal ↔ AEJS
+
+- A estratégia preferencial é um teste por cenário de integração.
+- O teste preparará a proposta no Portal e validará a mesma operação no AEJS.
+- Portal e AEJS poderão usar páginas ou contextos distintos dentro do mesmo teste.
+- A operação ficará em memória local do teste, sem depender de estado global entre specs.
+- As etapas serão registradas separadamente no relatório.
+- Se houver necessidade comprovada de separar preparação e validação em projetos, o contexto será persistido como artefato explícito e validado, com project dependency documentada.
+- Testes de integração continuarão protegidos pelo opt-in de mutação.
+
+## Organização dos relatórios
+
+- O relatório HTML nativo será a principal visão humana.
+- JSON ou JUnit será usado quando necessário para CI ou integração externa.
+- Trace será preservado em falhas conforme política de segurança e retenção.
+- Screenshot será gerado em falha.
+- Vídeo será preservado em falha e, quando exigido, por caso de integração.
+- IDs funcionais e steps deverão aparecer nos relatórios.
+- Credenciais, tokens e arquivos de autenticação não poderão ser anexados.
+- Mochawesome permanecerá apenas enquanto Cypress estiver ativo ou se existir dependência externa comprovada.
+
+## Estratégia para CI/CD
+
+- Cypress e Playwright coexistirão durante a migração.
+- O smoke Playwright começará como job manual ou não bloqueante.
+- Cada módulo migrado será comparado com o correspondente Cypress.
+- O Playwright se tornará bloqueante somente após estabilidade e equivalência comprovadas.
+- Os jobs serão separados por risco: quality, smoke, funcional de leitura, mutação e integração.
+- Testes mutáveis manterão concurrency control e ambiente protegido.
+- Browsers e dependências do Playwright serão instalados explicitamente no CI.
+- Artefatos incluirão relatório e resultados, nunca `storageState`.
+
+## Convenções de nomenclatura
+
+- Specs: `*.spec.ts`.
+- Setup: `*.setup.ts`.
+- Page Objects: `*.page.ts`.
+- Componentes: `*.component.ts`.
+- Fixtures: `*.fixture.ts` ou arquivo agregador `test.ts`.
+- Helpers: nomes orientados à responsabilidade, sem sufixo genérico desnecessário.
+- IDs funcionais existentes serão preservados sem renumeração.
+- Tags mínimas previstas: `@smoke`, `@functional`, `@readonly`, `@mutation`, `@integration` e tag do ID quando necessário.
+- Métodos e arquivos usarão inglês técnico consistente; descrições funcionais dos casos poderão permanecer em português.
+
+## Estratégia de paralelismo
+
+- A configuração inicial usará um worker para os conjuntos que compartilham massa.
+- Testes mutáveis serão seriais até existir proposta independente por worker ou reset confiável.
+- Testes de leitura poderão ser paralelizados somente após validação de autenticação e limites do ambiente.
+- AEJS começará serial devido ao custo, ao legado ExtJS e à massa compartilhada.
+- `fullyParallel` não será habilitado globalmente no início.
+- Aumento de workers exigirá medição de estabilidade, tempo e impacto no ambiente.
+
+## Organização da configuração
+
+- A configuração será tipada e carregada no processo Node.
+- Variáveis de ambiente continuarão como fonte prioritária no CI.
+- Configurações locais continuarão ignoradas pelo Git.
+- DEV e HT permanecerão explicitamente separados.
+- Configuração pública e segredos não serão misturados.
+- O `Proxy` baseado em `Cypress.expose` será substituído por dependências explícitas.
+- Campos sem uso serão removidos somente após auditoria e equivalência comprovada.
+
+## Tratamento de erros
+
+- Erros de página serão coletados e avaliados por fixture automática.
+- Erros inesperados do browser deverão falhar o teste.
+- A quarentena do React 418 permanecerá explícita, temporária, rastreável e com data de revisão.
+- Não serão criadas listas genéricas de exceções ignoradas.
+- Falhas de rede relevantes deverão incluir método, URL segura, status e etapa no diagnóstico.
+- `test.fixme` será usado para automação ainda inviável ou pré-condição externa ausente.
+- Expected failure será usado somente para defeito funcional conhecido e documentado.
+- Um unexpected pass deverá ser tratado como sinal de possível correção do produto.
+
+## Navegadores
+
+- Chromium será o primeiro e único browser obrigatório durante a migração inicial.
+- Firefox e WebKit serão avaliados após paridade funcional em Chromium.
+- A matriz futura respeitará os navegadores oficialmente suportados pelo Portal e pelo AEJS.
+
+# Estratégia de Migração
+
+## Fase 1 — Infraestrutura
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Adicionar a infraestrutura mínima do Playwright em coexistência com Cypress, sem migrar comportamentos funcionais.
+
+### Arquivos envolvidos
+
+- `package.json`
+- `package-lock.json`
+- `playwright.config.ts`
+- `tsconfig.json`
+- `eslint.config.mjs`
+- `.gitignore`
+- diretórios base em `tests` e `playwright`
+
+### Critérios para iniciar
+
+- Documento oficial aprovado.
+- Versões de Node, npm e Playwright definidas.
+- Estratégia de coexistência aceita pela equipe.
+
+### Critérios para concluir
+
+- Playwright instalado e configurado.
+- TypeScript e ESLint reconhecem os arquivos Playwright.
+- Cypress continua executável sem regressão.
+- Configuração base documentada.
+- Lint e typecheck aprovados.
+
+### Dependências
+
+- Aprovação deste plano.
+- Acesso ao registro de pacotes e browsers no ambiente de desenvolvimento e CI.
+
+## Fase 2 — Autenticação
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Implementar autenticação segura e reutilizável com `storageState`, preservando as proteções existentes para magic link e Admin.
+
+### Arquivos envolvidos
+
+- `tests/setup/auth.setup.ts`
+- fixtures de autenticação
+- configuração runtime
+- `playwright.config.ts`
+- `.gitignore`
+
+### Critérios para iniciar
+
+- Fase 1 concluída.
+- Variáveis e credenciais necessárias disponíveis.
+- Fluxo atual de geração de acesso documentado e reproduzível.
+
+### Critérios para concluir
+
+- Magic link consumido no máximo uma vez por estado autenticado criado.
+- Estado validado em `/api/auth/me`.
+- Arquivo de autenticação fora do Git e dos artefatos.
+- Cenários autenticado e não autenticado suportados.
+- Nenhum segredo exposto em log, screenshot, vídeo ou trace.
+- Execuções repetidas sem aumento indevido de autenticações ou HTTP 429.
+
+### Dependências
+
+- Admin ou access URL válido.
+- Disponibilidade do Portal e endpoint de sessão.
+
+## Fase 3 — Fixtures
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Criar a camada de fixtures tipadas para configuração, sessão, páginas e tratamento de erros.
+
+### Arquivos envolvidos
+
+- `tests/fixtures/test.ts`
+- fixtures específicas
+- configuração runtime
+- tipos compartilhados
+
+### Critérios para iniciar
+
+- Fases 1 e 2 concluídas.
+- Responsabilidades de cada fixture definidas.
+
+### Critérios para concluir
+
+- Configuração acessível sem globals.
+- Fixtures possuem setup e teardown claros.
+- Fixtures não utilizadas não executam setup desnecessário.
+- Erros de página são capturados e tratados.
+- Testes básicos comprovam o lifecycle.
+- Tipagem forte sem `any` injustificado.
+
+### Dependências
+
+- Estratégia de autenticação estabilizada.
+- Política de tratamento de erros definida.
+
+## Fase 4 — Componentes compartilhados
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Criar Page Objects e componentes mínimos necessários para evitar duplicação e padronizar locators.
+
+### Arquivos envolvidos
+
+- `tests/pages`
+- `tests/components`
+- `tests/helpers`
+
+### Critérios para iniciar
+
+- Fixtures principais disponíveis.
+- Interações repetidas inventariadas.
+- Contratos de locator definidos com a equipe do frontend quando necessário.
+
+### Critérios para concluir
+
+- Lista de propostas, proposta e Admin encapsulados quando aplicável.
+- Combobox, tabs e dialogs reutilizáveis.
+- Nenhum Page Object monolítico.
+- Assertions funcionais permanecem legíveis nos specs.
+- Uso de `force` documentado e restrito.
+
+### Dependências
+
+- Fase 3 concluída.
+- Interface do Portal disponível para validação dos locators.
+
+## Fase 5 — Smoke Tests
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Comprovar autenticação, sessão e abertura da proposta padrão com a nova infraestrutura.
+
+### Arquivos envolvidos
+
+- `tests/smoke/auth.spec.ts`
+- `tests/smoke/open-proposal.spec.ts`
+- fixtures e Page Objects relacionados
+
+### Critérios para iniciar
+
+- Fases 1 a 4 concluídas no mínimo necessário.
+- Massa de smoke válida.
+
+### Critérios para concluir
+
+- Smokes Playwright aprovados repetidamente.
+- Resultado equivalente aos dois smokes Cypress atuais.
+- Evidências de falha disponíveis.
+- Nenhum consumo desnecessário de magic link.
+- Execução local e no CI de transição comprovadas.
+
+### Dependências
+
+- Portal, Admin e massa disponíveis.
+- Autenticação estabilizada.
+
+## Fase 6 — Testes Funcionais
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendências e divergências conhecidas.
+
+### Arquivos envolvidos
+
+- specs em `tests/functional`
+- catálogo de casos
+- `known-pending.json`
+- Page Objects, componentes e helpers
+- script de validação do contrato
+
+### Critérios para iniciar
+
+- Smoke estável.
+- Componentes compartilhados disponíveis.
+- Baseline Cypress do módulo registrada.
+- Massa adequada identificada.
+
+### Critérios para concluir
+
+- 108 IDs representados no Playwright.
+- Nenhum ID duplicado ou perdido.
+- Pendências e expected failures corretamente modelados.
+- Cada módulo comparado com Cypress.
+- Setup e teardown comprovados para testes mutáveis.
+- Lint, typecheck e testes do módulo aprovados.
+- Documento atualizado com status e desvios.
+
+### Dependências
+
+- Fases 1 a 5 concluídas.
+- Disponibilidade de massas funcionais.
+- Defeitos conhecidos documentados.
+
+## Fase 7 — Integrações
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Migrar preparação, confirmação, cancelamento e validações AEJS com rastreabilidade ponta a ponta.
+
+### Arquivos envolvidos
+
+- `tests/integrations`
+- Page Object e componentes AEJS
+- dados de integração
+- script de opt-in de mutação
+- configuração AEJS
+
+### Critérios para iniciar
+
+- Funcionalidades de formulário necessárias já migradas.
+- Opt-in de mutação preservado.
+- Massas descartáveis ou controladas disponíveis.
+- Credenciais AEJS válidas.
+
+### Critérios para concluir
+
+- Mesma operação preparada no Portal e validada no AEJS.
+- Fluxo não depende de memória global entre specs.
+- Cada etapa aparece no relatório.
+- Traces e evidências preservados conforme política.
+- Seletores ExtJS encapsulados.
+- Casos de confirmação, cancelamento, documentos e tarefas equivalentes ao Cypress.
+- Execução serial e proteção de massa comprovadas.
+
+### Dependências
+
+- Fases 1 a 6 concluídas no escopo necessário.
+- Portal e AEJS disponíveis.
+- Massa de integração autorizada.
+
+## Fase 8 — CI/CD
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Integrar o Playwright ao pipeline de forma gradual, segura e observável.
+
+### Arquivos envolvidos
+
+- `.github/workflows/ci.yml`
+- scripts de execução em `package.json`
+- configuração de reporters e artefatos
+
+### Critérios para iniciar
+
+- Smoke estável localmente.
+- Estratégia de instalação de browsers definida.
+- Política de retenção e segurança de traces aprovada.
+
+### Critérios para concluir
+
+- Quality gate inclui arquivos Playwright.
+- Smoke Playwright executa no ambiente protegido.
+- Artefatos são publicados sem dados de autenticação.
+- Jobs de leitura, mutação e integração possuem políticas distintas.
+- Playwright torna-se bloqueante apenas após período de comparação aprovado.
+- Concurrency de QA preservada.
+
+### Dependências
+
+- Fases anteriores estáveis conforme o job habilitado.
+- Variáveis e secrets configurados no GitHub.
+
+## Fase 9 — Remoção do Cypress
+
+**Status:** ⏳ Não iniciado
+
+### Objetivo
+
+Remover Cypress e dependências transitórias somente após equivalência completa e aprovação formal.
+
+### Arquivos envolvidos
+
+- `cypress.config.ts`
+- `cypress/e2e`
+- `cypress/support`
+- dependências e scripts Cypress/Mochawesome
+- TypeScript, ESLint, CI e documentação
+
+### Critérios para iniciar
+
+- Todos os módulos no escopo migrados.
+- Comparação Cypress e Playwright aprovada.
+- CI Playwright bloqueante e estável.
+- Nenhuma integração externa depende de Mochawesome ou artefatos Cypress sem substituição.
+- Aprovação explícita do Tech Lead e responsáveis funcionais.
+
+### Critérios para concluir
+
+- Cypress e dependências exclusivas removidos.
+- Nenhum script ou documentação aponta para comandos descontinuados.
+- Playwright executa toda a cobertura esperada.
+- Lint, typecheck, testes e CI aprovados.
+- Evidências históricas necessárias preservadas.
+- Documento atualizado com encerramento, métricas e lições aprendidas.
+
+### Dependências
+
+- Conclusão e aceite das fases 1 a 8.
+- Aprovação formal de cutover.
+
+# Checklist Geral
+
+## Governança e baseline
+
+- ✅ Criar o documento oficial da migração.
+- ✅ Criar o guia oficial da arquitetura final.
+- ⏳ Aprovar o plano com Tech Lead, QA e responsáveis funcionais.
+- ⏳ Registrar baseline de execução Cypress por módulo.
+- ⏳ Confirmar a lista oficial dos 108 casos.
+- ⏳ Confirmar casos adicionais de smoke e integração.
+- ⏳ Registrar pendências e defeitos conhecidos.
+- ⏳ Definir responsáveis por cada fase.
+- ⏳ Definir frequência de atualização deste documento.
+
+## Infraestrutura
+
+- ⏳ Selecionar e fixar a versão do Playwright.
+- ⏳ Adicionar dependência do Playwright.
+- ⏳ Instalar browsers necessários.
+- ⏳ Criar `playwright.config.ts`.
+- ⏳ Configurar Chromium inicial.
+- ⏳ Configurar viewport 1440×900.
+- ⏳ Configurar base URL e timeouts por projeto.
+- ⏳ Configurar TypeScript.
+- ⏳ Configurar ESLint.
+- ⏳ Configurar diretórios de resultados.
+- ⏳ Ignorar `playwright/.auth` e resultados transitórios.
+- ⏳ Garantir coexistência com Cypress.
+
+## Configuração e segurança
+
+- ⏳ Reaproveitar os tipos úteis de runtime config.
+- ⏳ Separar configuração pública de segredos.
+- ⏳ Preservar seleção DEV/HT.
+- ⏳ Validar todas as variáveis obrigatórias.
+- ⏳ Impedir logs de credenciais e tokens.
+- ⏳ Auditar campos de configuração sem uso.
+- ⏳ Manter configurações locais fora do Git.
+
+## Autenticação
+
+- ⏳ Criar setup de autenticação.
+- ⏳ Gerar magic link com segurança.
+- ⏳ Salvar `storageState`.
+- ⏳ Validar sessão em `/api/auth/me`.
+- ⏳ Suportar contexto não autenticado.
+- ⏳ Garantir que `storageState` não seja publicado.
+- ⏳ Verificar comportamento após expiração da sessão.
+- ⏳ Medir quantidade de autenticações por execução.
+- ⏳ Validar ausência de HTTP 429 causado pela suíte.
+
+## Fixtures
+
+- ⏳ Criar fixture base tipada.
+- ⏳ Criar fixture de configuração.
+- ⏳ Criar fixture de sessão autenticada.
+- ⏳ Criar fixture de Portal quando necessária.
+- ⏳ Criar fixture para captura de erros de página.
+- ⏳ Definir fixtures para cenários mutáveis.
+- ⏳ Encapsular teardown junto ao setup.
+- ⏳ Validar lifecycle em sucesso e falha.
+
+## Page Objects e componentes
+
+- ⏳ Criar Page Object do Admin de acesso.
+- ⏳ Criar Page Object da lista de propostas.
+- ⏳ Criar Page Object da proposta.
+- ⏳ Criar Page Object do AEJS.
+- ⏳ Criar componente de tabs.
+- ⏳ Criar componente de combobox pesquisável.
+- ⏳ Criar componente de dialog.
+- ⏳ Criar componente de grid ExtJS.
+- ⏳ Criar componente de janela ExtJS.
+- ⏳ Centralizar espera de gravação por resposta de rede.
+- ⏳ Auditar duplicação após cada módulo.
+
+## Smoke tests
+
+- ⏳ Migrar smoke de autenticação.
+- ⏳ Migrar smoke de abertura de proposta.
+- ⏳ Comparar resultados com Cypress.
+- ⏳ Executar repetidamente sem consumir novos tokens.
+- ⏳ Publicar evidência de falha.
+- ⏳ Validar smoke no CI de transição.
+
+## Testes funcionais
+
+- ⏳ Migrar Login.
+- ⏳ Migrar Minhas Propostas.
+- ⏳ Migrar Linha do Tempo e Alertas.
+- ⏳ Migrar Participantes.
+- ⏳ Migrar Cônjuge.
+- ⏳ Migrar Composição de Renda.
+- ⏳ Migrar Renda do Cônjuge.
+- ⏳ Migrar Renda de Terceiros.
+- ⏳ Migrar Motivo da Contratação.
+- ⏳ Migrar Imóvel.
+- ⏳ Migrar Garantidor PF.
+- ⏳ Migrar Garantidor PJ.
+- ⏳ Migrar Detalhamento.
+- ⏳ Preservar `PROP-03` como pendência conhecida.
+- ⏳ Representar `PROP-14` como defeito conhecido conforme decisão aprovada.
+- ⏳ Validar 108 IDs no contrato de testes.
+- ⏳ Comparar todos os módulos com a baseline Cypress.
+
+## Integrações
+
+- ⏳ Preservar opt-in destrutivo.
+- ⏳ Migrar preparação de proposta.
+- ⏳ Migrar confirmação.
+- ⏳ Migrar cancelamento.
+- ⏳ Migrar login AEJS.
+- ⏳ Migrar abertura de operação.
+- ⏳ Migrar validação de titular e cônjuge.
+- ⏳ Migrar validação de composição de renda.
+- ⏳ Migrar validação de imóvel.
+- ⏳ Migrar garantidores PF e PJ.
+- ⏳ Migrar sócios e interveniente.
+- ⏳ Migrar tarefas e documentos.
+- ⏳ Unificar contexto Portal para AEJS.
+- ⏳ Validar evidências por cenário.
+- ⏳ Confirmar que nenhuma execução usa massa não autorizada.
+
+## Relatórios e debug
+
+- ⏳ Configurar reporter HTML.
+- ⏳ Definir necessidade de JSON e JUnit.
+- ⏳ Configurar screenshot em falha.
+- ⏳ Configurar vídeo conforme política.
+- ⏳ Configurar trace conforme política.
+- ⏳ Adicionar IDs e steps aos relatórios.
+- ⏳ Validar segurança dos artefatos.
+- ⏳ Definir retenção de evidências.
+- ⏳ Confirmar eventual consumidor externo do Mochawesome.
+
+## Paralelismo e performance
+
+- ⏳ Medir duração da baseline Cypress.
+- ⏳ Medir duração Playwright por módulo.
+- ⏳ Manter mutações com um worker inicialmente.
+- ⏳ Identificar testes realmente read-only.
+- ⏳ Validar paralelismo dos read-only.
+- ⏳ Definir massa exclusiva por worker quando possível.
+- ⏳ Validar limites de autenticação e backend.
+- ⏳ Registrar decisão antes de aumentar workers.
+
+## CI/CD
+
+- ⏳ Instalar browser e dependências no CI.
+- ⏳ Adicionar quality checks Playwright.
+- ⏳ Criar job de smoke Playwright.
+- ⏳ Manter job inicialmente não bloqueante.
+- ⏳ Publicar relatório e resultados.
+- ⏳ Impedir publicação de estado autenticado.
+- ⏳ Preservar concurrency de QA.
+- ⏳ Criar jobs distintos por risco quando necessário.
+- ⏳ Tornar Playwright bloqueante após aceite.
+
+## Cutover
+
+- ⏳ Aprovar equivalência dos 108 casos.
+- ⏳ Aprovar equivalência dos casos de integração.
+- ⏳ Aprovar estabilidade do CI.
+- ⏳ Confirmar substituição de relatórios e evidências.
+- ⏳ Atualizar documentação operacional.
+- ⏳ Remover scripts Cypress.
+- ⏳ Remover dependências Cypress e Mochawesome exclusivas.
+- ⏳ Remover configuração Cypress.
+- ⏳ Remover specs Cypress após autorização.
+- ⏳ Executar validação final completa.
+- ⏳ Registrar encerramento e lições aprendidas.
+
+# Critérios de Qualidade
+
+As regras abaixo são obrigatórias para toda implementação da migração:
+
+1. Nunca fazer conversão literal de Cypress para Playwright.
+2. Sempre utilizar as melhores práticas atuais e estáveis do Playwright.
+3. Preferir APIs nativas do Playwright antes de criar abstrações próprias ou instalar plugins.
+4. Evitar duplicação de código sem esconder a intenção funcional do teste.
+5. Manter tipagem forte em TypeScript.
+6. Não usar `any` sem justificativa documentada.
+7. Criar componentes reutilizáveis quando existir repetição real ou contrato de UI compartilhado.
+8. Garantir legibilidade antes de reduzir linhas de código.
+9. Preferir locators por role, label, texto estável ou test ID acordado.
+10. Evitar CSS estrutural, XPath e seleção por posição quando houver alternativa semântica.
+11. Tratar `first`, `last`, `nth` e `force` como exceções que exigem justificativa.
+12. Utilizar assertions web-first para estado de UI.
+13. Aguardar a resposta de rede associada quando ela for a evidência real da operação.
+14. Não usar espera fixa como solução padrão de sincronização.
+15. Manter cada teste independente de resultados produzidos por outro teste.
+16. Não depender de ordem entre specs.
+17. Não paralelizar testes que compartilham estado mutável.
+18. Preservar os IDs funcionais existentes.
+19. Não transformar defeitos funcionais em testes silenciosamente ignorados.
+20. Não registrar credenciais, tokens, cookies ou conteúdo sensível.
+21. Manter setup e teardown relacionados na mesma fixture sempre que possível.
+22. Evitar Page Objects monolíticos e métodos que escondam toda a regra testada.
+23. Manter assertions específicas no teste quando isso melhorar a clareza funcional.
+24. Produzir mensagem de falha que identifique caso, massa e etapa sem expor segredo.
+25. Atualizar este documento durante a mesma etapa que altera uma decisão ou status.
+26. Executar lint, typecheck e testes relevantes antes de considerar uma etapa concluída.
+27. Comparar o módulo Playwright com a baseline Cypress antes do aceite.
+28. Não remover Cypress até o cutover formal.
+
+# Critérios de Aceite
+
+Um módulo será considerado totalmente migrado somente quando todos os critérios aplicáveis forem atendidos:
+
+- Todos os IDs Cypress do módulo existem no Playwright.
+- Nenhum caso adicional ou pendência foi perdido.
+- A intenção funcional e as pré-condições foram preservadas.
+- Os testes não dependem de outro spec ou de ordem de execução.
+- A autenticação não consome magic links desnecessariamente.
+- Locators seguem os critérios de qualidade.
+- Esperas comprovam a ação atual, não um estado visual anterior.
+- Setup e teardown foram validados em sucesso e falha.
+- Testes mutáveis restauram a massa ou usam massa descartável autorizada.
+- Execução paralela está desabilitada quando a massa não é independente.
+- Defeitos conhecidos estão representados explicitamente.
+- Relatório e evidências permitem diagnosticar uma falha.
+- Nenhum segredo aparece nos artefatos.
+- Lint está aprovado.
+- Typecheck está aprovado.
+- Testes do módulo estão aprovados ou possuem falhas esperadas documentadas.
+- Resultados foram comparados com a baseline Cypress.
+- Divergências entre runners foram investigadas e registradas.
+- O checklist e o status da fase foram atualizados.
+- A revisão técnica foi aprovada.
+
+A suíte completa será considerada migrada somente quando:
+
+- os 108 casos funcionais estiverem representados e validados;
+- smoke, transições e integrações estiverem equivalentes;
+- CI Playwright estiver estável e bloqueante onde aplicável;
+- a equipe aprovar formalmente o cutover;
+- não houver consumidor sem substituição para os artefatos Cypress;
+- a remoção do Cypress não reduzir cobertura, segurança ou rastreabilidade.
+
+# Registro de Decisões
+
+Use esta seção para registrar futuras decisões arquiteturais. Nenhuma decisão relevante deve existir apenas em conversa, commit ou pull request.
+
+## Modelo
+
+### ADR-XXX — Título
+
+- **Data:** AAAA-MM-DD
+- **Status:** Proposta | Aceita | Substituída | Rejeitada
+- **Contexto:** problema ou necessidade que motivou a decisão.
+- **Decisão:** abordagem escolhida.
+- **Alternativas consideradas:** opções avaliadas.
+- **Consequências positivas:** benefícios esperados.
+- **Consequências negativas:** custos, riscos ou limitações.
+- **Fases afetadas:** fases da migração impactadas.
+- **Substitui:** ADR anterior, quando aplicável.
+
+## Decisões registradas
+
+### ADR-001 — Migração incremental com coexistência
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** a suíte possui cobertura funcional e integrações que não podem ser interrompidas durante a reescrita.
+- **Decisão:** manter Cypress e Playwright em paralelo até equivalência e cutover formal.
+- **Alternativas consideradas:** substituição integral em uma única entrega.
+- **Consequências positivas:** menor risco de perda de cobertura e comparação direta entre runners.
+- **Consequências negativas:** manutenção temporária de duas infraestruturas.
+- **Fases afetadas:** todas.
+
+### ADR-002 — Chromium como browser inicial
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** a prioridade é alcançar paridade com a execução atual antes de ampliar a matriz.
+- **Decisão:** usar Chromium como browser obrigatório durante a migração inicial.
+- **Alternativas consideradas:** iniciar simultaneamente com Chromium, Firefox e WebKit.
+- **Consequências positivas:** menor superfície de variação durante a paridade.
+- **Consequências negativas:** cobertura cross-browser adiada.
+- **Fases afetadas:** 1, 5, 6, 7 e 8.
+
+### ADR-003 — Autenticação baseada em `storageState`
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** magic links são de uso único e autenticações repetidas já causaram risco de rate limit.
+- **Decisão:** autenticar em setup explícito, validar a sessão e reutilizar `storageState` com segurança.
+- **Alternativas consideradas:** autenticar pela UI em todos os testes.
+- **Consequências positivas:** menos tokens consumidos, menor duração e maior estabilidade.
+- **Consequências negativas:** exige política rigorosa para arquivos de autenticação.
+- **Fases afetadas:** 2, 3, 5, 6 e 8.
+
+### ADR-004 — Paralelismo conservador para testes mutáveis
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** vários testes alteram propostas compartilhadas no servidor.
+- **Decisão:** iniciar conjuntos mutáveis e AEJS com um worker; aumentar paralelismo apenas com massa independente comprovada.
+- **Alternativas consideradas:** habilitar paralelismo global desde o início.
+- **Consequências positivas:** evita colisões e corrupção de massa.
+- **Consequências negativas:** ganho inicial de performance limitado.
+- **Fases afetadas:** 6, 7 e 8.
+
+### ADR-005 — Jornada Portal ↔ AEJS no mesmo teste lógico
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** o Cypress atual transporta contexto de integração por memória entre specs.
+- **Decisão:** preferir um teste por cenário, com etapas e páginas/contextos separados para Portal e AEJS.
+- **Alternativas consideradas:** manter specs separados com estado global; persistir contexto em arquivo entre projetos.
+- **Consequências positivas:** rastreabilidade da mesma operação e independência de ordem/processo.
+- **Consequências negativas:** teste longo e necessidade de steps bem definidos.
+- **Fases afetadas:** 7 e 8.
+
+### ADR-006 — Fixtures e Page Objects focados
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** a suíte possui comandos globais e interações repetidas, mas abstrações excessivas poderiam esconder as regras funcionais.
+- **Decisão:** usar fixtures para lifecycle e Page Objects/componentes para navegação e interação reutilizável, mantendo assertions funcionais nos specs.
+- **Alternativas consideradas:** conversão literal de comandos Cypress; Page Object monolítico.
+- **Consequências positivas:** reutilização sem perda de legibilidade.
+- **Consequências negativas:** exige disciplina sobre os limites de cada abstração.
+- **Fases afetadas:** 3, 4, 5, 6 e 7.
+
+### ADR-007 — Relatório nativo e Trace Viewer como evidência técnica
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** vídeos e screenshots atuais não preservam todo o contexto necessário para diagnosticar fluxos longos.
+- **Decisão:** usar relatório HTML, attachments e traces como evidência técnica principal, preservando vídeo quando necessário.
+- **Alternativas consideradas:** manter Mochawesome como solução permanente.
+- **Consequências positivas:** diagnóstico mais completo e menor necessidade de merge manual.
+- **Consequências negativas:** traces exigem política de segurança e retenção.
+- **Fases afetadas:** 1, 5, 7 e 8.
+
+# Lições Aprendidas
+
+Esta seção deverá ser atualizada ao longo da migração com evidências concretas, evitando recomendações genéricas.
+
+## Modelo de registro
+
+### Data — Fase ou módulo
+
+- **Situação:** contexto observado.
+- **Problema ou descoberta:** o que ocorreu.
+- **Causa:** causa confirmada ou hipótese ainda em validação.
+- **Ação tomada:** mudança realizada.
+- **Resultado:** efeito medido.
+- **Aplicação futura:** regra ou melhoria que deve ser repetida nos próximos módulos.
+
+## Lições iniciais herdadas da suíte atual
+
+1. Uma mensagem de “Rascunho salvo” já visível não comprova que a gravação atual terminou; a nova suíte deve correlacionar ação e resposta de rede.
+2. Magic links de uso único não combinam com retries globais ou autenticação repetida; autenticação e retry precisam de políticas separadas.
+3. Sessão isolada no browser não isola estado persistente no servidor; paralelismo exige massa independente.
+4. Vídeo ajuda a compreender o fluxo, mas não substitui evidência de DOM, console e rede para falhas complexas.
+5. Seletores ExtJS amplos podem clicar no elemento errado sem erro aparente; a nova camada AEJS precisa impor escopo e unicidade.
+6. Setup e teardown espalhados em hooks dificultam garantir restauração após falhas parciais; fixtures devem manter o lifecycle junto.
+7. Um caso pendente precisa de motivo e prazo; uma divergência conhecida precisa permanecer visível no resultado.
+8. O fluxo Portal para AEJS deve transportar explicitamente a identidade da operação validada.
+9. A migração deve preservar a segurança das mutações antes de buscar ganho de velocidade.
+10. A equivalência funcional deve ser comprovada caso a caso; quantidade de arquivos convertidos não é métrica suficiente.
