@@ -1,0 +1,80 @@
+import { existsSync } from "node:fs";
+import { defineConfig, devices } from "@playwright/test";
+
+for (const envFile of [".env.local", ".env"]) {
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+    break;
+  }
+}
+
+const portalBaseUrl = process.env.PORTAL_URL?.trim() || undefined;
+const desktopChromium = {
+  ...devices["Desktop Chrome"],
+  viewport: { width: 1440, height: 900 },
+};
+
+export default defineConfig({
+  testDir: "./tests",
+  outputDir: "test-results",
+  fullyParallel: false,
+  forbidOnly: Boolean(process.env.CI),
+  retries: 0,
+  timeout: 30_000,
+  expect: {
+    timeout: 10_000,
+  },
+  reporter: [
+    [process.env.CI ? "dot" : "list"],
+    ["html", { open: "never", outputFolder: "playwright-report" }],
+  ],
+  use: {
+    baseURL: portalBaseUrl,
+    actionTimeout: 10_000,
+    navigationTimeout: 30_000,
+    screenshot: "only-on-failure",
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
+  },
+  projects: [
+    {
+      name: "setup",
+      testDir: "./tests/setup",
+      testMatch: "**/*.setup.ts",
+      workers: 1,
+      use: desktopChromium,
+    },
+    {
+      name: "smoke",
+      testDir: "./tests/smoke",
+      testMatch: "**/*.spec.ts",
+      workers: 1,
+      use: desktopChromium,
+    },
+    {
+      name: "functional-readonly",
+      testDir: "./tests/functional",
+      testMatch: "**/*.spec.ts",
+      grep: /@readonly/,
+      workers: 1,
+      use: desktopChromium,
+    },
+    {
+      name: "functional-mutation",
+      testDir: "./tests/functional",
+      testMatch: "**/*.spec.ts",
+      grep: /@mutation/,
+      workers: 1,
+      use: desktopChromium,
+    },
+    {
+      name: "integration",
+      testDir: "./tests/integrations",
+      testMatch: "**/*.spec.ts",
+      workers: 1,
+      retries: 0,
+      timeout: 15 * 60_000,
+      use: desktopChromium,
+    },
+  ],
+});

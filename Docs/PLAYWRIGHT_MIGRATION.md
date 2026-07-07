@@ -6,9 +6,9 @@
 
 ## Status do programa
 
-- **Estado geral:** ⏳ Planejamento concluído; implementação não iniciada.
+- **Estado geral:** ✅ Fase 1 concluída; Fase 2 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
-- **Framework alvo:** Playwright Test com TypeScript.
+- **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
 - **Última atualização:** 07/07/2026.
 
@@ -372,7 +372,7 @@ Componentes serão usados quando um padrão de interação se repetir em mais de
 
 ## Fase 1 — Infraestrutura
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
@@ -386,7 +386,7 @@ Adicionar a infraestrutura mínima do Playwright em coexistência com Cypress, s
 - `tsconfig.json`
 - `eslint.config.mjs`
 - `.gitignore`
-- diretórios base em `tests` e `playwright`
+- referências aos diretórios base `tests` e `playwright`, criados fisicamente somente quando receberem arquivos reais
 
 ### Critérios para iniciar
 
@@ -698,7 +698,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 - ✅ Criar o documento oficial da migração.
 - ✅ Criar o guia oficial da arquitetura final.
-- ⏳ Aprovar o plano com Tech Lead, QA e responsáveis funcionais.
+- ✅ Aprovar o plano para início da Fase 1.
 - ⏳ Registrar baseline de execução Cypress por módulo.
 - ⏳ Confirmar a lista oficial dos 108 casos.
 - ⏳ Confirmar casos adicionais de smoke e integração.
@@ -708,18 +708,19 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Infraestrutura
 
-- ⏳ Selecionar e fixar a versão do Playwright.
-- ⏳ Adicionar dependência do Playwright.
-- ⏳ Instalar browsers necessários.
-- ⏳ Criar `playwright.config.ts`.
-- ⏳ Configurar Chromium inicial.
-- ⏳ Configurar viewport 1440×900.
-- ⏳ Configurar base URL e timeouts por projeto.
-- ⏳ Configurar TypeScript.
-- ⏳ Configurar ESLint.
-- ⏳ Configurar diretórios de resultados.
-- ⏳ Ignorar `playwright/.auth` e resultados transitórios.
-- ⏳ Garantir coexistência com Cypress.
+- ✅ Selecionar e fixar Playwright 1.61.1.
+- ✅ Adicionar dependência do Playwright.
+- ✅ Instalar Chromium, Chromium Headless Shell e FFmpeg necessários.
+- ✅ Criar `playwright.config.ts`.
+- ✅ Configurar Chromium inicial.
+- ✅ Configurar viewport 1440×900.
+- ✅ Configurar base URL e timeouts por projeto.
+- ✅ Configurar TypeScript.
+- ✅ Configurar ESLint.
+- ✅ Configurar diretórios de resultados.
+- ✅ Ignorar `playwright/.auth` e resultados transitórios.
+- ✅ Adicionar validação de coleta da configuração ao quality gate.
+- ✅ Garantir coexistência com Cypress.
 
 ## Configuração e segurança
 
@@ -817,11 +818,11 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Relatórios e debug
 
-- ⏳ Configurar reporter HTML.
+- ✅ Configurar reporter HTML.
 - ⏳ Definir necessidade de JSON e JUnit.
-- ⏳ Configurar screenshot em falha.
-- ⏳ Configurar vídeo conforme política.
-- ⏳ Configurar trace conforme política.
+- ✅ Configurar screenshot em falha.
+- ✅ Configurar vídeo com retenção em falha.
+- ✅ Configurar trace com retenção em falha.
 - ⏳ Adicionar IDs e steps aos relatórios.
 - ⏳ Validar segurança dos artefatos.
 - ⏳ Definir retenção de evidências.
@@ -831,7 +832,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 - ⏳ Medir duração da baseline Cypress.
 - ⏳ Medir duração Playwright por módulo.
-- ⏳ Manter mutações com um worker inicialmente.
+- ✅ Limitar todos os projetos a um worker inicialmente, até validação segura de paralelismo read-only.
 - ⏳ Identificar testes realmente read-only.
 - ⏳ Validar paralelismo dos read-only.
 - ⏳ Definir massa exclusiva por worker quando possível.
@@ -1028,6 +1029,17 @@ Use esta seção para registrar futuras decisões arquiteturais. Nenhuma decisã
 - **Consequências negativas:** traces exigem política de segurança e retenção.
 - **Fases afetadas:** 1, 5, 7 e 8.
 
+### ADR-008 — Infraestrutura mínima sem implementação prematura
+
+- **Data:** 2026-07-07
+- **Status:** Aceita
+- **Contexto:** a Fase 1 precisa validar Playwright e coexistência sem criar autenticação, fixtures, testes artificiais ou arquivos vazios pertencentes a fases futuras.
+- **Decisão:** instalar Playwright Test 1.61.1 e somente Chromium; configurar os projetos `setup`, `smoke`, `functional-readonly`, `functional-mutation` e `integration`; manter dependências entre projetos e `storageState` desativados até a Fase 2; usar reporters nativos e criar diretórios físicos apenas quando houver arquivos reais.
+- **Alternativas consideradas:** gerar o scaffold padrão com teste de exemplo; criar placeholders para toda a árvore; ativar setup e autenticação incompletos; instalar todos os browsers.
+- **Consequências positivas:** infraestrutura validável, diff pequeno, nenhuma falsa implementação e preservação integral do Cypress.
+- **Consequências negativas:** a coleta Playwright contém zero testes até o início das fases de autenticação e smoke.
+- **Fases afetadas:** 1, 2 e 5.
+
 # Lições Aprendidas
 
 Esta seção deverá ser atualizada ao longo da migração com evidências concretas, evitando recomendações genéricas.
@@ -1055,3 +1067,23 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 8. O fluxo Portal para AEJS deve transportar explicitamente a identidade da operação validada.
 9. A migração deve preservar a segurança das mutações antes de buscar ganho de velocidade.
 10. A equivalência funcional deve ser comprovada caso a caso; quantidade de arquivos convertidos não é métrica suficiente.
+
+## Lições da Fase 1 — Infraestrutura
+
+### 2026-07-07 — Validação sem teste artificial
+
+- **Situação:** a infraestrutura precisava ser validada antes da existência de specs Playwright.
+- **Problema ou descoberta:** a coleta padrão retorna erro quando nenhum teste é encontrado, embora a configuração seja válida.
+- **Causa:** autenticação e smoke pertencem às fases seguintes, e um teste de exemplo não representaria comportamento real do projeto.
+- **Ação tomada:** a configuração passou a ser coletada com a opção nativa `--pass-with-no-tests` no quality gate.
+- **Resultado:** os cinco projetos são carregados e validados sem criar placeholder ou enfraquecer o comando real de execução.
+- **Aplicação futura:** remover a tolerância a zero testes do quality gate quando a suíte possuir cobertura mínima obrigatória definida.
+
+### 2026-07-07 — Coexistência confirmada
+
+- **Situação:** Playwright foi adicionado ao mesmo projeto que mantém Cypress 15.17.0.
+- **Problema ou descoberta:** a verificação do Cypress precisa atualizar seu arquivo de estado no cache do usuário.
+- **Causa:** comportamento do binário Cypress fora do workspace, não regressão causada pela nova dependência.
+- **Ação tomada:** a verificação foi executada com acesso apropriado ao cache.
+- **Resultado:** Cypress permaneceu íntegro; lint, typecheck e contrato dos 108 casos continuaram aprovados.
+- **Aplicação futura:** diferenciar falha de permissão do ambiente de falha real do runner durante as validações.

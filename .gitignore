@@ -6,6 +6,9 @@ cypress/downloads/
 cypress/results/
 cypress/screenshots/
 cypress/videos/
+playwright/.auth/
+playwright-report/
+test-results/
 .env
 .env.local
 .codex-tmp/

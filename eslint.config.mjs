@@ -20,6 +20,9 @@ export default tseslint.config(
       "cypress/results/**",
       "cypress/screenshots/**",
       "cypress/videos/**",
+      "playwright/.auth/**",
+      "playwright-report/**",
+      "test-results/**",
       "Portal-antigo/**",
     ],
   },
@@ -40,7 +43,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["cypress.config.ts"],
+    files: ["cypress.config.ts", "playwright.config.ts"],
     languageOptions: {
       globals: {
         __filename: "readonly",

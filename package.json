@@ -1,7 +1,7 @@
 {
   "name": "portalnext",
   "version": "1.0.0",
-  "description": "Testes automatizados do PortalNext com Cypress e TypeScript",
+  "description": "Testes automatizados do PortalNext com Cypress, Playwright e TypeScript",
   "scripts": {
     "cy:open": "cypress open",
     "cy:run": "npm run cy:run:smoke",
@@ -13,10 +13,16 @@
     "report:merge": "mochawesome-merge \"cypress/results/*.json\" -o cypress/results/mochawesome.json",
     "report:generate": "marge cypress/results/mochawesome.json --reportDir cypress/results --reportFilename mochawesome-report",
     "report:mochawesome": "npm run report:merge && npm run report:generate",
+    "pw:test": "playwright test",
+    "pw:test:list": "playwright test --list",
+    "pw:check": "playwright test --list --pass-with-no-tests",
+    "pw:ui": "playwright test --ui",
+    "pw:report": "playwright show-report",
+    "pw:install": "playwright install chromium",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "check:test-contracts": "node scripts/check-test-contracts.mjs",
-    "check": "npm run typecheck && npm run lint && npm run check:test-contracts",
+    "check": "npm run typecheck && npm run lint && npm run check:test-contracts && npm run pw:check",
     "test": "npm run check"
   },
   "keywords": [],
@@ -29,6 +35,7 @@
   "packageManager": "npm@11.9.0",
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "1.61.1",
     "@types/node": "^25.9.2",
     "cypress": "^15.17.0",
     "eslint": "^9.39.4",
