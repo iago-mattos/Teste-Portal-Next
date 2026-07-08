@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; Fase 6 não iniciada.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1 concluída e 6.2 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** ⏳ Não iniciado
+**Status:** 🚧 Em andamento — Subfase 6.1 concluída
 
 ### Objetivo
 
@@ -672,6 +672,42 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Fases 1 a 5 concluídas.
 - Disponibilidade de massas funcionais.
 - Defeitos conhecidos documentados.
+
+### Subfase 6.1 — Acesso e contrato funcional
+
+**Status:** ✅ Concluída em 08/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/login/login.spec.ts`
+- `tests/config/runtime-config.ts`
+- `tests/pages/proposal.page.ts`
+- `tests/components/portal/proposal-tabs.component.ts`
+- `playwright.config.ts`
+- `scripts/check-test-contracts.mjs`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+- `docs/PLAYWRIGHT_ARCHITECTURE.md`
+
+#### Implementação
+
+- `LOGIN-01` valida que a sessão tokenizada termina no Portal configurado, sem manter o token na URL e com cookie de sessão presente;
+- `LOGIN-02` valida a abertura autenticada da lista sem mensagem de link inválido ou expirado;
+- `LOGIN-03` carrega toda a paginação e confirma a proposta esperada na lista;
+- `LOGIN-04` usa `storageState` vazio no escopo do próprio grupo, valida CPF inválido e comprova que nenhum `POST /api/auth/login` foi enviado;
+- os quatro casos usam `@functional` e `@readonly` e importam somente o agregador oficial de fixtures;
+- paths e CPF inválido passaram a ser públicos, tipados e imutáveis no runtime config, com variáveis de ambiente prioritárias e fallback local transitório;
+- o Page Object da proposta e o componente de abas passaram a validar o contrato acessível estável da tela aberta — heading da proposta e região da subtela — porque os textos internos do formulário não são expostos de forma consistente ao snapshot do Playwright;
+- o contrato mantém os 108 IDs Cypress como baseline e valida um subconjunto Playwright crescente, conhecido e sem duplicidades;
+- a execução Playwright permanece serializada no nível global com `workers: 1`, preservando a sessão e a massa compartilhada até que o paralelismo entre projetos seja validado explicitamente;
+- nenhum token, magic link, access URL ou credencial foi disponibilizado aos specs.
+
+#### Validação
+
+- Playwright: suíte acumulada com setup, smoke e `LOGIN-01` a `LOGIN-04` aprovada com 7 testes em 52,3 segundos;
+- Cypress: `01-login.cy.ts` aprovado com 4 casos em 52 segundos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 4 migrados para Playwright;
+- TypeScript, ESLint, coleta Playwright e verificação de whitespace aprovados;
+- nenhuma mutação de proposta, retry, espera fixa ou abstração sem reutilização foi introduzida.
 
 ## Fase 7 — Integrações
 
@@ -792,7 +828,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Criar o guia oficial da arquitetura final.
 - ✅ Aprovar o plano para início da Fase 1.
 - ⏳ Registrar baseline de execução Cypress por módulo.
-- ⏳ Confirmar a lista oficial dos 108 casos.
+- ✅ Confirmar a lista oficial dos 108 casos.
 - ⏳ Confirmar casos adicionais de smoke e integração.
 - ⏳ Registrar pendências e defeitos conhecidos.
 - ⏳ Definir responsáveis por cada fase.
@@ -872,7 +908,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Testes funcionais
 
-- ⏳ Migrar Login.
+- ✅ Migrar Login — Subfase 6.1.
 - ⏳ Migrar Minhas Propostas.
 - ⏳ Migrar Linha do Tempo e Alertas.
 - ⏳ Migrar Participantes.
@@ -1143,6 +1179,17 @@ Use esta seção para registrar futuras decisões arquiteturais. Nenhuma decisã
 - **Consequências negativas:** adiciona um arquivo privado de metadados e torna o diagnóstico do setup deliberadamente mais textual e sanitizado.
 - **Fases afetadas:** 2, 3, 5, 6, 7 e 8.
 
+### ADR-010 — Contrato incremental de casos durante a coexistência
+
+- **Data:** 2026-07-08
+- **Status:** Aceita
+- **Contexto:** os 108 casos permanecem ativos no Cypress enquanto os módulos são migrados em commits pequenos para Playwright.
+- **Decisão:** manter o catálogo Cypress como baseline completa e validar, a cada subfase, que todo ID Playwright é conhecido, único e pertence aos 108 casos; o contador Playwright crescerá até atingir 108/108.
+- **Alternativas consideradas:** duplicar antecipadamente todo o catálogo em Playwright; exigir 108 specs Playwright desde a primeira subfase; suspender o contrato até o fim da Fase 6.
+- **Consequências positivas:** cada subfase pode terminar consistente, sem placeholders e sem perder rastreabilidade global.
+- **Consequências negativas:** o Cypress continua temporariamente como fonte completa do catálogo durante a coexistência.
+- **Fases afetadas:** 6 e 9.
+
 # Lições Aprendidas
 
 Esta seção deverá ser atualizada ao longo da migração com evidências concretas, evitando recomendações genéricas.
@@ -1280,3 +1327,21 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** a configuração Playwright passou a ler somente `visibleNumber` de `PORTAL_EXPECTED_PROPOSAL_JSON`, mantendo a variável como fonte prioritária e o fallback local durante a coexistência.
 - **Resultado:** o spec permanece desacoplado do Cypress e possui a mesma entrada de massa já disponível para o futuro job Playwright.
 - **Aplicação futura:** migrar apenas os campos de configuração realmente consumidos por cada módulo, preservando precedência de ambiente e validação tipada.
+
+## Lições da Fase 6.1 — Acesso e contrato funcional
+
+### 2026-07-08 — Comprovar autenticação sem reexpor o magic link
+
+- **Situação:** `LOGIN-01` e `LOGIN-02` tratam do acesso tokenizado, mas a arquitetura proíbe disponibilizar tokens aos specs.
+- **Problema ou descoberta:** copiar a leitura Cypress do access URL quebraria a fronteira de segurança construída na Fase 2.
+- **Ação tomada:** o setup permanece responsável por validar origem e presença do token; o spec comprova a sessão resultante, o destino correto e a remoção da query sensível.
+- **Resultado:** os casos preservam a intenção funcional sem gerar outro link nem expor segredo em relatório, screenshot, vídeo ou trace.
+- **Aplicação futura:** specs autenticados devem testar o comportamento pós-autenticação; geração e consumo de credenciais permanecem exclusivamente no setup seguro.
+
+### 2026-07-08 — Contexto não autenticado escopado ao caso
+
+- **Situação:** o projeto funcional usa `storageState` autenticado por padrão, enquanto `LOGIN-04` precisa começar sem sessão.
+- **Problema ou descoberta:** uma fixture global apenas para um caso adicionaria abstração sem reutilização comprovada.
+- **Ação tomada:** o grupo de `LOGIN-04` usa `test.use` nativo com estado vazio e mantém a captura automática de page errors.
+- **Resultado:** o caso executou isolado, confirmou zero requests de login para CPF inválido e não interferiu nos demais testes autenticados.
+- **Aplicação futura:** repetir a abordagem escopada enquanto a necessidade permanecer local; extrair fixture somente quando houver lifecycle reutilizado em outros domínios.

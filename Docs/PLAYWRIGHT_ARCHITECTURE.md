@@ -8,7 +8,7 @@
 
 - **Status:** Arquitetura alvo aprovada para orientar a implementação.
 - **Abrangência:** suíte Playwright completa após a remoção do Cypress.
-- **Última atualização:** 07/07/2026.
+- **Última atualização:** 08/07/2026.
 - **Framework alvo:** Playwright Test com TypeScript em modo estrito.
 - **Browser inicial obrigatório:** Chromium.
 
@@ -1366,6 +1366,19 @@ Registrar uma decisão quando houver:
 - **Impacto operacional:** menos magic links e menor risco de vazamento, com diagnóstico do setup restrito a mensagens sanitizadas.
 - **Riscos:** a primeira execução continua dependente do Admin ou de um access URL válido; sem artefatos visuais, o diagnóstico exige etapas de erro claras.
 - **Critério de revisão:** após a primeira execução E2E validada em DEV e antes da configuração de autenticação no CI.
+- **Substitui:** nenhuma decisão anterior.
+
+### ARCH-003 — Contexto não autenticado escopado
+
+- **Data:** 2026-07-08
+- **Status:** Aceita
+- **Contexto:** o primeiro módulo funcional possui três casos autenticados e um caso que precisa comprovar o login inválido sem sessão, enquanto os projetos funcionais autenticados usam `storageState` por padrão.
+- **Decisão:** usar `test.use` com estado vazio no menor `describe` aplicável; não criar fixture global de página não autenticada até existir lifecycle ou reutilização real em outro domínio.
+- **Alternativas:** criar projeto separado; limpar cookies do contexto autenticado; criar fixture global usada por um único caso.
+- **Impacto nas camadas:** specs podem sobrescrever opções nativas do contexto dentro de escopo explícito; fixtures autenticadas permanecem inalteradas.
+- **Impacto operacional:** mantém um único projeto read-only, não consome outro magic link e garante contexto limpo por teste.
+- **Riscos:** uma necessidade não autenticada recorrente poderá justificar fixture ou projeto próprio no futuro.
+- **Critério de revisão:** quando um segundo domínio funcional exigir contexto não autenticado ou antes de habilitar paralelismo adicional.
 - **Substitui:** nenhuma decisão anterior.
 
 ## Revisões obrigatórias

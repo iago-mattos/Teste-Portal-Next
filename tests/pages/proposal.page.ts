@@ -9,8 +9,8 @@ export class ProposalPage {
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole("heading", {
-      name: "Cadastro da Proposta",
-      level: 2,
+      name: /^Proposta #\d+$/,
+      level: 1,
     });
     this.tabs = new ProposalTabsComponent(page);
   }

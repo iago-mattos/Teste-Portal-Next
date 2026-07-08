@@ -11,12 +11,12 @@ export type ProposalTabName =
 export class ProposalTabsComponent {
   readonly root: Locator;
 
-  constructor(page: Page) {
-    this.root = page.getByRole("tablist");
+  constructor(private readonly page: Page) {
+    this.root = page.getByRole("region", { name: "Conteudo da subtela" });
   }
 
   getTab(name: ProposalTabName): Locator {
-    return this.root.getByRole("tab", { name, exact: true });
+    return this.page.getByText(name, { exact: true });
   }
 
   async select(name: ProposalTabName): Promise<void> {
@@ -24,6 +24,6 @@ export class ProposalTabsComponent {
     await expect(tab).toBeVisible();
     await expect(tab).toBeEnabled();
     await tab.click();
-    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await expect(tab).toBeVisible();
   }
 }

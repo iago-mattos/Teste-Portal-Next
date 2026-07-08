@@ -20,6 +20,7 @@ export default defineConfig({
   testDir: "./tests",
   outputDir: "test-results",
   fullyParallel: false,
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   timeout: 30_000,

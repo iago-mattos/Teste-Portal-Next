@@ -8,10 +8,12 @@ export interface LocalPortalCompatibilityConfig {
   portalUrl?: string;
   accessUrl?: string;
   paths?: {
+    login?: string;
     propostas?: string;
   };
   testData?: {
     cpfComPropostas?: string;
+    cpfInvalido?: string;
     expectedProposal?: {
       visibleNumber?: string;
     };
@@ -23,9 +25,11 @@ export interface PortalRuntimeConfig {
   readonly portalUrl: string;
   readonly paths: Readonly<{
     authMe: "/api/auth/me";
+    login: string;
     proposals: string;
   }>;
   readonly testData: Readonly<{
+    invalidCpf: string;
     expectedProposal: Readonly<{
       visibleNumber: string;
     }>;
@@ -97,6 +101,34 @@ function resolveExpectedProposalNumber(
   }
 }
 
+function resolveInvalidCpf(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): string {
+  const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
+  if (!rawTestData) {
+    return local?.testData?.cpfInvalido?.replace(/\D/g, "") || "11111111111";
+  }
+
+  try {
+    const parsed = JSON.parse(rawTestData) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("o valor precisa ser um objeto JSON");
+    }
+
+    const invalidCpf = (parsed as { cpfInvalido?: unknown }).cpfInvalido;
+    if (invalidCpf !== undefined && typeof invalidCpf !== "string") {
+      throw new Error("cpfInvalido precisa ser texto");
+    }
+
+    return invalidCpf?.replace(/\D/g, "") || "11111111111";
+  } catch (error) {
+    throw new Error("PORTAL_TEST_DATA_JSON possui JSON invalido.", {
+      cause: error,
+    });
+  }
+}
+
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
@@ -119,17 +151,20 @@ export function loadPortalRuntimeConfig(
   }
 
   const proposalsPath = local?.paths?.propostas?.trim() || "/propostas";
+  const loginPath = local?.paths?.login?.trim() || "/login";
 
   return Object.freeze({
     environment: resolvePortalEnvironment(env),
     portalUrl,
     paths: Object.freeze({
       authMe: "/api/auth/me" as const,
+      login: loginPath.startsWith("/") ? loginPath : `/${loginPath}`,
       proposals: proposalsPath.startsWith("/")
         ? proposalsPath
         : `/${proposalsPath}`,
     }),
     testData: Object.freeze({
+      invalidCpf: resolveInvalidCpf(env, local),
       expectedProposal: Object.freeze({
         visibleNumber: resolveExpectedProposalNumber(env, local),
       }),
