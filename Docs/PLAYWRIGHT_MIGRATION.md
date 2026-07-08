@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 4 concluídas; Fase 5 não iniciada.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; Fase 6 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -584,7 +584,7 @@ Criar Page Objects e componentes mínimos necessários para evitar duplicação 
 
 ## Fase 5 — Smoke Tests
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
@@ -594,7 +594,8 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 - `tests/smoke/auth.spec.ts`
 - `tests/smoke/open-proposal.spec.ts`
-- fixtures e Page Objects relacionados
+- `tests/config/runtime-config.ts`
+- fixtures e Page Objects relacionados, sem alteração de responsabilidade
 
 ### Critérios para iniciar
 
@@ -607,12 +608,31 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 - Resultado equivalente aos dois smokes Cypress atuais.
 - Evidências de falha disponíveis.
 - Nenhum consumo desnecessário de magic link.
-- Execução local e no CI de transição comprovadas.
+- Execução local comprovada; ativação e publicação no CI de transição pertencem à Fase 8.
 
 ### Dependências
 
 - Portal, Admin e massa disponíveis.
 - Autenticação estabilizada.
+
+### Implementação realizada em 08/07/2026
+
+- `auth.spec.ts` valida a sessão reutilizada em `/api/auth/me`, o estado `autenticado: true` e a presença do cookie de sessão no contexto autenticado;
+- `open-proposal.spec.ts` abre a lista, carrega todas as páginas, localiza exatamente a proposta configurada e comprova a abertura do cadastro e de suas tabs;
+- ambos os testes importam `test` e `expect` do agregador oficial de fixtures e usam as tags `@smoke` e `@readonly`;
+- o número visível da proposta padrão passou a integrar a configuração pública, tipada e imutável do Playwright;
+- `PORTAL_EXPECTED_PROPOSAL_JSON` permanece como fonte prioritária para CI, com fallback transitório para a configuração local ignorada durante a coexistência;
+- nenhuma fixture, Page Object ou Component novo foi necessário.
+
+### Validação
+
+- a primeira execução Playwright passou os dois smokes e o setup em 33,2 segundos, criando uma sessão válida;
+- a repetição passou em 22,1 segundos e reutilizou o estado autenticado em 86 milissegundos, sem consumir outro magic link;
+- os dois smokes Cypress correspondentes passaram em 34 segundos, comprovando equivalência e coexistência;
+- TypeScript, ESLint, contrato da suíte e coleta dos projetos foram aprovados;
+- autenticação, fixtures, `ProposalsPage`, `ProposalPage` e `ProposalTabsComponent` foram exercitados pelo fluxo real;
+- screenshot, vídeo e trace em falha permanecem configurados nativamente; publicação e retenção no CI serão implementadas na Fase 8;
+- nenhuma funcionalidade da Fase 6 foi antecipada.
 
 ## Fase 6 — Testes Funcionais
 
@@ -843,12 +863,12 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Smoke tests
 
-- ⏳ Migrar smoke de autenticação.
-- ⏳ Migrar smoke de abertura de proposta.
-- ⏳ Comparar resultados com Cypress.
-- ⏳ Executar repetidamente sem consumir novos tokens.
-- ⏳ Publicar evidência de falha.
-- ⏳ Validar smoke no CI de transição.
+- ✅ Migrar smoke de autenticação.
+- ✅ Migrar smoke de abertura de proposta.
+- ✅ Comparar resultados com Cypress.
+- ✅ Executar repetidamente sem consumir novos tokens.
+- ✅ Validar configuração nativa de evidência em falha; publicação aguarda a Fase 8.
+- ⏳ Validar smoke no CI de transição — pertencente à Fase 8.
 
 ## Testes funcionais
 
@@ -1242,3 +1262,21 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** somente Admin, lista, cadastro, tabs, combobox e dialog foram implementados; as demais abstrações permaneceram no roadmap.
 - **Resultado:** a Fase 4 entrega a base necessária para o smoke sem antecipar lógica das fases funcionais e de integração.
 - **Aplicação futura:** criar endereço e salvamento com o primeiro módulo mutável; criar AEJS, grid e janela apenas na Fase 7.
+
+## Lições da Fase 5 — Smoke Tests
+
+### 2026-07-08 — O smoke deve comprovar reutilização, não apenas autenticar
+
+- **Situação:** a primeira execução precisou criar uma sessão e os smokes seguintes deveriam reaproveitá-la sem consumir outro magic link.
+- **Problema ou descoberta:** uma única execução aprovada não comprova a política de reutilização definida para `storageState`.
+- **Ação tomada:** o projeto `smoke` foi executado duas vezes consecutivas com a dependência de setup habilitada.
+- **Resultado:** a segunda execução validou o estado existente em 86 milissegundos e aprovou os dois fluxos sem nova autenticação pelo Admin.
+- **Aplicação futura:** todo módulo autenticado deve preservar a dependência do setup e evitar autenticação própria no spec.
+
+### 2026-07-08 — Massa de smoke precisa funcionar localmente e no CI
+
+- **Situação:** a proposta padrão existia na configuração local de compatibilidade, enquanto o pipeline fornece a mesma expectativa por variável JSON.
+- **Problema ou descoberta:** ler apenas o arquivo local faria o smoke passar no checkout atual e falhar em um checkout limpo de CI.
+- **Ação tomada:** a configuração Playwright passou a ler somente `visibleNumber` de `PORTAL_EXPECTED_PROPOSAL_JSON`, mantendo a variável como fonte prioritária e o fallback local durante a coexistência.
+- **Resultado:** o spec permanece desacoplado do Cypress e possui a mesma entrada de massa já disponível para o futuro job Playwright.
+- **Aplicação futura:** migrar apenas os campos de configuração realmente consumidos por cada módulo, preservando precedência de ambiente e validação tipada.

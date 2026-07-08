@@ -12,6 +12,9 @@ export interface LocalPortalCompatibilityConfig {
   };
   testData?: {
     cpfComPropostas?: string;
+    expectedProposal?: {
+      visibleNumber?: string;
+    };
   };
 }
 
@@ -21,6 +24,11 @@ export interface PortalRuntimeConfig {
   readonly paths: Readonly<{
     authMe: "/api/auth/me";
     proposals: string;
+  }>;
+  readonly testData: Readonly<{
+    expectedProposal: Readonly<{
+      visibleNumber: string;
+    }>;
   }>;
   readonly pageErrors: Readonly<{
     allowReact418Quarantine: boolean;
@@ -61,6 +69,34 @@ function normalizeUrl(value: string, field: string): string {
   }
 }
 
+function resolveExpectedProposalNumber(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): string {
+  const rawExpectedProposal = env.PORTAL_EXPECTED_PROPOSAL_JSON?.trim();
+  if (!rawExpectedProposal) {
+    return local?.testData?.expectedProposal?.visibleNumber?.trim() ?? "";
+  }
+
+  try {
+    const parsed = JSON.parse(rawExpectedProposal) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("o valor precisa ser um objeto JSON");
+    }
+
+    const visibleNumber = (parsed as { visibleNumber?: unknown }).visibleNumber;
+    if (visibleNumber !== undefined && typeof visibleNumber !== "string") {
+      throw new Error("visibleNumber precisa ser texto");
+    }
+
+    return visibleNumber?.trim() ?? "";
+  } catch (error) {
+    throw new Error("PORTAL_EXPECTED_PROPOSAL_JSON possui JSON invalido.", {
+      cause: error,
+    });
+  }
+}
+
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
@@ -92,6 +128,11 @@ export function loadPortalRuntimeConfig(
       proposals: proposalsPath.startsWith("/")
         ? proposalsPath
         : `/${proposalsPath}`,
+    }),
+    testData: Object.freeze({
+      expectedProposal: Object.freeze({
+        visibleNumber: resolveExpectedProposalNumber(env, local),
+      }),
     }),
     pageErrors: Object.freeze({
       allowReact418Quarantine:
