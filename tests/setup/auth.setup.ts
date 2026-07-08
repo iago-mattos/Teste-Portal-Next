@@ -15,6 +15,7 @@ import {
   type PortalAdminAuthConfig,
   type PortalAuthConfig,
 } from "../config/auth-config";
+import { AdminAccessPage } from "../pages/admin-access.page";
 
 interface AuthMetadata {
   fingerprint: string;
@@ -82,52 +83,22 @@ async function generateAccessUrl(
   admin: PortalAdminAuthConfig,
   portalUrl: string,
 ): Promise<string> {
+  const adminAccessPage = new AdminAccessPage(page, admin.url);
   let stage = "abrir login do Admin";
 
   try {
-    await page.goto(`${admin.url}/login`);
+    await adminAccessPage.openLogin();
 
-    if (new URL(page.url()).pathname === "/admin/login") {
+    if (adminAccessPage.isLoginRequired()) {
       stage = "autenticar no Admin";
-      await page.getByLabel("Usuário", { exact: true }).fill(admin.username);
-      await page.getByLabel("Senha", { exact: true }).fill(admin.password);
-      await Promise.all([
-        page.waitForURL((url) => url.pathname === "/admin"),
-        page.getByRole("button", { name: "Entrar", exact: true }).click(),
-      ]);
+      await adminAccessPage.signIn(admin.username, admin.password);
     }
 
     stage = "abrir gerador de acesso";
-    await page.goto(`${admin.url}/pascal`);
-    await expect(
-      page.getByRole("heading", { name: "Backend", level: 1 }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Gerar link de acesso", level: 4 }),
-    ).toBeVisible();
+    await adminAccessPage.openAccessGenerator();
 
-    stage = "preencher CPF do acesso";
-    const cpfInput = page.getByLabel("CPF/CNPJ para o link", { exact: true });
-    await cpfInput.fill("");
-    await cpfInput.pressSequentially(admin.cpf);
-    await cpfInput.blur();
     stage = "gerar magic link";
-    const generateButton = page.getByRole("button", {
-      name: "Gerar link",
-      exact: true,
-    });
-    await expect(generateButton).toBeEnabled();
-    await generateButton.click();
-
-    stage = "aguardar conclusao da geracao";
-    await expect(
-      page.getByRole("button", { name: "Copiar link", exact: true }),
-    ).toBeVisible({ timeout: 60_000 });
-
-    stage = "localizar magic link gerado na interface";
-    const accessField = page.getByLabel("Link de acesso", { exact: true });
-    await expect(accessField).toBeVisible();
-    const accessUrl = await accessField.inputValue();
+    const accessUrl = await adminAccessPage.generateAccessUrl(admin.cpf);
 
     stage = "validar magic link gerado";
     return validateAccessUrl(accessUrl, portalUrl);

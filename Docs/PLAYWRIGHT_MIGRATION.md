@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1, 2 e 3 concluídas; Fase 4 não iniciada.
+- **Estado geral:** ✅ Fases 1 a 4 concluídas; Fase 5 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -520,7 +520,7 @@ Criar a camada de fixtures tipadas para configuração, sessão, páginas e trat
 
 ## Fase 4 — Componentes compartilhados
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
@@ -528,9 +528,16 @@ Criar Page Objects e componentes mínimos necessários para evitar duplicação 
 
 ### Arquivos envolvidos
 
-- `tests/pages`
-- `tests/components`
-- `tests/helpers`
+- `tests/pages/admin-access.page.ts`
+- `tests/pages/proposals.page.ts`
+- `tests/pages/proposal.page.ts`
+- `tests/components/portal/proposal-tabs.component.ts`
+- `tests/components/portal/searchable-combobox.component.ts`
+- `tests/components/portal/dialog.component.ts`
+- `tests/helpers/dates.ts`
+- `tests/helpers/strings.ts`
+- `tests/fixtures/portal.fixture.ts`
+- `tests/setup/auth.setup.ts`
 
 ### Critérios para iniciar
 
@@ -550,6 +557,30 @@ Criar Page Objects e componentes mínimos necessários para evitar duplicação 
 
 - Fase 3 concluída.
 - Interface do Portal disponível para validação dos locators.
+
+### Implementação realizada em 08/07/2026
+
+- `AdminAccessPage` encapsula login, abertura do Backend e geração segura de acesso; o setup de autenticação passou a orquestrar esse Page Object sem duplicar locators;
+- `ProposalsPage` encapsula abertura, prontidão, paginação por resposta real de `/api/portal/propostas`, seleção única do card e navegação para a proposta;
+- `ProposalPage` representa exclusivamente o cadastro editável e compõe tabs, comboboxes pesquisáveis e dialogs;
+- `ProposalTabsComponent` centraliza o tablist único e comprova seleção por `aria-selected`;
+- `SearchableComboboxComponent` usa o atributo funcional `name`, listbox e option sem `force`, posição ou classes visuais;
+- `DialogComponent` trata `dialog` e `alertdialog`, botões e textarea dentro do escopo correto;
+- `dates.ts` fornece parsing estrito de data brasileira e contagem pura de dias úteis;
+- `strings.ts` fornece normalização de whitespace e comparação sem acentos;
+- as fixtures `proposalPage` e `proposalsPage` conectam os Page Objects à página autenticada da Fase 3;
+- nenhum Page Object usa herança, acessa globals, escolhe massa ou contém assertion funcional.
+
+### Validação
+
+- locators de lista, cards, paginação, headings, tablist, tabs e combobox foram confirmados no Portal real antes da implementação;
+- o setup foi forçado a regenerar a sessão e validou o `AdminAccessPage` completo em 12,9 segundos;
+- cinco contratos temporários, removidos após a execução, validaram helpers, integração Fixtures → Page Objects, paginação, abertura de proposta editável, tabs, combobox e dialog;
+- durante a validação isolada, a proposta padrão abriu a jornada de acompanhamento; o smoke Cypress posterior passou esperando o cadastro editável, indicando uma variação dependente de estado ou sessão que deverá ser investigada na Fase 5;
+- TypeScript, ESLint, contrato da suíte e coleta Playwright passaram após a remoção dos contratos temporários;
+- os dois smokes Cypress de autenticação e abertura da proposta passaram com a implementação da Fase 4 presente, comprovando a coexistência entre as suítes;
+- Components ExtJS, endereço, salvamento e Page Object AEJS foram deliberadamente adiados até existirem os fluxos correspondentes nas Fases 6/7;
+- nenhum smoke Playwright, teste funcional ou fluxo Portal → AEJS foi implementado.
 
 ## Fase 5 — Smoke Tests
 
@@ -798,17 +829,17 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Page Objects e componentes
 
-- ⏳ Criar Page Object do Admin de acesso.
-- ⏳ Criar Page Object da lista de propostas.
-- ⏳ Criar Page Object da proposta.
-- ⏳ Criar Page Object do AEJS.
-- ⏳ Criar componente de tabs.
-- ⏳ Criar componente de combobox pesquisável.
-- ⏳ Criar componente de dialog.
-- ⏳ Criar componente de grid ExtJS.
-- ⏳ Criar componente de janela ExtJS.
-- ⏳ Centralizar espera de gravação por resposta de rede.
-- ⏳ Auditar duplicação após cada módulo.
+- ✅ Criar Page Object do Admin de acesso.
+- ✅ Criar Page Object da lista de propostas.
+- ✅ Criar Page Object da proposta.
+- ⏳ Criar Page Object do AEJS — necessário somente na Fase 7.
+- ✅ Criar componente de tabs.
+- ✅ Criar componente de combobox pesquisável.
+- ✅ Criar componente de dialog.
+- ⏳ Criar componente de grid ExtJS — necessário somente na Fase 7.
+- ⏳ Criar componente de janela ExtJS — necessário somente na Fase 7.
+- ⏳ Centralizar espera de gravação por resposta de rede — será implementado com o primeiro fluxo mutável real.
+- ✅ Auditar duplicação após cada módulo.
 
 ## Smoke tests
 
@@ -1185,3 +1216,29 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** a estratégia foi mantida documentada, sem implementação fictícia nesta fase.
 - **Resultado:** a fundação de fixtures foi concluída sem antecipar Services, Helpers ou regras dos módulos mutáveis.
 - **Aplicação futura:** criar a fixture de cenário somente com o primeiro lifecycle real das Fases 6 ou 7, mantendo setup e teardown no mesmo recurso.
+
+## Lições da Fase 4 — Camadas compartilhadas
+
+### 2026-07-08 — Locators validados no produto, não herdados do Cypress
+
+- **Situação:** os comandos Cypress atuais usam jQuery, `:visible`, busca global e seleção por posição em alguns widgets.
+- **Problema ou descoberta:** transportar esses seletores preservaria fragilidade e esconderia contratos acessíveis já disponíveis no Portal.
+- **Ação tomada:** lista, cards, headings, tablist, tabs, comboboxes e campos por `name` foram inspecionados no Portal real antes da implementação.
+- **Resultado:** os Components usam role, nome acessível, `aria-selected`, atributo funcional `name` e escopo sem `force`, `first`, `last` ou classes visuais.
+- **Aplicação futura:** validar cada novo contrato de locator no produto antes de extrair ou migrar a interação correspondente.
+
+### 2026-07-08 — Page Object não decide qual jornada o card representa
+
+- **Situação:** durante a validação isolada, a proposta configurada como padrão abriu `Acompanhar proposta`; posteriormente, o smoke Cypress passou esperando o cadastro editável.
+- **Problema ou descoberta:** a mesma lista pode levar ao cadastro ou ao acompanhamento conforme o estado atual da massa.
+- **Ação tomada:** `ProposalsPage` encapsula a navegação comum e aceita ambas as ações, enquanto `ProposalPage` permanece restrito ao cadastro e valida sua própria prontidão.
+- **Resultado:** nenhuma regra de massa ou fallback silencioso foi escondido no Page Object; a variação dependente de estado ou sessão ficou explícita para a preparação da Fase 5.
+- **Aplicação futura:** investigar a estabilidade da massa e confirmar uma condição inicial editável antes de migrar o smoke de abertura.
+
+### 2026-07-08 — Abstrações adiadas até existir contrato real
+
+- **Situação:** a arquitetura final prevê endereço, componentes ExtJS, AEJS e espera padronizada de gravação.
+- **Problema ou descoberta:** esses elementos ainda não são necessários ao smoke e não foram validados em seus fluxos reais nesta fase.
+- **Ação tomada:** somente Admin, lista, cadastro, tabs, combobox e dialog foram implementados; as demais abstrações permaneceram no roadmap.
+- **Resultado:** a Fase 4 entrega a base necessária para o smoke sem antecipar lógica das fases funcionais e de integração.
+- **Aplicação futura:** criar endereço e salvamento com o primeiro módulo mutável; criar AEJS, grid e janela apenas na Fase 7.
