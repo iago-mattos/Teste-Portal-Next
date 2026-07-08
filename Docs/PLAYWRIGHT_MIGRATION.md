@@ -6,11 +6,11 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 e 2 concluídas; Fase 3 não iniciada.
+- **Estado geral:** ✅ Fases 1, 2 e 3 concluídas; Fase 4 não iniciada.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
-- **Última atualização:** 07/07/2026.
+- **Última atualização:** 08/07/2026.
 
 ## Legenda de status
 
@@ -463,7 +463,7 @@ Implementar autenticação segura e reutilizável com `storageState`, preservand
 
 ## Fase 3 — Fixtures
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
@@ -472,9 +472,12 @@ Criar a camada de fixtures tipadas para configuração, sessão, páginas e trat
 ### Arquivos envolvidos
 
 - `tests/fixtures/test.ts`
-- fixtures específicas
-- configuração runtime
-- tipos compartilhados
+- `tests/fixtures/config.fixture.ts`
+- `tests/fixtures/auth.fixture.ts`
+- `tests/fixtures/portal.fixture.ts`
+- `tests/fixtures/page-errors.fixture.ts`
+- `tests/config/runtime-config.ts`
+- `tests/config/auth-config.ts`
 
 ### Critérios para iniciar
 
@@ -494,6 +497,26 @@ Criar a camada de fixtures tipadas para configuração, sessão, páginas e trat
 
 - Estratégia de autenticação estabilizada.
 - Política de tratamento de erros definida.
+
+### Implementação realizada em 08/07/2026
+
+- composição explícita `configTest → authTest → portalTest → pageErrorsTest → test`;
+- `portalConfig` imutável e tipado em escopo de worker, sem expor credenciais, access URL ou cookies aos specs;
+- `authenticatedContext` em escopo de teste, validando tecnicamente a presença da sessão preparada na Fase 2;
+- `authenticatedPage` em escopo de teste, vinculada ao mesmo contexto autenticado e com teardown delegado às fixtures nativas;
+- `capturePageErrors` automática, observando todas as páginas do contexto, removendo listeners no teardown e falhando para erros inesperados;
+- mensagens, stacks e URLs de page errors sanitizadas antes de attachments ou falhas;
+- React `#418` mantido como quarentena exata, opcional e visível em attachment quando autorizado;
+- configuração pública do Portal separada da configuração privada de autenticação;
+- fixture de cenário mutável deliberadamente não criada sem mecanismo real de reserva/restauração; sua estratégia permanece definida e será implementada junto ao primeiro módulo mutável.
+
+### Validação
+
+- contratos temporários, removidos após a execução, comprovaram configuração congelada, página autenticada, falha automática em `pageerror` inesperado e quarentena exata do React `#418`;
+- autenticação da Fase 2 foi executada com sucesso antes dos contratos das fixtures;
+- os dois smokes Cypress passaram com a quarentena diagnóstica já documentada;
+- TypeScript, ESLint, contrato dos 108 casos e coleta Playwright foram aprovados;
+- nenhum Page Object, Component, Service de domínio, smoke Playwright ou teste funcional foi criado nesta fase.
 
 ## Fase 4 — Componentes compartilhados
 
@@ -764,14 +787,14 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Fixtures
 
-- ⏳ Criar fixture base tipada.
-- ⏳ Criar fixture de configuração.
-- ⏳ Criar fixture de sessão autenticada.
-- ⏳ Criar fixture de Portal quando necessária.
-- ⏳ Criar fixture para captura de erros de página.
-- ⏳ Definir fixtures para cenários mutáveis.
-- ⏳ Encapsular teardown junto ao setup.
-- ⏳ Validar lifecycle em sucesso e falha.
+- ✅ Criar fixture base tipada.
+- ✅ Criar fixture de configuração.
+- ✅ Criar fixture de sessão autenticada.
+- ✅ Criar fixture de Portal quando necessária.
+- ✅ Criar fixture para captura de erros de página.
+- ✅ Definir fixtures para cenários mutáveis — implementação aguarda mecanismo real nas Fases 6/7.
+- ✅ Encapsular teardown junto ao setup.
+- ✅ Validar lifecycle em sucesso e falha.
 
 ## Page Objects e componentes
 
@@ -1136,3 +1159,29 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** o defeito permaneceu visível por padrão e os smokes foram executados adicionalmente com a quarentena diagnóstica existente.
 - **Resultado:** ambos os smokes passaram com a única exceção conhecida isolada; nenhuma mudança no Cypress ou tolerância genérica foi adicionada ao Playwright.
 - **Aplicação futura:** a fixture de page errors da Fase 3 deverá preservar a política arquitetural: falhar em erros inesperados e tratar qualquer quarentena de forma exata, temporária e rastreável.
+
+## Lições da Fase 3 — Fixtures
+
+### 2026-07-08 — Composição explícita e lifecycle sob demanda
+
+- **Situação:** a nova camada precisava fornecer configuração e páginas autenticadas sem reproduzir comandos globais Cypress.
+- **Problema ou descoberta:** uma fixture worker sem dependências ainda exige factory com destructuring válido no runtime Playwright, regra não detectada apenas pelo TypeScript.
+- **Ação tomada:** as fixtures foram encadeadas por responsabilidade e validadas no runner real, mantendo configuração em worker e recursos de browser em escopo de teste.
+- **Resultado:** configuração, contexto autenticado e página são tipados, acíclicos e executados conforme a dependência solicitada.
+- **Aplicação futura:** todo novo fixture deve possuir contrato de runtime, não apenas aprovação de typecheck.
+
+### 2026-07-08 — Page errors como falha técnica observável
+
+- **Situação:** erros do browser não podem ser ignorados quando a assertion principal passa.
+- **Problema ou descoberta:** a política também precisa continuar segura para attachments e preservar a quarentena conhecida sem criar lista genérica de exceções.
+- **Ação tomada:** uma fixture automática passou a coletar erros de todas as páginas, sanitizar diagnóstico, anexar evidência e falhar no teardown; somente o prefixo exato do React `#418` é quarantinado quando autorizado.
+- **Resultado:** contratos de sucesso, falha inesperada e quarentena autorizada foram executados com o comportamento esperado.
+- **Aplicação futura:** novas exceções exigem decisão explícita, filtro exato, responsável e prazo de revisão.
+
+### 2026-07-08 — Nenhuma fixture de cenário sem lifecycle real
+
+- **Situação:** a arquitetura prevê `scenario.fixture.ts`, mas ainda não existe mecanismo oficial de reserva ou restauração de massa Playwright.
+- **Problema ou descoberta:** criar um arquivo placeholder ou uma fixture que apenas devolve dados estáticos anteciparia abstração e confundiria test data com lifecycle.
+- **Ação tomada:** a estratégia foi mantida documentada, sem implementação fictícia nesta fase.
+- **Resultado:** a fundação de fixtures foi concluída sem antecipar Services, Helpers ou regras dos módulos mutáveis.
+- **Aplicação futura:** criar a fixture de cenário somente com o primeiro lifecycle real das Fases 6 ou 7, mantendo setup e teardown no mesmo recurso.

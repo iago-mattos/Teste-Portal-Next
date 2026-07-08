@@ -63,7 +63,7 @@ async function validateStoredSession(
   });
 
   try {
-    const response = await requestContext.get("/api/auth/me", {
+    const response = await requestContext.get(config.authPath, {
       failOnStatusCode: false,
     });
     if (!response.ok()) return false;

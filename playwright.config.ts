@@ -1,9 +1,7 @@
 import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
-import {
-  PORTAL_AUTH_STATE_PATH,
-  resolvePortalBaseUrl,
-} from "./tests/config/auth-config";
+import { PORTAL_AUTH_STATE_PATH } from "./tests/config/auth-config";
+import { resolvePortalBaseUrl } from "./tests/config/runtime-config";
 
 for (const envFile of [".env.local", ".env"]) {
   if (existsSync(envFile)) {

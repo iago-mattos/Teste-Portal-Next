@@ -1,18 +1,9 @@
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
-import { createRequire } from "node:module";
 import { resolve } from "node:path";
-
-interface LocalPortalConfig {
-  portalUrl?: string;
-  accessUrl?: string;
-  paths?: {
-    propostas?: string;
-  };
-  testData?: {
-    cpfComPropostas?: string;
-  };
-}
+import {
+  loadLocalPortalCompatibilityConfig,
+  loadPortalRuntimeConfig,
+} from "./runtime-config";
 
 export interface PortalAdminAuthConfig {
   url: string;
@@ -23,6 +14,7 @@ export interface PortalAdminAuthConfig {
 
 export interface PortalAuthConfig {
   portalUrl: string;
+  authPath: "/api/auth/me";
   proposalsPath: string;
   accessUrl?: string;
   testCpf: string;
@@ -39,26 +31,6 @@ export const PORTAL_AUTH_METADATA_PATH = resolve(
   ".auth",
   "portal.meta.json",
 );
-
-const loadLocalModule = createRequire(resolve("package.json"));
-
-function loadLocalPortalConfig(
-  env: NodeJS.ProcessEnv,
-): LocalPortalConfig | undefined {
-  const environment = env.PORTAL_ENV?.trim().toLowerCase() === "ht" ? "ht" : "dev";
-  const configPath = resolve(
-    environment === "ht"
-      ? "cypress/config/connect.ht.ts"
-      : "cypress/config/connect.ts",
-  );
-
-  if (!existsSync(configPath)) return undefined;
-
-  const localModule = loadLocalModule(configPath) as {
-    portalConnect?: LocalPortalConfig;
-  };
-  return localModule.portalConnect;
-}
 
 function normalizeUrl(value: string, field: string): string {
   try {
@@ -106,41 +78,24 @@ function loadAdminConfig(
   return admin;
 }
 
-export function resolvePortalBaseUrl(
-  env: NodeJS.ProcessEnv = process.env,
-): string | undefined {
-  const local = loadLocalPortalConfig(env);
-  const value = env.PORTAL_URL?.trim() || local?.portalUrl?.trim();
-
-  return value ? normalizeUrl(value, "PORTAL_URL") : undefined;
-}
-
 export function loadPortalAuthConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): PortalAuthConfig {
-  const local = loadLocalPortalConfig(env);
-  const portalUrl = resolvePortalBaseUrl(env);
-
-  if (!portalUrl) {
-    throw new Error(
-      "Configure PORTAL_URL ou o arquivo local de compatibilidade antes de autenticar no Portal.",
-    );
-  }
+  const local = loadLocalPortalCompatibilityConfig(env);
+  const runtime = loadPortalRuntimeConfig(env);
 
   const accessUrl = env.PORTAL_ACCESS_URL?.trim() || local?.accessUrl?.trim();
   const testCpf = (
     env.PORTAL_TEST_CPF ?? local?.testData?.cpfComPropostas ?? ""
   ).replace(/\D/g, "");
-  const proposalsPath = local?.paths?.propostas?.trim() || "/propostas";
 
   return {
-    portalUrl,
-    proposalsPath: proposalsPath.startsWith("/")
-      ? proposalsPath
-      : `/${proposalsPath}`,
+    portalUrl: runtime.portalUrl,
+    authPath: runtime.paths.authMe,
+    proposalsPath: runtime.paths.proposals,
     accessUrl: accessUrl || undefined,
     testCpf,
-    admin: loadAdminConfig(env, portalUrl, testCpf),
+    admin: loadAdminConfig(env, runtime.portalUrl, testCpf),
   };
 }
 
