@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { DialogComponent } from "../components/portal/dialog.component";
-import { ProposalTabsComponent } from "../components/portal/proposal-tabs.component";
-import { SearchableComboboxComponent } from "../components/portal/searchable-combobox.component";
+import { DialogComponent } from "../../components/portal/dialog.component";
+import { ProposalTabsComponent } from "../../components/portal/proposal-tabs.component";
+import { SearchableComboboxComponent } from "../../components/portal/searchable-combobox.component";
 
 export class ProposalPage {
   readonly heading: Locator;

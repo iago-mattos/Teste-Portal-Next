@@ -15,7 +15,7 @@ import {
   type PortalAdminAuthConfig,
   type PortalAuthConfig,
 } from "../config/auth-config";
-import { AdminAccessPage } from "../pages/admin-access.page";
+import { AdminAccessPage } from "../pages/portal/admin-access.page";
 
 interface AuthMetadata {
   fingerprint: string;

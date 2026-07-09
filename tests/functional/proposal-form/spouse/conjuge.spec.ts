@@ -1,6 +1,6 @@
 import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
-import type { ProposalPage } from "../../../pages/proposal.page";
+import type { ProposalPage } from "../../../pages/portal/proposal.page";
 
 const functionalMutation = { tag: ["@functional", "@mutation"] };
 

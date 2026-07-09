@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
-import { ProposalPage } from "../pages/proposal.page";
-import { ProposalsPage } from "../pages/proposals.page";
+import { ProposalPage } from "../pages/portal/proposal.page";
+import { ProposalsPage } from "../pages/portal/proposals.page";
 import { authTest } from "./auth.fixture";
 
 export interface PortalFixtures {

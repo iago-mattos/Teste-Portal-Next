@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { DialogComponent } from "../components/portal/dialog.component";
+import { DialogComponent } from "../../components/portal/dialog.component";
 
 export class ProposalsPage {
   readonly heading: Locator;
