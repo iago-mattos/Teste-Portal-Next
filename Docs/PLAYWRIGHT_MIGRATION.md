@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4 e 6.5 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5 e 6.6 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4 e 6.5 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5 e 6.6 concluídas
 
 ### Objetivo
 
@@ -808,6 +808,27 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Playwright: execução completa de `conjuge.spec.ts` aprovada com 10 casos passando em 3.1 minutos;
 - Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 10 casos em 4.0 minutos;
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 58 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
+### Subfase 6.6 — Composição de Renda
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/income-composition/composicao-renda.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `RENDA-01` a `RENDA-03` migrados com 100% de paridade funcional com Cypress;
+- Adicionado helper `chooseRadio(page, labelText)` para localizar o elemento `label`, clicar e assegurar que o input correspondente via atributo `for` está marcado como `checked`.
+
+#### Validação
+
+- Playwright: execução completa de `composicao-renda.spec.ts` aprovada com 3 casos passando em 1.1 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 3 casos em 1.2 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 61 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
@@ -1014,7 +1035,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Linha do Tempo e Alertas — Subfase 6.3.
 - ✅ Migrar Participantes — Subfase 6.4.
 - ✅ Migrar Cônjuge — Subfase 6.5.
-- ⏳ Migrar Composição de Renda.
+- ✅ Migrar Composição de Renda — Subfase 6.6.
 - ⏳ Migrar Renda do Cônjuge.
 - ⏳ Migrar Renda de Terceiros.
 - ⏳ Migrar Motivo da Contratação.
@@ -1517,3 +1538,14 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** implementado hook `afterEach` que seleciona a opção vazia no campo de estado civil, clica em outra aba para disparar a chamada de gravação de rede e aguarda a confirmação de sucesso `PUT **/cadastro*`.
 - **Resultado:** cada teste limpa o estado mutável gerado, assegurando o isolamento perfeito do banco de dados para os testes sequenciais.
 - **Aplicação futura:** sempre garantir a limpeza e o teardown explícito via requisições/sincronização de rede quando lidar com modificações auto-salvadas no mesmo registro de teste.
+
+## Lições da Fase 6.6 — Composição de Renda
+
+### 2026-07-09 — Resolução de Mapeamento de Elementos de Rádio (Relação Label-Input)
+
+- **Situação:** os testes dependiam de interações complexas de cliques e asserções em opções de rádio baseadas apenas no texto ("Sim" e "Não").
+- **Problema ou descoberta:** o elemento clicável na interface de usuário é a tag `label` visível, mas a verificação de estado (`checked`) deve ser feita no elemento real `input`.
+- **Causa:** os leitores de tela e estilizações customizadas escondem o input original sob o label.
+- **Ação tomada:** criado o helper `chooseRadio(page, labelText)` que resolve o ID do input correspondente via atributo `for` do label, executa o clique no label e valida o estado `isChecked()` no input.
+- **Resultado:** as asserções de botões de rádio tornaram-se determinísticas e 100% robustas.
+- **Aplicação futura:** utilizar o atributo `for` ou relações de acessibilidade para associar labels e inputs em testes de formulários complexos.
