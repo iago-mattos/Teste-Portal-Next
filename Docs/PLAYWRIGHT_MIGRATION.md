@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2 e 6.3 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3 e 6.4 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2 e 6.3 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3 e 6.4 concluídas
 
 ### Objetivo
 
@@ -758,6 +758,34 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Playwright: execução completa de `timeline.spec.ts` aprovada com 12 casos passando em 4.5 minutos;
 - Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 12 casos em 4 minutos;
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 35 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
+### Subfase 6.4 — Participantes
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/participants/participantes.spec.ts`
+- `tests/components/portal/proposal-tabs.component.ts`
+- `tests/components/portal/searchable-combobox.component.ts`
+- `tests/pages/proposal.page.ts`
+- `tests/pages/proposals.page.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `PART-01` a `PART-13` migrados com 100% de paridade funcional com Cypress;
+- Adicionada a busca de botões de tabulação com papel de acessibilidade (`tablist.getByRole("tab", { name, exact: true })`) em `ProposalTabsComponent` para resolver validação de atributos `aria-selected` de maneira robusta e confiável;
+- Expostos todos os itens de opções em `SearchableComboboxComponent` (via `get options()`) permitindo que testes funcionais verifiquem a integridade das listas de dropdowns dinâmicos;
+- Otimizado o carregamento de paginação na listagem em `ProposalsPage` para verificar a visibilidade imediata (via `loadMoreButton.isVisible()`) em vez de introduzir timeouts artificiais de 4 segundos, acelerando a suíte de testes global significativamente;
+- Resolvido o strict mode nos seletores de rótulo para testes de obrigatoriedade de campos ao escopar com expressões regulares estritas (e.g. `/^Profissão\s*\*?$/`).
+
+#### Validação
+
+- Playwright: execução completa de `participantes.spec.ts` aprovada com 13 casos passando em 4.0 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 13 casos em 4.2 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 48 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
@@ -962,7 +990,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Login — Subfase 6.1.
 - ✅ Migrar Minhas Propostas — Subfase 6.2.
 - ✅ Migrar Linha do Tempo e Alertas — Subfase 6.3.
-- ⏳ Migrar Participantes.
+- ✅ Migrar Participantes — Subfase 6.4.
 - ⏳ Migrar Cônjuge.
 - ⏳ Migrar Composição de Renda.
 - ⏳ Migrar Renda do Cônjuge.
@@ -1436,3 +1464,23 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** escopado o localizador explicitamente para a tag da lista (`li[aria-current="step"]`).
 - **Resultado:** a linha do tempo passou a ser resolvida de maneira unívoca.
 - **Aplicação futura:** evitar filtros genéricos de atributos de estado sem escopo de tag ou de container.
+
+## Lições da Fase 6.4 — Participantes
+
+### 2026-07-09 — Espera por Renderização Dinâmica de Opções
+
+- **Situação:** os testes `PART-06`, `PART-08` e `PART-10` falhavam intermitentemente ao ler as opções de seletores/comboboxes que vinham vazias (`[]`).
+- **Problema ou descoberta:** os elementos de opções são montados de forma assíncrona após a abertura ou interação, e `.count()` ou `.all()` não têm retentativa embutida no Playwright.
+- **Causa:** a execução síncrona do teste lê o estado antes da conclusão do render no navegador.
+- **Ação tomada:** adicionadas esperas explícitas como `await expect(options.first()).toBeVisible()` ou `await expect(options.nth(1)).toBeAttached()`.
+- **Resultado:** o fluxo de teste aguarda com sucesso a renderização completa antes de processar as contagens ou obter arrays de textos.
+- **Aplicação futura:** sempre forçar uma expectativa visual/estado de carregamento em listas dinâmicas antes de interagir ou contar seus filhos.
+
+### 2026-07-09 — Otimização de Paginação na Listagem (Polling Ineficiente)
+
+- **Situação:** a suite funcional demorava mais de 4 minutos no Playwright, sofrendo de flutuações e expirando a sessão do Portal na metade dos casos.
+- **Problema ou descoberta:** a navegação dependia de `loadAll()` que esperava de forma síncrona e incondicional 4 segundos por um botão de paginação inexistente na última página.
+- **Causa:** loop genérico usando timeouts arbitrários altos para detecção de fim de página.
+- **Ação tomada:** substituído o bloco de espera por verificação instantânea baseada em `loadMoreButton.isVisible()`.
+- **Resultado:** o tempo de carregamento por teste reduziu drasticamente, mantendo o cookie e garantindo execução verde completa e robusta de todos os 13 casos de teste funcionais sequencialmente.
+- **Aplicação futura:** evitar esperas de timeout para elementos que podem ser ausentes; preferir checagens imediatas de visibilidade após a estabilização de skeletons.

@@ -44,9 +44,7 @@ export class ProposalsPage {
 
     while (true) {
       await expect(this.skeletons).toHaveCount(0);
-      try {
-        await loadMoreButton.waitFor({ state: "visible", timeout: 4000 });
-      } catch {
+      if (!(await loadMoreButton.isVisible())) {
         break;
       }
 

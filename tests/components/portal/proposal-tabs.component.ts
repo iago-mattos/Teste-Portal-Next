@@ -10,13 +10,21 @@ export type ProposalTabName =
 
 export class ProposalTabsComponent {
   readonly root: Locator;
+  readonly tablist: Locator;
+  readonly tabs: Locator;
 
   constructor(private readonly page: Page) {
     this.root = page.getByRole("region", { name: "Conteudo da subtela" });
+    this.tablist = page.getByRole("tablist");
+    this.tabs = this.tablist.getByRole("tab");
   }
 
   getTab(name: ProposalTabName): Locator {
     return this.page.getByText(name, { exact: true });
+  }
+
+  getTabButton(name: ProposalTabName): Locator {
+    return this.tablist.getByRole("tab", { name, exact: true });
   }
 
   async select(name: ProposalTabName): Promise<void> {

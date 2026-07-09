@@ -14,6 +14,10 @@ export class SearchableComboboxComponent {
     return this.page.getByRole("listbox");
   }
 
+  get options(): Locator {
+    return this.listbox.getByRole("option");
+  }
+
   getOption(name: string): Locator {
     return this.listbox.getByRole("option", { name, exact: true });
   }

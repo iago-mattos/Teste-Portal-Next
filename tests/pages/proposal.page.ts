@@ -49,4 +49,10 @@ export class ProposalPage {
   getDialog(name?: string | RegExp): DialogComponent {
     return new DialogComponent(this.page, name);
   }
+
+  async expectDraftSaved(): Promise<void> {
+    const heading = this.page.getByRole("heading", { name: "Cadastro da Proposta", level: 2 });
+    const container = heading.locator("..");
+    await expect(container.getByText("Rascunho salvo")).toBeVisible({ timeout: 30000 });
+  }
 }
