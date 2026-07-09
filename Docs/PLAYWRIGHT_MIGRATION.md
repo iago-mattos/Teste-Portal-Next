@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8 e 6.9 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9 e 6.10 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8 e 6.9 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9 e 6.10 concluídas
 
 ### Objetivo
 
@@ -896,6 +896,29 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 81 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.10 — Imóvel
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/property/imovel.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `IMOVEL-01` a `IMOVEL-12` migrados com 100% de paridade funcional com Cypress;
+- Mapeados e normalizados os textos das opções do combobox de uso do imóvel (`IMOVEL_OPERACAO.IN_USO_DO_IMOVEL`) removendo acentos e convertendo para minúsculas antes da asserção de igualdade para evitar falhas de grafia regionalizada;
+- Utilizado o método `.selectOption` do Page Object `SearchableComboboxComponent` para controlar a dependência de campos habilitados e inibidos do tipo do imóvel;
+- Validada a pergunta de residência no imóvel que ocorre na aba "Sobre Você" e a verificação estrutural do endereço.
+
+#### Validação
+
+- Playwright: execução completa de `imovel.spec.ts` aprovada com 12 casos passando em 4.1 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 12 casos em 4.22 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 93 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1104,7 +1127,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Renda do Cônjuge — Subfase 6.7.
 - ✅ Migrar Renda de Terceiros — Subfase 6.8.
 - ✅ Migrar Motivo da Contratação — Subfase 6.9.
-- ⏳ Migrar Imóvel.
+- ✅ Migrar Imóvel — Subfase 6.10.
 - ⏳ Migrar Garantidor PF.
 - ⏳ Migrar Garantidor PJ.
 - ⏳ Migrar Detalhamento.
@@ -1647,3 +1670,15 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** inserida uma ação explícita de clique/seleção na aba "Motivo da Contratação" (`proposalPage.tabs.select`) após o clique do botão de avanço.
 - **Resultado:** a aba forçou o reset de estado re-habilitando o textarea para edição imediata no Playwright, eliminando o timeout de element desabilitado.
 - **Aplicação futura:** sempre re-estabelecer foco ou re-selecionar abas/elementos caso um formulário Next.js mantenha elementos desabilitados após cliques de submissão falhos.
+
+## Lições da Fase 6.10 — Imóvel
+
+### 2026-07-09 — Uso de getByText vs locators estritos para Textos Soltos
+
+- **Situação:** o teste `IMOVEL-09` falhava ao procurar pela string "Endereço do Imóvel" usando o seletor `page.locator("label", { hasText: ... })`.
+- **Problema ou descoberta:** textos soltos na tela ou títulos de seções que parecem labels visualmente podem ser renderizados como outros elementos semânticos (como `h3`, `div` ou `span`).
+- **Causa:** o seletor restringia a busca apenas a tags `<label>`, gerando falha de elemento não encontrado.
+- **Ação tomada:** modificada a busca para utilizar `page.getByText("Endereço do Imóvel")`, que é independente de tag HTML e se comporta de forma idêntica ao `cy.contains` do Cypress.
+- **Resultado:** o elemento foi localizado com sucesso de forma robusta e independente de mudanças futuras na tag semântica de layout.
+- **Aplicação futura:** preferir `getByText` para assertar a presença de textos informativos ou títulos de layout sem acoplamento com a tag do elemento.
+
