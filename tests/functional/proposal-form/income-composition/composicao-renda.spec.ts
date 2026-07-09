@@ -1,7 +1,7 @@
 import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function chooseRadio(page: Page, labelText: string): Promise<void> {
   const label = page.locator("label", { hasText: new RegExp(`^${labelText}$`, "i") });
@@ -30,7 +30,7 @@ test.describe("Cadastro da Operação: Composição de Renda", () => {
 
   test(
     "RENDA-01 | Deve ter informativo que é permitido compor renda com terceiros",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       const text = page.getByText(
         /É possível compor renda com terceiros, preferencialmente com pessoas de vínculo familiar/i
@@ -41,7 +41,7 @@ test.describe("Cadastro da Operação: Composição de Renda", () => {
 
   test(
     "RENDA-02 | Se cliente selecionar a opção não, então não habilita outras informações",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       await chooseRadio(page, "Não");
 
@@ -52,7 +52,7 @@ test.describe("Cadastro da Operação: Composição de Renda", () => {
 
   test(
     "RENDA-03 | Se cliente selecionar a opção sim, habilitar opção “cônjuge” ou “outra pessoa”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       await chooseRadio(page, "Sim");
 

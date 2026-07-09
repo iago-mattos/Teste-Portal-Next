@@ -1,6 +1,6 @@
 import { expect, test } from "../../../fixtures/test";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 test.describe("Cadastro da Operação: Motivo da Contratação", () => {
   test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig }) => {
@@ -16,7 +16,7 @@ test.describe("Cadastro da Operação: Motivo da Contratação", () => {
 
   test(
     "MOTIVO-01 | Valor solicitado do Crédito, Prazo estimado, Tipo de juros devem ser preenchidos com dados do lead",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       const labels = [
         "Valor solicitado do Crédito",
@@ -32,7 +32,7 @@ test.describe("Cadastro da Operação: Motivo da Contratação", () => {
 
   test(
     "MOTIVO-02 | Finalidade do crédito será preenchida com a lista da prognum, permitindo os campos: “Outros”; Construções e/ou reformas; Quitar dívidas bancárias; Quitar dívidas não bancárias; Adquirir bens; Investir; Saúde",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const expected = [
         "Outros",
@@ -66,7 +66,7 @@ test.describe("Cadastro da Operação: Motivo da Contratação", () => {
 
   test(
     "MOTIVO-03 | Descrição profissional / Defesa para o crédito deverá ser “Utilize esse espaço para nos contar mais sobre você e seus objetivos financeiros no momento” e esse campo deverá validar texto para não permitir palavras soltas ou menor que 10 palavras",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const instruction =
         "Utilize esse espaço para nos contar mais sobre você e seus objetivos financeiros no momento";

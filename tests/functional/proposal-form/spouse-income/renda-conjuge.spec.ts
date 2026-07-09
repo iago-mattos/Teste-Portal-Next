@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function chooseRadio(page: Page, labelText: string): Promise<void> {
   const label = page.locator("label", { hasText: new RegExp(`^${labelText}$`, "i") });
@@ -50,7 +50,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-01 | Se cônjuge habilitar campos: Renda do cônjuge, Profissão do Conjuge e Tipo de Profissão do Cônjuge para preenchimento obrigatório E por isso são sinalizados com (*)",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const requiredFields = [
         "CONJUGE.VA_RENDA_BRUTA",
@@ -65,7 +65,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-02 | O campo renda deve aceitar apenas valores numéricos. Valores diferentes de numérico não deverão ser aceitos, mostrando em tela um erro",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const field = proposalPage.getFieldByName("CONJUGE.VA_RENDA_BRUTA");
       await field.clear();
@@ -79,7 +79,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-03 | O campo profissão do cônjuge deve conter as mesmas profissões da lista existente na prognum em originação, no campo profissão, não considerando: Outros; Outros Declarantes não especificados; Outros servidores civis e militares; outros trabal de nivel superior, ligados ao ensino; Outros trabalhadores administrativos e assemelhado; Outros trabalhadores de serviços assemelhados; Outros Trabalhadores do comercio e assemelhados",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const forbidden = [
         "Outros",
@@ -113,7 +113,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-04 | O campo profissão do cônjuge deve permitir o cliente digitar para filtrar as opções sem necessidade ficar rolando a barra",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const combobox = proposalPage.getSearchableCombobox("CONJUGE.CO_PROFISSAO");
       await combobox.search("ADMIN");
@@ -134,7 +134,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-05 | O campo tipo de profissão do cônjuge deve ter os mesmos campos do campo tipo de funcionário, sendo: Autônomo, Empresário, Pensionista, Profissional Liberal, Aposentado, Renda de Aluguel, Produtor Rural, Assalariado",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const expected = [
         "AUTONOMO",
@@ -167,7 +167,7 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
 
   test(
     "RENDA-CONJ-06 | Deve ser obrigatório o preenchimento de “Autorizo a consulta de dados dos demais participantes no Sistema de informações de crédito (SCR) e demais instituições de proteções e fraudes, lavagem de dinheiro e risco de crédito",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       await expectRequired(page, proposalPage, "CONJUGE.IN_AUTORZC");
     },

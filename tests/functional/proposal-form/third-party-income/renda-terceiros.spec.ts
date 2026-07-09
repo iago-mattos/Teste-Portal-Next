@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function chooseRadio(page: Page, labelText: string): Promise<void> {
   const label = page.locator("label", { hasText: new RegExp(`^${labelText}$`, "i") });
@@ -56,7 +56,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-01 | Se terceiro, habilitar campos: Nome Completo, CPF, Data de Nascimento Renda, Profissão e Tipo de Profissão, Telefone de Contato e E-mail para preenchimento.",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const fields = [
         "PESSOA.NO_PESSOA",
@@ -77,7 +77,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-02 | Para preenchimento obrigatório temos: Nome Completo, CPF, Data de Nascimento, Renda, Profissão e Tipo de Profissão, Telefone de Contato e E-mail E por isso são sinalizados com (*)",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const requiredFields = [
         "PESSOA.NO_PESSOA",
@@ -98,7 +98,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-03 | O campo CPF seve ser um campo válido",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const cpfInput = proposalPage.getFieldByName("PESSOA.NU_CPFCNPJ");
       await cpfInput.clear();
@@ -113,7 +113,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-04 | Data de nascimento deverá permitir apenas números",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const field = proposalPage.getFieldByName("PESSOA.DT_NASCIMENTO");
       await field.clear();
@@ -127,7 +127,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-05 | Telefone deverá permitir apenas números",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const dddField = proposalPage.getFieldByName("PESSOA.NU_DDD_CEL");
       await dddField.clear();
@@ -148,7 +148,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-06 | Não será permitido finalizar o nome e e-mail com espaço",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const nameInput = proposalPage.getFieldByName("PESSOA.NO_PESSOA");
       const emailInput = proposalPage.getFieldByName("PESSOA.NO_EMAIL");
@@ -184,7 +184,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-07 | O campo renda deve aceitar apenas valores numéricos. Valores diferentes de numérico não deverão ser aceitos, mostrando em tela um erro",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const field = proposalPage.getFieldByName("PESSOA.VA_RENDA_BRUTA");
       await field.clear();
@@ -198,7 +198,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-08 | O campo profissão do cônjuge deve conter as mesmas profissões da lista existente na prognum em originação, no campo profissão, não considerando: Outros; Outros Declarantes não especificados; Outros servidores civis e militares; outros trabal de nivel superior, ligados ao ensino; Outros trabalhadores administrativos e assemelhado; Outros trabalhadores de serviços assemelhados; Outros Trabalhadores do comercio e assemelhados",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const forbidden = [
         "Outros",
@@ -232,7 +232,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-09 | O campo profissão do cônjuge deve permitir o cliente digitar para filtrar as opções sem necessidade ficar rolando a barra",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const combobox = proposalPage.getSearchableCombobox("PESSOA.CO_PROFISSAO");
       await combobox.search("ADMIN");
@@ -253,7 +253,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-10 | O campo tipo de profissão do cônjuge deve ter os mesmos campos do campo tipo de funcionário, sendo: Autônomo, Empresário, Pensionista, Profissional Liberal, Aposentado, Renda de Aluguel, Produtor Rural, Assalariado",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const select = proposalPage.getFieldByName("PESSOA.CO_ATIVIDADE_PROFISSIONAL");
       const options = select.locator("option");
@@ -285,7 +285,7 @@ test.describe("Cadastro de Operação: Composição de Renda com terceiros", () 
 
   test(
     "RENDA-TERC-11 | Deve ser obrigatório o preenchimento de “Autorizo a consulta de dados dos demais participantes no Sistema de informações de crédito (SCR) e demais instituições de proteções e fraudes, lavagem de dinheiro e risco de crédito",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       await expectRequired(page, proposalPage, "PESSOA.IN_AUTORZC");
     },

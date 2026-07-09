@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function expectRequiredLabel(page: Page, proposalPage: ProposalPage, name: string): Promise<void> {
   const field = proposalPage.getFieldByName(name);
@@ -29,7 +29,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-01 | Valor Estimado do Imóvel, Endereço do Imóvel de garantia devem ser preenchidos com informações do lead",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const precoInput = proposalPage.getFieldByName("OPERACAO_CREDITO.VA_PRECO_IMOVEL");
       await expect(precoInput).not.toHaveValue("");
@@ -41,7 +41,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-02 | Terá uma mensagem informativa para o cliente: “Alteração das informações da simulação poderá ser feita no momento de negociação Comercial”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       const msg = "Alteração das informações da simulação poderá ser feita no momento de negociação Comercial";
       await expect(page.getByText(msg)).toBeVisible();
@@ -50,7 +50,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-03 | Tipo de Imóvel deve permitir: “Residencial”; “Comercial”",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL");
       const options = select.locator("option");
@@ -71,7 +71,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-04 | O campo uso do imóvel deve ser uma lista composta por: Casa, Apartamento, Casa em condomínio, Loja, Sala Comercial, Misto, Prédio Comercial, Prédio Comercial misto, Laje corporativa, Sobrado, Flat,Terreno em condominio",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const expected = [
         "Não Informado",
@@ -119,7 +119,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-05 | Se marcado Casa em condomínio o campo tipo do imóvel deverá ser residencial por default e não habilita para alteração",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const combobox = proposalPage.getSearchableCombobox("IMOVEL_OPERACAO.IN_USO_DO_IMOVEL");
       await combobox.selectOption("Casa em condomínio");
@@ -136,7 +136,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-06 | Se marcado Loja, Sala Comercial, Misto, Prédio Comercial, Prédio Comercial misto, Laje corporativa, o campo tipo do imóvel deverá ser comercial por default e não habilita para alteração",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const usages = [
         "Loja",
@@ -163,7 +163,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-07 | Se marcado Casa, Apartamento, Sobrado, Flat e Terreno em condomínio o cliente deve escolher o tipo sendo campo obrigatório",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const usages = [
         "Casa",
@@ -191,7 +191,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-08 | Após o endereço do imóvel deve vir a pergunta “Você reside neste imóvel?”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       await proposalPage.tabs.select("Sobre Você");
 
@@ -205,7 +205,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-09 | Quando o cliente selecionar “Não” deve habilitar o campo de endereço de residência para preenchimento",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const label = page.getByText("Endereço do Imóvel");
       await expect(label.first()).toBeVisible();
@@ -218,7 +218,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-10 | Número do imóvel que vem do lead poderá vir em número, mas deverá ser concatenado para integração com a tela da prognum",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const enderecoInput = proposalPage.getFieldByName("IMOVEL_OPERACAO.NO_ENDERECO");
       await expect(enderecoInput).toBeVisible();
@@ -228,7 +228,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-11 | Condição do imóvel deverá ter a lista: Próprio, quitado; Próprio, alienado/ financiado, De terceiro, quitado; De terceiro, alienado/financiado; Em nome de empresa (CNPJ), quitado; Em nome de empresa (CNPJ), alienado/financiado",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
       const options = select.locator("option");
@@ -257,7 +257,7 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
   test(
     "IMOVEL-12 | Caso preenchido alienado habilita campos Valor estimado saldo devedor e instituição para preenchimento obrigatório e portando deve ter “(*)”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
 

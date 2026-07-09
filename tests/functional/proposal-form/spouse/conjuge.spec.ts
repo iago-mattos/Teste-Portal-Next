@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function expectRequired(page: Page, proposalPage: ProposalPage, name: string): Promise<void> {
   const field = proposalPage.getFieldByName(name);
@@ -33,6 +33,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
     await proposalsPage.loadAll();
     await proposalsPage.openProposal(defaultProposalId);
     await proposalPage.waitUntilReady();
+    await proposalPage.tabs.select("Sobre Você");
 
     // Define estado civil como Casado (2)
     const civilStatusSelect = proposalPage.getFieldByName("PESSOA.CO_ESTCIV");
@@ -65,7 +66,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-01 | Se o estado civil diferente de casado ou convivente não habilita aba cônjuge, demais opções deverá habilitar o preenchimento",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       // Vai para Sobre Você
       await proposalPage.tabs.select("Sobre Você");
@@ -91,7 +92,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-02 | É de preenchimento obrigatório os campos: Nome do Cônjuge, CPF, Data de Nascimento e Regime de Comunhão. E por isso são sinalizados com (*)",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const requiredFields = [
         "CONJUGE.NO_PESSOA",
@@ -107,7 +108,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-03 | É de preenchimento opcional Data de Comunhão, E-mail e Telefone. Sendo sinalizados como opcional",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const optionalFields = [
         "PESSOA.DT_CASAMENTO",
@@ -123,7 +124,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-04 | O campo telefone deve possuir o DDD",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const dddInput = proposalPage.getFieldByName("CONJUGE.NU_DDD_CEL");
       const phoneInput = proposalPage.getFieldByName("CONJUGE.NU_CELULAR");
@@ -134,7 +135,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-05 | O campo CPF deve ser um campo válido",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const cpfInput = proposalPage.getFieldByName("CONJUGE.NU_CPFCNPJ");
       await cpfInput.clear();
@@ -148,7 +149,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-06 | Data de nascimento deverá permitir apenas números",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const field = proposalPage.getFieldByName("CONJUGE.DT_NASCIMENTO");
       await field.clear();
@@ -162,7 +163,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-07 | Data de comunhão deverá permitir apenas números",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const field = proposalPage.getFieldByName("PESSOA.DT_CASAMENTO");
       await field.clear();
@@ -176,7 +177,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-08 | Telefone deverá permitir apenas números",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const dddField = proposalPage.getFieldByName("CONJUGE.NU_DDD_CEL");
       const phoneField = proposalPage.getFieldByName("CONJUGE.NU_CELULAR");
@@ -199,7 +200,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-09 | Não será permitido finalizar o nome e e-mail com espaço",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage, page }) => {
       const nameInput = proposalPage.getFieldByName("CONJUGE.NO_PESSOA");
       const emailInput = proposalPage.getFieldByName("CONJUGE.NO_EMAIL");
@@ -235,7 +236,7 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
 
   test(
     "CONJ-10 | O regime de comunhão deverá ser uma lista: Comunhão Universal de Bens, Separação Total de Bens, Comunhão Parcial de Bens, Participação Final nos Aquestos, União Estável, Separação Obrigatória de Bens",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const expected = [
         "Comunhão Universal de Bens",

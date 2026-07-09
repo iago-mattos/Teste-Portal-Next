@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function expectRequired(page: Page, proposalPage: ProposalPage, name: string): Promise<void> {
   const field = proposalPage.getFieldByName(name);
@@ -77,7 +77,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-01 | Caso preenchido de terceiro quitado ou alienado, habilita garantidor PF",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const select = proposalPage.getFieldByName("PESSOA.IN_FISICA_JURIDICA");
       await expect(select).toBeDisabled();
@@ -99,7 +99,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-02 | Quando Garantidor PF habilitado, os campos “Nome do proprietário”, “CPF do proprietário”, “Estado Civil”, “CEP”, “Endereço”, “Número”, “Bairro”, “Município”, “UF”, Telefone de contato”, “E-mail” e “Data de Nascimento são de preenchimento obrigatório e por isso devem ter “(*)”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const fields = [
         "PESSOA.NO_PESSOA",
@@ -128,7 +128,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-03 | Telefone deve permitir apenas celular",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const cellInput = proposalPage.getFieldByName("PESSOA.NU_CELULAR");
       await cellInput.clear();
@@ -142,7 +142,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-04 | Quando Garantidor PF, o campo “Complemento” é opcional",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       await expectOptional(page, proposalPage, "PESSOA.NO_COMPLEMENTO");
     },
@@ -150,7 +150,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-05 | Ao digitar o CEP, os campos Endereço, Bairro, Município e UF devem ser preenchidos automaticamente",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const cepInput = proposalPage.getFieldByName("PESSOA.NU_CEP");
       await cepInput.clear();
@@ -175,7 +175,7 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
   test(
     "GAR-PF-06 | Deve existir em tela uma indicação que o endereço é do proprietário do imóvel",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       await expect(page.getByText("Endereço residencial do proprietário do imóvel")).toBeVisible();
     },

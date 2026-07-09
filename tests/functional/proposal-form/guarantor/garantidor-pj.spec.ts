@@ -2,7 +2,7 @@ import { expect, test } from "../../../fixtures/test";
 import type { Page } from "@playwright/test";
 import type { ProposalPage } from "../../../pages/proposal.page";
 
-const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function expectRequired(page: Page, proposalPage: ProposalPage, name: string): Promise<void> {
   const field = proposalPage.getFieldByName(name);
@@ -77,7 +77,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-01 | Caso preenchido em nome de empresa quitado ou alienado, habilita garantidor PJ",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const select = proposalPage.getFieldByName("PESSOA.IN_FISICA_JURIDICA");
       await expect(select).toBeDisabled();
@@ -99,7 +99,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-02 | Quando Garantidor PJ habilitado, os campos “Razão Social da Empresa”, “CNPJ”, “CEP”, “Endereço”, “Número”, “Bairro”, “Município”, “UF” são de preenchimento obrigatório e por isso devem ter “(*)”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const fields = [
         "PESSOA.NO_PESSOA",
@@ -124,7 +124,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-03 | Quando Garantidor PJ, os campos “Telefone de contato”, “E-mail” e “Complemento” são opcionais",
-    functionalReadonly,
+    functionalMutation,
     async ({ page, proposalPage }) => {
       const fields = [
         "PESSOA.NU_TELEFONE_COM",
@@ -139,7 +139,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-04 | Ao digitar o CEP, os campos Endereço, Bairro, Município e UF devem ser preenchidos automaticamente",
-    functionalReadonly,
+    functionalMutation,
     async ({ proposalPage }) => {
       const cepInput = proposalPage.getFieldByName("PESSOA.NU_CEP");
       await cepInput.clear();
@@ -164,7 +164,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-05 | Deve existir em tela uma indicação que o endereço é da empresa do imóvel",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       await expect(page.getByText("Endereço da Empresa")).toBeVisible();
     },
@@ -172,7 +172,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-06 | A Lista de Sócios deve permitir adicionar um novo sócio",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       await expect(page.getByText("Lista de Sócios")).toBeVisible();
 
@@ -190,7 +190,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-07 | Campo “Nome Completo”, “CPF”, “Telefone”, “Data de nascimento” e “E-mail” são obrigatórias para todos os sócios e por isso devem ter “(*)”",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       const partnerFields = [
         "NO_PESSOA",
@@ -214,7 +214,7 @@ test.describe("Cadastro da Operação: Garantidor PJ", () => {
 
   test(
     "GAR-PJ-08 | Telefone deve permitir apenas celular",
-    functionalReadonly,
+    functionalMutation,
     async ({ page }) => {
       const partnerCell = page.locator('[name="NU_CELULAR"]').first();
       await partnerCell.clear();
