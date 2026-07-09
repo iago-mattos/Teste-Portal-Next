@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3 e 6.4 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4 e 6.5 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3 e 6.4 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4 e 6.5 concluídas
 
 ### Objetivo
 
@@ -786,6 +786,28 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Playwright: execução completa de `participantes.spec.ts` aprovada com 13 casos passando em 4.0 minutos;
 - Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 13 casos em 4.2 minutos;
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 48 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
+### Subfase 6.5 — Cônjuge
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/spouse/conjuge.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `CONJ-01` a `CONJ-10` migrados com 100% de paridade funcional com Cypress;
+- Adicionado hook `afterEach` no arquivo de spec para redefinir o estado civil da proposta para vazio e salvar (navegando para a aba de Composição de Renda e aguardando resposta `PUT **/cadastro*`), garantindo o isolamento e a integridade de dados para as execuções de testes seguintes;
+- Reutilizados os seletores semânticos e as asserções de obrigatoriedade e opcionalidade buscando dinamicamente os rótulos vinculados aos IDs dos campos (`label[for="${id}"]`).
+
+#### Validação
+
+- Playwright: execução completa de `conjuge.spec.ts` aprovada com 10 casos passando em 3.1 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 10 casos em 4.0 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 58 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
@@ -991,7 +1013,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Minhas Propostas — Subfase 6.2.
 - ✅ Migrar Linha do Tempo e Alertas — Subfase 6.3.
 - ✅ Migrar Participantes — Subfase 6.4.
-- ⏳ Migrar Cônjuge.
+- ✅ Migrar Cônjuge — Subfase 6.5.
 - ⏳ Migrar Composição de Renda.
 - ⏳ Migrar Renda do Cônjuge.
 - ⏳ Migrar Renda de Terceiros.
@@ -1483,4 +1505,15 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Causa:** loop genérico usando timeouts arbitrários altos para detecção de fim de página.
 - **Ação tomada:** substituído o bloco de espera por verificação instantânea baseada em `loadMoreButton.isVisible()`.
 - **Resultado:** o tempo de carregamento por teste reduziu drasticamente, mantendo o cookie e garantindo execução verde completa e robusta de todos os 13 casos de teste funcionais sequencialmente.
-- **Aplicação futura:** evitar esperas de timeout para elementos que podem ser ausentes; preferir checagens imediatas de visibilidade após a estabilização de skeletons.
+- **Aplicação futura:** evitar esperas de timeout para elements que podem ser ausentes; preferir checagens imediatas de visibilidade após a estabilização de skeletons.
+
+## Lições da Fase 6.5 — Cônjuge
+
+### 2026-07-09 — Isolamento de Estado de Banco via hooks de Teardown
+
+- **Situação:** os testes de módulos posteriores falhavam ou vinham com o estado alterado (aba Cônjuge habilitada) devido ao estado civil persistido de testes anteriores.
+- **Problema ou descoberta:** alterar dados mutáveis (como estado civil) em um formulário salva automaticamente os dados no backend do Portal de Cadastro.
+- **Causa:** persistência de dados de rascunhos compartilhada na mesma proposta do ambiente de desenvolvimento.
+- **Ação tomada:** implementado hook `afterEach` que seleciona a opção vazia no campo de estado civil, clica em outra aba para disparar a chamada de gravação de rede e aguarda a confirmação de sucesso `PUT **/cadastro*`.
+- **Resultado:** cada teste limpa o estado mutável gerado, assegurando o isolamento perfeito do banco de dados para os testes sequenciais.
+- **Aplicação futura:** sempre garantir a limpeza e o teardown explícito via requisições/sincronização de rede quando lidar com modificações auto-salvadas no mesmo registro de teste.
