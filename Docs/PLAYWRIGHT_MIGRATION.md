@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9 e 6.10 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10 e 6.11 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -574,7 +574,7 @@ Criar Page Objects e componentes mínimos necessários para evitar duplicação 
 ### Validação
 
 - locators de lista, cards, paginação, headings, tablist, tabs e combobox foram confirmados no Portal real antes da implementação;
-- o setup foi forçado a regenerar a sessão e validou o `AdminAccessPage` completo em 12,9 segundos;
+- the setup foi forçado a regenerar a sessão e validou o `AdminAccessPage` completo em 12,9 segundos;
 - cinco contratos temporários, removidos após a execução, validaram helpers, integração Fixtures → Page Objects, paginação, abertura de proposta editável, tabs, combobox e dialog;
 - durante a validação isolada, a proposta padrão abriu a jornada de acompanhamento; o smoke Cypress posterior passou esperando o cadastro editável, indicando uma variação dependente de estado ou sessão que deverá ser investigada na Fase 5;
 - TypeScript, ESLint, contrato da suíte e coleta Playwright passaram após a remoção dos contratos temporários;
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9 e 6.10 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10 e 6.11 concluídas
 
 ### Objetivo
 
@@ -919,6 +919,29 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 93 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.11 — Garantidor PF
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/guarantor/garantidor-pf.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `GAR-PF-01` a `GAR-PF-06` migrados com 100% de paridade funcional com Cypress;
+- Adicionado hook `afterEach` para reverter a Condição do Imóvel para vazio e salvar o rascunho via navegação de abas no Portal para isolar o estado no banco de dados;
+- Implementada validação de campos obrigatórios (`expectRequired`) e opcionais (`expectOptional`) no Garantidor PF;
+- Validado o preenchimento automático das informações de endereço ao digitar o CEP.
+
+#### Validação
+
+- Playwright: execução completa de `garantidor-pf.spec.ts` aprovada com 6 casos passando em 2.4 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 6 casos em 2.28 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 99 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1128,7 +1151,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Renda de Terceiros — Subfase 6.8.
 - ✅ Migrar Motivo da Contratação — Subfase 6.9.
 - ✅ Migrar Imóvel — Subfase 6.10.
-- ⏳ Migrar Garantidor PF.
+- ✅ Migrar Garantidor PF — Subfase 6.11.
 - ⏳ Migrar Garantidor PJ.
 - ⏳ Migrar Detalhamento.
 - ✅ Preservar `PROP-03` como pendência conhecida.
@@ -1676,9 +1699,21 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 ### 2026-07-09 — Uso de getByText vs locators estritos para Textos Soltos
 
 - **Situação:** o teste `IMOVEL-09` falhava ao procurar pela string "Endereço do Imóvel" usando o seletor `page.locator("label", { hasText: ... })`.
-- **Problema ou descoberta:** textos soltos na tela ou títulos de seções que parecem labels visualmente podem ser renderizados como outros elementos semânticos (como `h3`, `div` ou `span`).
+- **Problema ou descoberta:** textos soltos na tela ou títulos de seções que parecem labels visualmente podem ser renderizados como outros elements semânticos (como `h3`, `div` ou `span`).
 - **Causa:** o seletor restringia a busca apenas a tags `<label>`, gerando falha de elemento não encontrado.
 - **Ação tomada:** modificada a busca para utilizar `page.getByText("Endereço do Imóvel")`, que é independente de tag HTML e se comporta de forma idêntica ao `cy.contains` do Cypress.
 - **Resultado:** o elemento foi localizado com sucesso de forma robusta e independente de mudanças futuras na tag semântica de layout.
 - **Aplicação futura:** preferir `getByText` para assertar a presença de textos informativos ou títulos de layout sem acoplamento com a tag do elemento.
+
+## Lições da Fase 6.11 — Garantidor PF
+
+### 2026-07-09 — Gestão de Variáveis Globais de Estado do Teste para Teardown Seguro
+
+- **Situação:** o teardown em `afterEach` tentava limpar a condição do imóvel mesmo quando a inicialização do teste no `beforeEach` falhava (e.g. devido a timeouts na lista de propostas).
+- **Problema ou descoberta:** tentar limpar o estado da proposta quando a página nem sequer carregou a proposta gera erros secundários de seletor ausente no teardown, sujando os logs de execução.
+- **Causa:** os hooks de `afterEach` rodam incondicionalmente mesmo se `beforeEach` falhar.
+- **Ação tomada:** criada uma flag de controle local `guarantorPfReady` inicializada como `false` no `beforeEach` e definida como `true` apenas após a navegação completa para a tela do Garantidor. O teardown verifica esta flag antes de executar as interações de limpeza.
+- **Resultado:** em caso de falha de carregamento, o teste falha limpamente e de forma isolada, sem causar falhas secundárias confusas no teardown.
+- **Aplicação futura:** usar flags de status do teste para condicionar ações mutáveis ou interações de limpeza em hooks de teardown.
+
 
