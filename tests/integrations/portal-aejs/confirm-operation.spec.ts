@@ -5,7 +5,7 @@ import { getIntegrationScenario } from "../../test-data/integration-data";
 test(
   "Portal → AEJS | abre no AEJS a operação existente no Portal",
   { tag: ["@integration", "@readonly"] },
-  async ({ aejsConfig, aejsPage, proposalsPage }) => {
+  async ({ aejsPage, proposalsPage }) => {
     const scenario = getIntegrationScenario("INT-CONFIRM-PJ");
 
     await proposalsPage.open();
@@ -13,8 +13,6 @@ test(
     await expect(
       proposalsPage.getProposalCard(scenario.operationNumber),
     ).toBeVisible();
-
-    await aejsPage.goto(aejsConfig.baseUrl, { waitUntil: "domcontentloaded" });
 
     const aejsOperationsPage = new AejsOperationsPage(aejsPage);
     await aejsOperationsPage.navigateToOperations();
