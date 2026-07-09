@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11 e 6.12 concluídas.
+- **Estado geral:** ✅ Fases 1 a 6 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11 e 6.12 concluídas
+**Status:** ✅ Concluída — Subfases 6.1 a 6.13 migradas
 
 ### Objetivo
 
@@ -965,6 +965,27 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 107 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.13 — Detalhamento
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/details/detalhamento.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `DETALHE-01` migrado com 100% de paridade funcional com Cypress;
+- Validado que o rótulo explicativo de campos obrigatórios ausentes está visível e que o botão de "Ver Detalhes da Operação" não está no DOM para propostas incompletas.
+
+#### Validação
+
+- Playwright: execução completa de `detalhamento.spec.ts` aprovada com 1 caso passando em 28.4 segundos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 1 caso em 38 segundos;
+- contrato: 108 casos, 108 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1176,7 +1197,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Imóvel — Subfase 6.10.
 - ✅ Migrar Garantidor PF — Subfase 6.11.
 - ✅ Migrar Garantidor PJ — Subfase 6.12.
-- ⏳ Migrar Detalhamento.
+- ✅ Migrar Detalhamento — Subfase 6.13.
 - ✅ Preservar `PROP-03` como pendência conhecida.
 - ✅ Representar `PROP-14` como defeito conhecido conforme decisão aprovada.
 - ✅ Validar 108 IDs no contrato de testes.
@@ -1749,6 +1770,18 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** utilizamos a query genérica `page.locator('[name="NO_PESSOA"]')` e extraímos o `.count()` antes e após o clique de inclusão, assertando que o tamanho total do array aumentou em 1.
 - **Resultado:** o teste funcionou perfeitamente e de forma robusta, independente da complexidade ou dos índices numéricos gerados pela UI para o novo sócio.
 - **Aplicação futura:** preferir checagens de quantidade em conjuntos de elementos quando validar criação/exclusão dinâmica de cartões em listas.
+
+## Lições da Fase 6.13 — Detalhamento
+
+### 2026-07-09 — Asserção sobre Inexistência Absoluta de Elementos
+
+- **Situação:** o teste `DETALHE-01` precisava garantir que o botão "Ver Detalhes da Operação" não está visível nem renderizado no DOM.
+- **Problema ou descoberta:** no Playwright, utilizar `.toBeHidden()` ou `.not.toBeVisible()` em elementos que nem mesmo existem no DOM pode introduzir tempos de espera e timeouts implícitos se o locator não for estrito.
+- **Causa:** o seletor tenta aguardar o elemento até o timeout padrão antes de julgar a negação.
+- **Ação tomada:** utilizado `expect(page.locator("button", { hasText: /Ver Detalhes da Operação/i })).toHaveCount(0)`.
+- **Resultado:** a asserção sobre contagem zero de elementos é executada de forma imediata e síncrona sem disparar tentativas de re-fetch ou esperas desnecessárias no motor de renderização.
+- **Aplicação futura:** usar `toHaveCount(0)` para validar a ausência absoluta de elementos no DOM para otimizar a velocidade de execução dos testes.
+
 
 
 
