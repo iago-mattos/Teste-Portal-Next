@@ -27,12 +27,32 @@ async function expectOptional(page: Page, proposalPage: ProposalPage, name: stri
 }
 
 test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
-  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig }) => {
+  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page, teardownRegistry }) => {
     const defaultProposalId = portalConfig.testData.expectedProposal.visibleNumber;
     await proposalsPage.open();
     await proposalsPage.loadAll();
     await proposalsPage.openProposal(defaultProposalId);
     await proposalPage.waitUntilReady();
+
+    // Registra a limpeza do cônjuge no teardownRegistry
+    teardownRegistry.add(async () => {
+      await proposalPage.tabs.select("Sobre Você");
+      const civilStatusSelect = proposalPage.getFieldByName("PESSOA.CO_ESTCIV");
+      await civilStatusSelect.selectOption("");
+
+      // Salva o estado limpando o cônjuge ao navegar para Composição de Renda
+      await Promise.all([
+        page.waitForResponse((response) => {
+          const url = new URL(response.url());
+          return (
+            response.request().method() === "PUT" &&
+            url.pathname.includes("/cadastro")
+          );
+        }, { timeout: 30000 }),
+        proposalPage.tabs.select("Composição de Renda"),
+      ]);
+    });
+
     await proposalPage.tabs.select("Sobre Você");
 
     // Define estado civil como Casado (2)
@@ -42,26 +62,6 @@ test.describe("Cadastro da Operação: Dados do Cônjuge", () => {
     // Seleciona a aba Cônjuge
     await proposalPage.tabs.select("Cônjuge");
     await expect(proposalPage.getFieldByName("CONJUGE.NO_PESSOA")).toBeVisible();
-  });
-
-  test.afterEach(async ({ proposalPage, page }) => {
-    // Retorna para Sobre Você
-    await proposalPage.tabs.select("Sobre Você");
-
-    const civilStatusSelect = proposalPage.getFieldByName("PESSOA.CO_ESTCIV");
-    await civilStatusSelect.selectOption("");
-
-    // Salva o estado limpando o cônjuge ao navegar para Composição de Renda
-    await Promise.all([
-      page.waitForResponse((response) => {
-        const url = new URL(response.url());
-        return (
-          response.request().method() === "PUT" &&
-          url.pathname.includes("/cadastro")
-        );
-      }, { timeout: 30000 }),
-      proposalPage.tabs.select("Composição de Renda"),
-    ]);
   });
 
   test(

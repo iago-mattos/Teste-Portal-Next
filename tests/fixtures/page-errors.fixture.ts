@@ -1,5 +1,5 @@
 import type { Page, TestInfo } from "@playwright/test";
-import { portalTest } from "./portal.fixture";
+import { scenarioTest } from "./scenario.fixture";
 
 interface CapturedPageError {
   message: string;
@@ -54,7 +54,7 @@ async function attachErrors(
   });
 }
 
-export const pageErrorsTest = portalTest.extend<PageErrorFixtures>({
+export const pageErrorsTest = scenarioTest.extend<PageErrorFixtures>({
   capturePageErrors: [
     async ({ context, portalConfig }, use, testInfo) => {
       const capturedErrors: CapturedPageError[] = [];

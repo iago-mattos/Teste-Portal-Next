@@ -29,7 +29,7 @@ async function expectRequired(page: Page, proposalPage: ProposalPage, name: stri
 }
 
 test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () => {
-  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page }) => {
+  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page, teardownRegistry }) => {
     const defaultProposalId = portalConfig.testData.expectedProposal.visibleNumber;
     await proposalsPage.open();
     await proposalsPage.loadAll();
@@ -39,13 +39,14 @@ test.describe("Cadastro de Operação: Composição de Renda com cônjuge", () =
     await proposalPage.tabs.select("Composição de Renda");
     await expect(page.getByText(/Composição de Renda/i).first()).toBeVisible();
 
+    // Registra restauração da composição de renda no teardownRegistry
+    teardownRegistry.add(async () => {
+      await chooseRadio(page, "Não");
+    });
+
     await chooseRadio(page, "Sim");
     await chooseRadio(page, "Conjuge");
     await expect(page.getByText("Dados do Cônjuge para Composição de Renda")).toBeVisible();
-  });
-
-  test.afterEach(async ({ page }) => {
-    await chooseRadio(page, "Não");
   });
 
   test(

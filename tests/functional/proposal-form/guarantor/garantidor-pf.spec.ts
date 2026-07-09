@@ -42,15 +42,23 @@ async function clearAddress(proposalPage: ProposalPage): Promise<void> {
 }
 
 test.describe("Cadastro da Operação: Garantidor PF", () => {
-  let guarantorPfReady = false;
-
-  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page }) => {
-    guarantorPfReady = false;
+  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page, teardownRegistry }) => {
     const defaultProposalId = portalConfig.testData.expectedProposal.visibleNumber;
     await proposalsPage.open();
     await proposalsPage.loadAll();
     await proposalsPage.openProposal(defaultProposalId);
     await proposalPage.waitUntilReady();
+
+    // Registra o teardown da condição do imóvel no teardownRegistry
+    teardownRegistry.add(async () => {
+      await proposalPage.tabs.select("Imóvel");
+      const condicaoSelect = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
+      await condicaoSelect.selectOption("");
+
+      // Salva navegando para outra aba
+      await proposalPage.tabs.select("Sobre Você");
+      await proposalPage.expectDraftSaved();
+    });
 
     await proposalPage.tabs.select("Imóvel");
     const condicaoSelect = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
@@ -59,20 +67,6 @@ test.describe("Cadastro da Operação: Garantidor PF", () => {
 
     await proposalPage.tabs.select("Garantidor");
     await expect(page.getByText("Dados Pessoais")).toBeVisible();
-    guarantorPfReady = true;
-  });
-
-  test.afterEach(async ({ proposalPage }) => {
-    if (!guarantorPfReady) {
-      return;
-    }
-    await proposalPage.tabs.select("Imóvel");
-    const condicaoSelect = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
-    await condicaoSelect.selectOption("");
-
-    // Salva navegando para outra aba
-    await proposalPage.tabs.select("Sobre Você");
-    await proposalPage.expectDraftSaved();
   });
 
   test(
