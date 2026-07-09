@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5 e 6.6 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 e 6.7 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5 e 6.6 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 e 6.7 concluídas
 
 ### Objetivo
 
@@ -829,6 +829,27 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Playwright: execução completa de `composicao-renda.spec.ts` aprovada com 3 casos passando em 1.1 minutos;
 - Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 3 casos em 1.2 minutos;
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 61 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
+### Subfase 6.7 — Renda do Cônjuge
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/spouse-income/renda-conjuge.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `RENDA-CONJ-01` a `RENDA-CONJ-06` migrados com 100% de paridade funcional com Cypress;
+- Adicionado hook `afterEach` no arquivo de spec para redefinir a composição de renda para "Não" após a execução de cada caso de teste funcional, isolando completamente o banco de dados.
+
+#### Validação
+
+- Playwright: execução completa de `renda-conjuge.spec.ts` aprovada com 6 casos passando em 2.3 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 6 casos em 2.2 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 67 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
@@ -1036,7 +1057,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Participantes — Subfase 6.4.
 - ✅ Migrar Cônjuge — Subfase 6.5.
 - ✅ Migrar Composição de Renda — Subfase 6.6.
-- ⏳ Migrar Renda do Cônjuge.
+- ✅ Migrar Renda do Cônjuge — Subfase 6.7.
 - ⏳ Migrar Renda de Terceiros.
 - ⏳ Migrar Motivo da Contratação.
 - ⏳ Migrar Imóvel.
@@ -1549,3 +1570,14 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** criado o helper `chooseRadio(page, labelText)` que resolve o ID do input correspondente via atributo `for` do label, executa o clique no label e valida o estado `isChecked()` no input.
 - **Resultado:** as asserções de botões de rádio tornaram-se determinísticas e 100% robustas.
 - **Aplicação futura:** utilizar o atributo `for` ou relações de acessibilidade para associar labels e inputs em testes de formulários complexos.
+
+## Lições da Fase 6.7 — Renda do Cônjuge
+
+### 2026-07-09 — Filtragem de Opções via Métodos do Combobox
+
+- **Situação:** o teste `RENDA-CONJ-04` exigia a validação de que digitar um texto no campo de profissão do cônjuge filtrava corretamente as opções exibidas na lista de dropdown.
+- **Problema ou descoberta:** interagir cruamente com o DOM do input via `click()` e `type()` pode não disparar corretamente todos os eventos de pesquisa no React/Next.js de maneira estável.
+- **Causa:** o componente aguarda debounces ou eventos específicos de controle de foco de input.
+- **Ação tomada:** utilizado o método `.search(value)` do Page Object encapsulado de combobox (`SearchableComboboxComponent`), que executa a limpeza, escrita nativa e validação da abertura de listbox unificadamente.
+- **Resultado:** o teste de filtro funcionou consistentemente em todas as execuções sem falhas de carregamento assíncrono.
+- **Aplicação futura:** preferir expor e utilizar métodos especializados de interação em componentes reutilizáveis em vez de manipulação direta de seletores de baixo nível.
