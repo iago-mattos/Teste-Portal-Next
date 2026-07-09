@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 e 6.8 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8 e 6.9 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 e 6.8 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8 e 6.9 concluídas
 
 ### Objetivo
 
@@ -874,6 +874,28 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 78 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.9 — Motivo da Contratação
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/loan-reason/motivo-contratacao.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `MOTIVO-01` a `MOTIVO-03` migrados com 100% de paridade funcional com Cypress;
+- Adicionada re-seleção explícita da aba "Motivo da Contratação" após a validação de avanço bloqueado para re-estabelecer o foco da página e garantir que a re-digitação não seja bloqueada por campos mantidos em estado `disabled` temporário pelo formulário Next.js durante a tentativa de submissão falha;
+- Adicionado teardown em `MOTIVO-03` para limpar o campo de descrição profissional e finalidade no banco de dados do Portal.
+
+#### Validação
+
+- Playwright: execução completa de `motivo-contratacao.spec.ts` aprovada com 3 casos passando em 1.1 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 3 casos em 1.23 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 81 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1081,7 +1103,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Composição de Renda — Subfase 6.6.
 - ✅ Migrar Renda do Cônjuge — Subfase 6.7.
 - ✅ Migrar Renda de Terceiros — Subfase 6.8.
-- ⏳ Migrar Motivo da Contratação.
+- ✅ Migrar Motivo da Contratação — Subfase 6.9.
 - ⏳ Migrar Imóvel.
 - ⏳ Migrar Garantidor PF.
 - ⏳ Migrar Garantidor PJ.
@@ -1614,3 +1636,14 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** adicionada a checagem explícita `await expect(options.nth(1)).toBeAttached()` para segurar a execução do teste até que o elemento seja populado.
 - **Resultado:** a lista foi obtida e validada de forma 100% confiável em todas as tentativas subsequentes.
 - **Aplicação futura:** usar `toBeAttached()` no primeiro ou segundo elemento dinâmico de selects nativos para sincronizar carregamentos assíncronos de APIs.
+
+## Lições da Fase 6.9 — Motivo da Contratação
+
+### 2026-07-09 — Re-seleção de Aba para Reset de Elementos Disabled
+
+- **Situação:** o teste `MOTIVO-03` falhava por timeout ao tentar limpar a descrição profissional após uma tentativa de submissão inválida com menos de 10 palavras.
+- **Problema ou descoberta:** ao clicar em "Confirmar e avançar cadastro" com dados inválidos, a aplicação Next.js bloqueia temporariamente a edição dos inputs desabilitando-os (`disabled`) no DOM enquanto a lógica de validação/submissão roda ou a animação é processada.
+- **Causa:** o estado desabilitado não é redefinido automaticamente no DOM se o foco não for re-estabelecido.
+- **Ação tomada:** inserida uma ação explícita de clique/seleção na aba "Motivo da Contratação" (`proposalPage.tabs.select`) após o clique do botão de avanço.
+- **Resultado:** a aba forçou o reset de estado re-habilitando o textarea para edição imediata no Playwright, eliminando o timeout de element desabilitado.
+- **Aplicação futura:** sempre re-estabelecer foco ou re-selecionar abas/elementos caso um formulário Next.js mantenha elementos desabilitados após cliques de submissão falhos.
