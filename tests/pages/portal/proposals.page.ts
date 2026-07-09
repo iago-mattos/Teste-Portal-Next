@@ -29,7 +29,10 @@ export class ProposalsPage {
   }
 
   getProposalCard(number: string): Locator {
-    return this.proposalCards.filter({ hasText: `Proposta #${number}` });
+    const displayedNumber = number.replace(/^0+(?=\d)/, "");
+    return this.proposalCards.filter({
+      hasText: `Proposta #${displayedNumber}`,
+    });
   }
 
   getDialog(name?: string | RegExp): DialogComponent {
