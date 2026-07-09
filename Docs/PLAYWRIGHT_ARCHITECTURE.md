@@ -253,6 +253,19 @@ Contém massa declarativa e expectativas estáticas.
 
 Test data não executa navegação, assertions ou setup.
 
+#### Massas descartáveis oficiais da Fase 7
+
+`tests/test-data/integration-data.ts` é o catálogo único das operações descartáveis autorizadas para desenvolvimento dos fluxos Portal → AEJS. Specs, Page Objects, Components e fixtures não podem declarar números de operação.
+
+| Caso | Operação descartável | Finalidade |
+|---|---|---|
+| `INT-CONFIRM-PJ` | `000436033` | Cônjuge, imóvel, garantidor PJ, sócios e interveniente. |
+| `INT-CONFIRM-PF` | `000436034` | Terceiro na composição de renda e garantidor PF. |
+| `INT-CONFIRM-QUITADO` | `000436035` | Titular sem composição de renda e imóvel quitado. |
+| `INT-CONFIRM-WORKFLOW` | `000436036` | Tarefas, documentos e fluxo controlado de cancelamento. |
+
+Substituições de massa devem alterar exclusivamente esse catálogo e preservar a correspondência entre caso, perfil e finalidade. O catálogo não autoriza mutações: o opt-in e a validação da operação continuam obrigatórios no fluxo de integração.
+
 ### `tests/types/`
 
 Contém contratos compartilhados que não pertencem naturalmente a outro módulo.

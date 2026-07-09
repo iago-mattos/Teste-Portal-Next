@@ -997,10 +997,22 @@ Migrar preparação, confirmação, cancelamento e validações AEJS com rastrea
 ### Arquivos envolvidos
 
 - `tests/integrations`
+- `tests/test-data/integration-data.ts`
 - Page Object e componentes AEJS
 - dados de integração
 - script de opt-in de mutação
 - configuração AEJS
+
+### Massas descartáveis oficiais
+
+As operações descartáveis da Fase 7 ficam centralizadas exclusivamente em `tests/test-data/integration-data.ts`:
+
+- `INT-CONFIRM-PJ` → `000436033` — cônjuge, imóvel, garantidor PJ, sócios e interveniente;
+- `INT-CONFIRM-PF` → `000436034` — terceiro na composição de renda e garantidor PF;
+- `INT-CONFIRM-QUITADO` → `000436035` — titular sem composição de renda e imóvel quitado;
+- `INT-CONFIRM-WORKFLOW` → `000436036` — tarefas, documentos e cancelamento controlado.
+
+Specs não devem declarar números de operação. Qualquer substituição futura deve ocorrer somente nessa camada de dados, mantendo o mesmo caso, perfil e finalidade. O catálogo não substitui o opt-in destrutivo nem a validação da massa autorizada antes da execução.
 
 ### Critérios para iniciar
 
@@ -1805,7 +1817,6 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 ### 2026-07-09 — Etapa 4: Encerramento do Hardening
 - **Ação:** Consolidação e alinhamento dos documentos de arquitetura, migração e auditoria. Validação final de consistência e typecheck da suíte.
 - **Parecer:** A arquitetura encontra-se 100% pronta e robusta para o início seguro da Fase 7 (integração Portal-AEJS).
-
 
 
 
