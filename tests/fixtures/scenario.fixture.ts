@@ -37,6 +37,7 @@ export interface ScenarioFixtures {
    * - Ações temporárias de UI que não persistem estado no servidor e não interferem em outros cenários.
    */
   teardownRegistry: TeardownRegistry;
+  mutationGate: void;
 }
 
 export const scenarioTest = portalTest.extend<ScenarioFixtures>({
@@ -65,4 +66,18 @@ export const scenarioTest = portalTest.extend<ScenarioFixtures>({
       }
     }
   },
+
+  mutationGate: [
+    // eslint-disable-next-line no-empty-pattern
+    async ({}, use, testInfo) => {
+      const isMutation = testInfo.tags.includes("@mutation");
+      if (isMutation && process.env.ALLOW_TEST_MUTATION !== "true") {
+        throw new Error(
+          "Execucao bloqueada: defina ALLOW_TEST_MUTATION=true para autorizar alteracoes em propostas de QA.",
+        );
+      }
+      await use();
+    },
+    { auto: true },
+  ],
 });
