@@ -6,11 +6,11 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 6 concluídas.
+- **Estado geral:** ✅ Fases 1 a 6 concluídas. Hardening arquitetural concluído.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
-- **Última atualização:** 09/07/2026.
+- **Última atualização:** 09/07/2026 (Pós-Hardening).
 
 ## Legenda de status
 
@@ -1781,6 +1781,30 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** utilizado `expect(page.locator("button", { hasText: /Ver Detalhes da Operação/i })).toHaveCount(0)`.
 - **Resultado:** a asserção sobre contagem zero de elementos é executada de forma imediata e síncrona sem disparar tentativas de re-fetch ou esperas desnecessárias no motor de renderização.
 - **Aplicação futura:** usar `toHaveCount(0)` para validar a ausência absoluta de elementos no DOM para otimizar a velocidade de execução dos testes.
+
+# Hardening da Arquitetura (Fase Pré-Fase 7)
+
+## Realizações e Histórico das Etapas
+
+### 2026-07-09 — Etapa 1: Governança da Suíte (Reclassificar specs mutáveis)
+- **Ação:** Reclassificados 9 arquivos de especificações funcionais de formulário de proposta de `@readonly` para `@mutation`.
+- **Justificativa:** Garantir que o Playwright execute testes que modificam dados persistentes no banco de dados de QA apenas no projeto `functional-mutation` (modo serial), evitando concorrência destrutiva no paralelismo.
+- **Commit:** `82e9e21f1589`
+
+### 2026-07-09 — Etapa 2: Preparação Estrutural para AEJS
+- **Ação:** Reorganização dos diretórios sob `tests/pages/` separando Portal e AEJS.
+- **Arquivos Movidos:** Page Objects do Portal (`admin-access.page.ts`, `proposal.page.ts`, `proposals.page.ts`) foram isolados na subpasta `tests/pages/portal/`.
+- **Placeholders criados:** Criados os diretórios futuros para o AEJS (`tests/pages/aejs/`, `tests/components/aejs/`, `tests/fixtures/aejs/` e subpastas sob `tests/integrations/`) contendo arquivos `.gitkeep`.
+- **Commit:** `81ac208a54d6`
+
+### 2026-07-09 — Etapa 3: Lifecycle Centralizado para Cenários Mutáveis
+- **Ação:** Implementação da fixture de `teardownRegistry` com execução em ordem reversa (LIFO) no arquivo `tests/fixtures/scenario.fixture.ts`.
+- **Ajustes:** Remoção dos hooks locais `afterEach` e migração da lógica de limpeza para registros dinâmicos em `teardownRegistry.add(...)` nos setups (`beforeEach`) das 5 specs mutáveis afetadas (`garantidor-pf.spec.ts`, `garantidor-pj.spec.ts`, `conjuge.spec.ts`, `renda-conjuge.spec.ts` e `renda-terceiros.spec.ts`).
+- **Commit:** `0c24dd2a1db3`
+
+### 2026-07-09 — Etapa 4: Encerramento do Hardening
+- **Ação:** Consolidação e alinhamento dos documentos de arquitetura, migração e auditoria. Validação final de consistência e typecheck da suíte.
+- **Parecer:** A arquitetura encontra-se 100% pronta e robusta para o início seguro da Fase 7 (integração Portal-AEJS).
 
 
 

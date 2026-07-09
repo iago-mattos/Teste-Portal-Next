@@ -69,12 +69,14 @@ tests/
     portal.fixture.ts
     scenario.fixture.ts
     page-errors.fixture.ts
+    aejs/
 
   pages/
-    admin-access.page.ts
-    proposals.page.ts
-    proposal.page.ts
-    aejs.page.ts
+    portal/
+      admin-access.page.ts
+      proposals.page.ts
+      proposal.page.ts
+    aejs/
 
   components/
     portal/
