@@ -60,6 +60,16 @@ export function getIntegrationScenario(
 
   const scenario = integrationData[caseId];
   const operationOverride = env.PORTAL_INTEGRATION_OPERATION?.trim().replace(/\D/g, "");
+
+  if (operationOverride) {
+    const officialOperations = Object.values(integrationData).map((d) => d.operationNumber.replace(/\D/g, ""));
+    if (!officialOperations.includes(operationOverride)) {
+      throw new Error(
+        `Erro de Governanca: A proposta de override '${operationOverride}' nao esta cadastrada no catalogo oficial de massas de integracao.`,
+      );
+    }
+  }
+
   const operationNumber = operationOverride || scenario.operationNumber;
 
   if (!operationNumber) {

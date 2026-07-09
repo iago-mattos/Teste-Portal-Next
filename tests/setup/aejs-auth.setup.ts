@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { expect, test as setup } from "@playwright/test";
+import { expect, test as setup, type Browser } from "@playwright/test";
 import {
   loadAejsRuntimeConfig,
   aejsAuthFingerprint,
@@ -29,10 +29,40 @@ async function readAejsAuthMetadata(): Promise<AuthMetadata | undefined> {
   }
 }
 
-async function validateStoredSession(config: AejsRuntimeConfig): Promise<boolean> {
+async function validateStoredSession(
+  config: AejsRuntimeConfig,
+  browser: Browser,
+): Promise<boolean> {
   if (!existsSync(AEJS_AUTH_STATE_PATH)) return false;
+
   const metadata = await readAejsAuthMetadata();
-  return metadata?.fingerprint === aejsAuthFingerprint(config);
+  if (metadata?.fingerprint !== aejsAuthFingerprint(config)) return false;
+
+  const context = await browser.newContext({
+    storageState: AEJS_AUTH_STATE_PATH,
+    viewport: { width: 1440, height: 900 },
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.goto(config.baseUrl, { waitUntil: "domcontentloaded" });
+
+    // Se o botao de login "Acesso via Plataforma" estiver visivel, fomos redirecionados (sessao invalida)
+    const acessoBtn = page.getByText("Acesso via Plataforma");
+    try {
+      await acessoBtn.waitFor({ state: "visible", timeout: 5000 });
+      return false;
+    } catch {
+      // Se nao ficou visivel, valida que entramos na area autenticada (presenca de barra/botoes ExtJS)
+      const mainIndicator = page.locator("a, button, .x-btn, .x-btn-inner").first();
+      await mainIndicator.waitFor({ state: "visible", timeout: 10000 });
+      return true;
+    }
+  } catch {
+    return false;
+  } finally {
+    await context.close();
+  }
 }
 
 async function clearAejsAuthState(): Promise<void> {
@@ -52,10 +82,12 @@ setup("authenticate AEJS session", async ({ browser }) => {
     );
   }
 
-  if (await validateStoredSession(config)) {
+  if (await validateStoredSession(config, browser)) {
+    console.log("Sessao do AEJS ja esta autenticada e valida.");
     return;
   }
 
+  console.log("Sessao expirada, invalida ou inexistente. Iniciando novo login no AEJS...");
   await clearAejsAuthState();
   await mkdir(dirname(AEJS_AUTH_STATE_PATH), { recursive: true });
 
@@ -110,4 +142,14 @@ setup("authenticate AEJS session", async ({ browser }) => {
   } finally {
     await context.close();
   }
+
+  // Valida explicitamente a sessao recem-criada antes de concluir o setup
+  if (!(await validateStoredSession(config, browser))) {
+    await clearAejsAuthState();
+    throw new Error(
+      "Falha na autenticacao do AEJS: O estado de sessao foi salvo, mas a validacao de acesso a area logada falhou.",
+    );
+  }
+
+  console.log("Autenticacao do AEJS realizada e comprovada com sucesso.");
 });
