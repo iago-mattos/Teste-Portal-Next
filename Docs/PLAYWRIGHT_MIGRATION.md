@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10 e 6.11 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11 e 6.12 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10 e 6.11 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11 e 6.12 concluídas
 
 ### Objetivo
 
@@ -942,6 +942,29 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 99 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.12 — Garantidor PJ
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/guarantor/garantidor-pj.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `GAR-PJ-01` a `GAR-PJ-08` migrados com 100% de paridade funcional com Cypress;
+- Adicionado hook `afterEach` utilizando a flag robusta de controle `guarantorPjReady` para reverter a Condição do Imóvel para vazio e salvar o rascunho de forma isolada;
+- Mapeado o preenchimento automático das informações de endereço ao digitar o CEP;
+- Implementada a validação da lista dinâmica de sócios, verificando se clicar no botão de adicionar sócio cria corretamente novos campos de sócios, e testando a obrigatoriedade/rejeição de número não-celular (fixo).
+
+#### Validação
+
+- Playwright: execução completa de `garantidor-pj.spec.ts` aprovada com 8 casos passando em 3.1 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 8 casos em 3.12 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 107 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1152,7 +1175,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Motivo da Contratação — Subfase 6.9.
 - ✅ Migrar Imóvel — Subfase 6.10.
 - ✅ Migrar Garantidor PF — Subfase 6.11.
-- ⏳ Migrar Garantidor PJ.
+- ✅ Migrar Garantidor PJ — Subfase 6.12.
 - ⏳ Migrar Detalhamento.
 - ✅ Preservar `PROP-03` como pendência conhecida.
 - ✅ Representar `PROP-14` como defeito conhecido conforme decisão aprovada.
@@ -1715,5 +1738,17 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** criada uma flag de controle local `guarantorPfReady` inicializada como `false` no `beforeEach` e definida como `true` apenas após a navegação completa para a tela do Garantidor. O teardown verifica esta flag antes de executar as interações de limpeza.
 - **Resultado:** em caso de falha de carregamento, o teste falha limpamente e de forma isolada, sem causar falhas secundárias confusas no teardown.
 - **Aplicação futura:** usar flags de status do teste para condicionar ações mutáveis ou interações de limpeza em hooks de teardown.
+
+## Lições da Fase 6.12 — Garantidor PJ
+
+### 2026-07-09 — Resolução de Mapeadores Dinâmicos de Arrays
+
+- **Situação:** o teste `GAR-PJ-06` precisava validar a adição dinâmica de novos sócios na interface de usuário.
+- **Problema ou descoberta:** ao adicionar elementos repetidos na UI (como um novo card de sócio), seletores estáticos por ID que contêm índices numéricos podem gerar falsos positivos ou falhas secundárias.
+- **Causa:** o DOM renderiza vários campos com o atributo `name="NO_PESSOA"`.
+- **Ação tomada:** utilizamos a query genérica `page.locator('[name="NO_PESSOA"]')` e extraímos o `.count()` antes e após o clique de inclusão, assertando que o tamanho total do array aumentou em 1.
+- **Resultado:** o teste funcionou perfeitamente e de forma robusta, independente da complexidade ou dos índices numéricos gerados pela UI para o novo sócio.
+- **Aplicação futura:** preferir checagens de quantidade em conjuntos de elementos quando validar criação/exclusão dinâmica de cartões em listas.
+
 
 
