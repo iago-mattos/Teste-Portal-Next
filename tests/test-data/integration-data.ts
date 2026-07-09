@@ -41,3 +41,36 @@ export const integrationData = {
 } as const satisfies Record<string, IntegrationScenarioData>;
 
 export type IntegrationCaseId = keyof typeof integrationData;
+
+export interface ResolvedIntegrationScenario {
+  readonly caseId: IntegrationCaseId;
+  readonly operationNumber: string;
+  readonly profile: IntegrationScenarioProfile;
+  readonly purpose: string;
+}
+
+export function getIntegrationScenario(
+  caseIdInput: IntegrationCaseId,
+  env: NodeJS.ProcessEnv = process.env,
+): ResolvedIntegrationScenario {
+  const caseIdEnv = env.PORTAL_INTEGRATION_CASE_ID?.trim();
+  const caseId = (caseIdEnv && caseIdEnv in integrationData)
+    ? (caseIdEnv as IntegrationCaseId)
+    : caseIdInput;
+
+  const scenario = integrationData[caseId];
+  const operationOverride = env.PORTAL_INTEGRATION_OPERATION?.trim().replace(/\D/g, "");
+  const operationNumber = operationOverride || scenario.operationNumber;
+
+  if (!operationNumber) {
+    throw new Error(`Numero de operacao nao configurado para o cenario: ${caseId}`);
+  }
+
+  return {
+    caseId,
+    operationNumber: operationNumber.padStart(9, "0"),
+    profile: scenario.profile,
+    purpose: scenario.purpose,
+  };
+}
+
