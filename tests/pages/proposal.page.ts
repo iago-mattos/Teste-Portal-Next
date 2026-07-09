@@ -6,6 +6,8 @@ import { SearchableComboboxComponent } from "../components/portal/searchable-com
 export class ProposalPage {
   readonly heading: Locator;
   readonly tabs: ProposalTabsComponent;
+  readonly proponentInfo: Locator;
+  readonly phasesNav: Locator;
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole("heading", {
@@ -13,6 +15,13 @@ export class ProposalPage {
       level: 1,
     });
     this.tabs = new ProposalTabsComponent(page);
+    this.proponentInfo = page.getByText(/^Proponente:\s*$/i).locator("..");
+    this.phasesNav = page.getByRole("navigation", { name: "Fases da proposta" });
+  }
+
+  getAlert(text?: string | RegExp): Locator {
+    const alert = this.page.getByRole("status");
+    return text ? alert.filter({ hasText: text }) : alert;
   }
 
   async open(proposalId: string): Promise<void> {

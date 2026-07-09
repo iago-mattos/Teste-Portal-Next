@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1 e 6.2 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2 e 6.3 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1 e 6.2 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2 e 6.3 concluídas
 
 ### Objetivo
 
@@ -733,6 +733,31 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - Playwright: execução completa de `proposals.spec.ts` aprovada com 19 casos passando (1 skip/fixme conhecido) em aproximadamente 5.7 minutos;
 - Cypress: permanece íntegro com a baseline inalterada;
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 23 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
+### Subfase 6.3 — Linha do Tempo e Alertas
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/timeline/timeline.spec.ts`
+- `tests/pages/proposal.page.ts`
+- `tests/config/runtime-config.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `TIMELINE-01` a `TIMELINE-12` migrados com 100% de paridade funcional com Cypress;
+- Resolvido o localizador `proponentInfo` no Page Object do Portal para obter o container pai (`page.getByText(/^Proponente:\s*$/i).locator("..")`) do label, evitando correspondência de correspondência incompleta e assegurando a validação correta do nome e do CPF do proponente;
+- Evitada a violação de strict mode em `TIMELINE-05` ao escopar o locator da etapa atual da linha do tempo especificamente para elementos `li` com `aria-current="step"`;
+- Adicionado tratamento de sincronização para carregamento assíncrono em `TIMELINE-06` (proposta expirada), aguardando o desaparecimento de skeletons e a visibilidade de pelo menos um campo antes da contagem de elementos de formulário.
+
+#### Validação
+
+- Playwright: execução completa de `timeline.spec.ts` aprovada com 12 casos passando em 4.5 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 12 casos em 4 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 35 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
@@ -936,7 +961,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 - ✅ Migrar Login — Subfase 6.1.
 - ✅ Migrar Minhas Propostas — Subfase 6.2.
-- ⏳ Migrar Linha do Tempo e Alertas.
+- ✅ Migrar Linha do Tempo e Alertas — Subfase 6.3.
 - ⏳ Migrar Participantes.
 - ⏳ Migrar Cônjuge.
 - ⏳ Migrar Composição de Renda.
@@ -1391,3 +1416,23 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** adicionada chamada explícita `test.setTimeout(60000)` para o caso `PROP-05`.
 - **Resultado:** o caso passou estavelmente em 41.6 segundos.
 - **Aplicação futura:** aplicar timeouts expandidos em fluxos complexos de navegação cumulativa.
+
+## Lições da Fase 6.3 — Linha do Tempo e Alertas
+
+### 2026-07-09 — Seleção de texto parcial em elementos aninhados
+
+- **Situação:** os testes `TIMELINE-01` e `TIMELINE-02` falhavam ao validar o nome e o CPF do proponente.
+- **Problema ou descoberta:** o localizador `page.getByText(/Proponente:/i)` selecionava apenas o span interno contendo o rótulo fixo.
+- **Causa:** o comportamento padrão do Playwright de obter a correspondência mais específica ao invés de subir para o contêiner de texto pai.
+- **Ação tomada:** ajustado o localizador do Page Object para subir para o elemento pai (`page.getByText(/^Proponente:\s*$/i).locator("..")`).
+- **Resultado:** o contêiner completo foi obtido com sucesso permitindo validar os dados dinâmicos de forma consistente.
+- **Aplicação futura:** usar `locator("..")` ou contêineres explícitos ao lidar com spans de rótulos aninhados em blocos de texto dinâmico.
+
+### 2026-07-09 — Violação de Strict Mode por múltiplos aria-current
+
+- **Situação:** o teste `TIMELINE-05` falhava com erro de violação de strict mode no Playwright.
+- **Problema ou descoberta:** o localizador `[aria-current="step"]` retornava dois elementos: uma `div` e um `li` da etapa atual.
+- **Causa:** múltiplos elementos contendo a indicação de etapa atual na estrutura de linha do tempo.
+- **Ação tomada:** escopado o localizador explicitamente para a tag da lista (`li[aria-current="step"]`).
+- **Resultado:** a linha do tempo passou a ser resolvida de maneira unívoca.
+- **Aplicação futura:** evitar filtros genéricos de atributos de estado sem escopo de tag ou de container.

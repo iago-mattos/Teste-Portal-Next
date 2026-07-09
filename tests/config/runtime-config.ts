@@ -16,8 +16,11 @@ export interface LocalPortalCompatibilityConfig {
   testData?: {
     cpfComPropostas?: string;
     cpfInvalido?: string;
+    propostaExpiradaId?: string;
     expectedProposal?: {
       visibleNumber?: string;
+      proponentName?: string;
+      cpfEnding?: string;
       registrationDate?: string;
       propertyValue?: string;
       financedValue?: string;
@@ -40,8 +43,11 @@ export interface PortalRuntimeConfig {
   }>;
   readonly testData: Readonly<{
     invalidCpf: string;
+    propostaExpiradaId: string;
     expectedProposal: Readonly<{
       visibleNumber: string;
+      proponentName: string;
+      cpfEnding: string;
       registrationDate: string;
       propertyValue: string;
       financedValue: string;
@@ -94,6 +100,8 @@ function resolveExpectedProposal(
   local: LocalPortalCompatibilityConfig | undefined,
 ): Readonly<{
   visibleNumber: string;
+  proponentName: string;
+  cpfEnding: string;
   registrationDate: string;
   propertyValue: string;
   financedValue: string;
@@ -128,6 +136,8 @@ function resolveExpectedProposal(
 
   return Object.freeze({
     visibleNumber: getString("visibleNumber", localExpected.visibleNumber),
+    proponentName: getString("proponentName", localExpected.proponentName),
+    cpfEnding: getString("cpfEnding", localExpected.cpfEnding),
     registrationDate: getString("registrationDate", localExpected.registrationDate),
     propertyValue: getString("propertyValue", localExpected.propertyValue),
     financedValue: getString("financedValue", localExpected.financedValue),
@@ -201,6 +211,34 @@ function resolveInvalidCpf(
   }
 }
 
+function resolvePropostaExpiradaId(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): string {
+  const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
+  if (!rawTestData) {
+    return local?.testData?.propostaExpiradaId?.trim() || "";
+  }
+
+  try {
+    const parsed = JSON.parse(rawTestData) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("o valor precisa ser um objeto JSON");
+    }
+
+    const propostaExpiradaId = (parsed as { propostaExpiradaId?: unknown }).propostaExpiradaId;
+    if (propostaExpiradaId !== undefined && typeof propostaExpiradaId !== "string") {
+      throw new Error("propostaExpiradaId precisa ser texto");
+    }
+
+    return propostaExpiradaId?.trim() || "";
+  } catch (error) {
+    throw new Error("PORTAL_TEST_DATA_JSON possui JSON invalido.", {
+      cause: error,
+    });
+  }
+}
+
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
@@ -239,6 +277,7 @@ export function loadPortalRuntimeConfig(
     }),
     testData: Object.freeze({
       invalidCpf: resolveInvalidCpf(env, local),
+      propostaExpiradaId: resolvePropostaExpiradaId(env, local),
       expectedProposal: resolveExpectedProposal(env, local),
     }),
     pageErrors: Object.freeze({
