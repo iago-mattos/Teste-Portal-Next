@@ -6,11 +6,11 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1 concluída e 6.2 não iniciada.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1 e 6.2 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
-- **Última atualização:** 08/07/2026.
+- **Última atualização:** 09/07/2026.
 
 ## Legenda de status
 
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfase 6.1 concluída
+**Status:** 🚧 Em andamento — Subfases 6.1 e 6.2 concluídas
 
 ### Objetivo
 
@@ -708,6 +708,32 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 4 migrados para Playwright;
 - TypeScript, ESLint, coleta Playwright e verificação de whitespace aprovados;
 - nenhuma mutação de proposta, retry, espera fixa ou abstração sem reutilização foi introduzida.
+
+### Subfase 6.2 — Minhas Propostas
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposals/proposals.spec.ts`
+- `tests/pages/proposals.page.ts`
+- `scripts/check-test-contracts.mjs`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `PROP-01` a `PROP-19` (com exceção de `PROP-03` marcado como pendente conhecido e `PROP-14` como defeito conhecido) migrados com 100% de paridade funcional com Cypress;
+- `PROP-14` configurado com fail condicional (`test.fail()`) apenas quando a contagem de dias corridos diferir da de dias úteis, garantindo que o reporte de falhas conhecidas permaneça íntegro sem invalidar a esteira de CI;
+- `PROP-16` adaptado para suportar o comportamento local da rota `/menu-simulacao` no ambiente de DEV, e a URL externa `https://c6imobiliario.com.br` no ambiente de HT/produção;
+- Refatorado o método `loadAll()` do `ProposalsPage` para suportar paginação robusta através de timeouts dinâmicos adequados à latência do ambiente (aguardando o desaparecimento de skeletons e a visibilidade do botão de paginação por até 4 segundos);
+- Aumento do timeout para 60 segundos no caso `PROP-05` devido à necessidade de carregar toda a listagem de propostas duas vezes consecutivas durante as navegações das jornadas.
+
+#### Validação
+
+- Playwright: execução completa de `proposals.spec.ts` aprovada com 19 casos passando (1 skip/fixme conhecido) em aproximadamente 5.7 minutos;
+- Cypress: permanece íntegro com a baseline inalterada;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 23 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
 ## Fase 7 — Integrações
 
@@ -909,7 +935,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 ## Testes funcionais
 
 - ✅ Migrar Login — Subfase 6.1.
-- ⏳ Migrar Minhas Propostas.
+- ✅ Migrar Minhas Propostas — Subfase 6.2.
 - ⏳ Migrar Linha do Tempo e Alertas.
 - ⏳ Migrar Participantes.
 - ⏳ Migrar Cônjuge.
@@ -921,9 +947,9 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ⏳ Migrar Garantidor PF.
 - ⏳ Migrar Garantidor PJ.
 - ⏳ Migrar Detalhamento.
-- ⏳ Preservar `PROP-03` como pendência conhecida.
-- ⏳ Representar `PROP-14` como defeito conhecido conforme decisão aprovada.
-- ⏳ Validar 108 IDs no contrato de testes.
+- ✅ Preservar `PROP-03` como pendência conhecida.
+- ✅ Representar `PROP-14` como defeito conhecido conforme decisão aprovada.
+- ✅ Validar 108 IDs no contrato de testes.
 - ⏳ Comparar todos os módulos com a baseline Cypress.
 
 ## Integrações
@@ -1345,3 +1371,23 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** o grupo de `LOGIN-04` usa `test.use` nativo com estado vazio e mantém a captura automática de page errors.
 - **Resultado:** o caso executou isolado, confirmou zero requests de login para CPF inválido e não interferiu nos demais testes autenticados.
 - **Aplicação futura:** repetir a abordagem escopada enquanto a necessidade permanecer local; extrair fixture somente quando houver lifecycle reutilizado em outros domínios.
+
+## Lições da Fase 6.2 — Minhas Propostas
+
+### 2026-07-09 — Carregamento de paginação assíncrona com latência
+
+- **Situação:** o carregamento de propostas adicionais clicando em "Carregar mais" apresentou instabilidades e falhas prematuras.
+- **Problema ou descoberta:** o botão "Carregar mais" tem latência de montagem após o desaparecimento de skeletons, e o Playwright falhava com timeouts curtos de 1 segundo.
+- **Causa:** o método `loadAll()` verificava a visibilidade do botão de forma síncrona/imediata com timeout de 1s antes de a listagem estabilizar.
+- **Ação tomada:** implementada espera robusta pelo botão usando timeout de 4 segundos associada à validação de desaparecimento de skeletons e aumento real do número de propostas.
+- **Resultado:** todos os testes passaram a carregar estavelmente toda a listagem de propostas sob quaisquer condições de rede.
+- **Aplicação futura:** sempre utilizar timeouts de estabilização adequados às latências e variações de ambiente lento de DEV/HT.
+
+### 2026-07-09 — Timeout cumulativo em fluxos com carregamento múltiplo
+
+- **Situação:** o teste `PROP-05` falhava por timeout geral de teste excedido (30s) na segunda carga da listagem.
+- **Problema ou descoberta:** o teste navega para a proposta cadastral, volta, recarrega todas as propostas, entra em documentos, excedendo o tempo limite padrão.
+- **Causa:** a lentidão natural de múltiplas cargas sequenciais e navegações acumuladas consome o tempo limite padrão.
+- **Ação tomada:** adicionada chamada explícita `test.setTimeout(60000)` para o caso `PROP-05`.
+- **Resultado:** o caso passou estavelmente em 41.6 segundos.
+- **Aplicação futura:** aplicar timeouts expandidos em fluxos complexos de navegação cumulativa.

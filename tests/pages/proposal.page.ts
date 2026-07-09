@@ -29,6 +29,10 @@ export class ProposalPage {
     await expect(this.tabs.root).toBeVisible();
   }
 
+  getFieldByName(fieldName: string): Locator {
+    return this.page.locator(`[name=${JSON.stringify(fieldName)}]`);
+  }
+
   getSearchableCombobox(fieldName: string): SearchableComboboxComponent {
     return new SearchableComboboxComponent(this.page, fieldName);
   }

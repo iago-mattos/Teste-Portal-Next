@@ -7,6 +7,8 @@ export type PortalEnvironment = "dev" | "ht";
 export interface LocalPortalCompatibilityConfig {
   portalUrl?: string;
   accessUrl?: string;
+  externalSimulationUrl?: string;
+  caseProposalIds?: Record<string, string>;
   paths?: {
     login?: string;
     propostas?: string;
@@ -16,6 +18,12 @@ export interface LocalPortalCompatibilityConfig {
     cpfInvalido?: string;
     expectedProposal?: {
       visibleNumber?: string;
+      registrationDate?: string;
+      propertyValue?: string;
+      financedValue?: string;
+      term?: string;
+      currentPhase?: string;
+      deadline?: string;
     };
   };
 }
@@ -23,6 +31,8 @@ export interface LocalPortalCompatibilityConfig {
 export interface PortalRuntimeConfig {
   readonly environment: PortalEnvironment;
   readonly portalUrl: string;
+  readonly externalSimulationUrl: string;
+  readonly caseProposalIds: Readonly<Record<string, string>>;
   readonly paths: Readonly<{
     authMe: "/api/auth/me";
     login: string;
@@ -32,6 +42,12 @@ export interface PortalRuntimeConfig {
     invalidCpf: string;
     expectedProposal: Readonly<{
       visibleNumber: string;
+      registrationDate: string;
+      propertyValue: string;
+      financedValue: string;
+      term: string;
+      currentPhase: string;
+      deadline: string;
     }>;
   }>;
   readonly pageErrors: Readonly<{
@@ -73,32 +89,88 @@ function normalizeUrl(value: string, field: string): string {
   }
 }
 
-function resolveExpectedProposalNumber(
+function resolveExpectedProposal(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): Readonly<{
+  visibleNumber: string;
+  registrationDate: string;
+  propertyValue: string;
+  financedValue: string;
+  term: string;
+  currentPhase: string;
+  deadline: string;
+}> {
+  const rawExpectedProposal = env.PORTAL_EXPECTED_PROPOSAL_JSON?.trim();
+  let parsed: Record<string, unknown> = {};
+
+  if (rawExpectedProposal) {
+    try {
+      const parsedJson = JSON.parse(rawExpectedProposal) as unknown;
+      if (parsedJson && typeof parsedJson === "object" && !Array.isArray(parsedJson)) {
+        parsed = parsedJson as Record<string, unknown>;
+      } else {
+        throw new Error("o valor precisa ser um objeto JSON");
+      }
+    } catch (error) {
+      throw new Error("PORTAL_EXPECTED_PROPOSAL_JSON possui JSON invalido.", {
+        cause: error,
+      });
+    }
+  }
+
+  const localExpected = local?.testData?.expectedProposal ?? {};
+
+  const getString = (key: string, fallback: string | undefined): string => {
+    const val = parsed[key] !== undefined ? parsed[key] : fallback;
+    return val !== undefined ? String(val).trim() : "";
+  };
+
+  return Object.freeze({
+    visibleNumber: getString("visibleNumber", localExpected.visibleNumber),
+    registrationDate: getString("registrationDate", localExpected.registrationDate),
+    propertyValue: getString("propertyValue", localExpected.propertyValue),
+    financedValue: getString("financedValue", localExpected.financedValue),
+    term: getString("term", localExpected.term),
+    currentPhase: getString("currentPhase", localExpected.currentPhase),
+    deadline: getString("deadline", localExpected.deadline),
+  });
+}
+
+function resolveCaseProposalIds(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): Readonly<Record<string, string>> {
+  const rawRecord = env.PORTAL_CASE_PROPOSAL_IDS_JSON?.trim();
+  if (rawRecord) {
+    try {
+      const parsed = JSON.parse(rawRecord) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return Object.freeze(
+          Object.fromEntries(
+            Object.entries(parsed).map(([key, entry]) => [key, String(entry)]),
+          ),
+        );
+      }
+      throw new Error("o valor precisa ser um objeto JSON");
+    } catch (error) {
+      throw new Error("PORTAL_CASE_PROPOSAL_IDS_JSON possui JSON invalido.", {
+        cause: error,
+      });
+    }
+  }
+  return Object.freeze(local?.caseProposalIds ?? {});
+}
+
+function resolveExternalSimulationUrl(
   env: NodeJS.ProcessEnv,
   local: LocalPortalCompatibilityConfig | undefined,
 ): string {
-  const rawExpectedProposal = env.PORTAL_EXPECTED_PROPOSAL_JSON?.trim();
-  if (!rawExpectedProposal) {
-    return local?.testData?.expectedProposal?.visibleNumber?.trim() ?? "";
-  }
-
-  try {
-    const parsed = JSON.parse(rawExpectedProposal) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      throw new Error("o valor precisa ser um objeto JSON");
-    }
-
-    const visibleNumber = (parsed as { visibleNumber?: unknown }).visibleNumber;
-    if (visibleNumber !== undefined && typeof visibleNumber !== "string") {
-      throw new Error("visibleNumber precisa ser texto");
-    }
-
-    return visibleNumber?.trim() ?? "";
-  } catch (error) {
-    throw new Error("PORTAL_EXPECTED_PROPOSAL_JSON possui JSON invalido.", {
-      cause: error,
-    });
-  }
+  return (
+    env.PORTAL_EXTERNAL_SIMULATION_URL?.trim() ||
+    local?.externalSimulationUrl?.trim() ||
+    "https://c6imobiliario.com.br"
+  );
 }
 
 function resolveInvalidCpf(
@@ -156,6 +228,8 @@ export function loadPortalRuntimeConfig(
   return Object.freeze({
     environment: resolvePortalEnvironment(env),
     portalUrl,
+    externalSimulationUrl: resolveExternalSimulationUrl(env, local),
+    caseProposalIds: resolveCaseProposalIds(env, local),
     paths: Object.freeze({
       authMe: "/api/auth/me" as const,
       login: loginPath.startsWith("/") ? loginPath : `/${loginPath}`,
@@ -165,9 +239,7 @@ export function loadPortalRuntimeConfig(
     }),
     testData: Object.freeze({
       invalidCpf: resolveInvalidCpf(env, local),
-      expectedProposal: Object.freeze({
-        visibleNumber: resolveExpectedProposalNumber(env, local),
-      }),
+      expectedProposal: resolveExpectedProposal(env, local),
     }),
     pageErrors: Object.freeze({
       allowReact418Quarantine:

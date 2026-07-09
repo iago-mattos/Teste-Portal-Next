@@ -42,10 +42,16 @@ export class ProposalsPage {
       exact: true,
     });
 
-    while ((await loadMoreButton.count()) > 0) {
-      if (!(await loadMoreButton.isVisible())) return;
+    while (true) {
+      await expect(this.skeletons).toHaveCount(0);
+      try {
+        await loadMoreButton.waitFor({ state: "visible", timeout: 4000 });
+      } catch {
+        break;
+      }
 
       const previousCount = await this.proposalCards.count();
+
       await Promise.all([
         this.page.waitForResponse((response) => {
           const url = new URL(response.url());
@@ -53,22 +59,21 @@ export class ProposalsPage {
             response.request().method() === "GET" &&
             url.pathname === "/api/portal/propostas"
           );
-        }),
+        }, { timeout: 10000 }),
         loadMoreButton.click(),
       ]);
+
       await expect(
         this.page.getByRole("button", {
           name: "Carregando...",
           exact: true,
         }),
-      ).toBeHidden();
+      ).toBeHidden({ timeout: 10000 });
 
-      const currentCount = await this.proposalCards.count();
-      if (currentCount <= previousCount && (await loadMoreButton.isVisible())) {
-        throw new Error(
-          "O Portal manteve a acao Carregar mais sem adicionar propostas.",
-        );
-      }
+      await expect(async () => {
+        const currentCount = await this.proposalCards.count();
+        expect(currentCount).toBeGreaterThan(previousCount);
+      }).toPass({ timeout: 3000 });
     }
   }
 
