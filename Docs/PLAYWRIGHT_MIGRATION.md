@@ -6,7 +6,7 @@
 
 ## Status do programa
 
-- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 e 6.7 concluídas.
+- **Estado geral:** ✅ Fases 1 a 5 concluídas; 🚧 Fase 6 em andamento — 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 e 6.8 concluídas.
 - **Framework atual:** Cypress 15.17.0 com TypeScript.
 - **Framework alvo:** Playwright Test 1.61.1 com TypeScript.
 - **Estratégia de transição:** coexistência controlada até comprovação de equivalência.
@@ -636,7 +636,7 @@ Comprovar autenticação, sessão e abertura da proposta padrão com a nova infr
 
 ## Fase 6 — Testes Funcionais
 
-**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 e 6.7 concluídas
+**Status:** 🚧 Em andamento — Subfases 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 e 6.8 concluídas
 
 ### Objetivo
 
@@ -852,6 +852,28 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 - contrato: 108 casos, 107 implementados, 1 pendente conhecido e 67 migrados para Playwright;
 - TypeScript, ESLint, verificação de linter e contratos executados sem erros.
 
+### Subfase 6.8 — Renda de Terceiros
+
+**Status:** ✅ Concluída em 09/07/2026
+
+#### Arquivos envolvidos
+
+- `tests/functional/proposal-form/third-party-income/renda-terceiros.spec.ts`
+- `docs/PLAYWRIGHT_MIGRATION.md`
+
+#### Implementação
+
+- `RENDA-TERC-01` a `RENDA-TERC-11` migrados com 100% de paridade funcional com Cypress;
+- Adicionado hook `afterEach` no arquivo de spec para redefinir a composição de renda para "Não" após a execução de cada caso de teste funcional, isolando completamente o banco de dados;
+- Resolvido o teste de verificação de lista `RENDA-TERC-10` mapeando as opções de select nativo via `options.nth(1).toBeAttached()` para esperar o carregamento assíncrono antes do processamento dos textos.
+
+#### Validação
+
+- Playwright: execução completa de `renda-terceiros.spec.ts` aprovada com 11 casos passando em 3.9 minutos;
+- Cypress: execução da spec correspondente com quarentena de hydration habilitada aprovada com 11 casos em 3.9 minutos;
+- contrato: 108 casos, 107 implementados, 1 pendente conhecido e 78 migrados para Playwright;
+- TypeScript, ESLint, verificação de linter e contratos executados sem erros.
+
 ## Fase 7 — Integrações
 
 **Status:** ⏳ Não iniciado
@@ -1058,7 +1080,7 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 - ✅ Migrar Cônjuge — Subfase 6.5.
 - ✅ Migrar Composição de Renda — Subfase 6.6.
 - ✅ Migrar Renda do Cônjuge — Subfase 6.7.
-- ⏳ Migrar Renda de Terceiros.
+- ✅ Migrar Renda de Terceiros — Subfase 6.8.
 - ⏳ Migrar Motivo da Contratação.
 - ⏳ Migrar Imóvel.
 - ⏳ Migrar Garantidor PF.
@@ -1581,3 +1603,14 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 - **Ação tomada:** utilizado o método `.search(value)` do Page Object encapsulado de combobox (`SearchableComboboxComponent`), que executa a limpeza, escrita nativa e validação da abertura de listbox unificadamente.
 - **Resultado:** o teste de filtro funcionou consistentemente em todas as execuções sem falhas de carregamento assíncrono.
 - **Aplicação futura:** preferir expor e utilizar métodos especializados de interação em componentes reutilizáveis em vez de manipulação direta de seletores de baixo nível.
+
+## Lições da Fase 6.8 — Renda de Terceiros
+
+### 2026-07-09 — Espera Determinística em Selects Nativos
+
+- **Situação:** o teste `RENDA-TERC-10` falhava intermitentemente ao retornar uma lista de opções vazia (`[]`).
+- **Problema ou descoberta:** ao contrário dos comboboxes customizados que forçam a visibilidade de listbox ao serem abertos, os selects nativos (que populam suas `<option>` de forma assíncrona) não têm estados de listbox mapeados em HTML.
+- **Causa:** a contagem de opções `.count()` ocorre síncronamente antes da API de originação carregar e anexar as opções no DOM.
+- **Ação tomada:** adicionada a checagem explícita `await expect(options.nth(1)).toBeAttached()` para segurar a execução do teste até que o elemento seja populado.
+- **Resultado:** a lista foi obtida e validada de forma 100% confiável em todas as tentativas subsequentes.
+- **Aplicação futura:** usar `toBeAttached()` no primeiro ou segundo elemento dinâmico de selects nativos para sincronizar carregamentos assíncronos de APIs.
