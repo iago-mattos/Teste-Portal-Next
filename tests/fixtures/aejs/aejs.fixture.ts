@@ -1,9 +1,8 @@
-import { existsSync } from "node:fs";
-import { type Page, type BrowserContext } from "@playwright/test";
+import { expect, type Page, type BrowserContext } from "@playwright/test";
 import { pageErrorsTest } from "../page-errors.fixture";
 import {
+  assertAejsRuntimeConfig,
   loadAejsRuntimeConfig,
-  AEJS_AUTH_STATE_PATH,
   type AejsRuntimeConfig,
 } from "../../config/aejs-config";
 
@@ -16,6 +15,41 @@ export interface AejsWorkerFixtures {
   aejsConfig: AejsRuntimeConfig;
 }
 
+async function authenticateAejsPage(
+  page: Page,
+  config: AejsRuntimeConfig,
+): Promise<void> {
+  await page.goto(config.baseUrl, { waitUntil: "domcontentloaded" });
+
+  const platformAccessButton = page.getByText("Acesso via Plataforma", {
+    exact: true,
+  });
+  await expect(platformAccessButton).toBeVisible({ timeout: 30_000 });
+  await platformAccessButton.click();
+
+  const usernameInput = page.locator('input[name="name"]:visible');
+  const passwordInput = page.locator('input[name="password"]:visible');
+  await expect(usernameInput).toBeVisible({ timeout: 30_000 });
+  await expect(passwordInput).toBeVisible();
+  await usernameInput.fill(config.username);
+  await passwordInput.fill(config.password);
+
+  if (config.path) {
+    const pathInput = page.locator('input[name="path"]:visible');
+    if (await pathInput.isVisible()) {
+      await pathInput.fill(config.path);
+    }
+  }
+
+  const loginButton = page.getByText("Login", { exact: true });
+  await expect(loginButton).toBeVisible();
+  await loginButton.click();
+
+  await expect(page.getByText("Originação", { exact: true })).toBeVisible({
+    timeout: 40_000,
+  });
+}
+
 export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>({
   aejsConfig: [
     // eslint-disable-next-line no-empty-pattern
@@ -26,14 +60,7 @@ export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>(
   ],
 
   aejsContext: async ({ browser }, use) => {
-    if (!existsSync(AEJS_AUTH_STATE_PATH)) {
-      throw new Error(
-        "Erro: O estado de autenticacao do AEJS nao existe. Execute o setup do AEJS antes de rodar os testes de integracao.",
-      );
-    }
-
     const context = await browser.newContext({
-      storageState: AEJS_AUTH_STATE_PATH,
       viewport: { width: 1440, height: 900 },
     });
 
@@ -41,8 +68,10 @@ export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>(
     await context.close();
   },
 
-  aejsPage: async ({ aejsContext }, use) => {
+  aejsPage: async ({ aejsContext, aejsConfig }, use) => {
     const page = await aejsContext.newPage();
+    assertAejsRuntimeConfig(aejsConfig);
+    await authenticateAejsPage(page, aejsConfig);
     await use(page);
   },
 });

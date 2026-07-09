@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
-import { createHash } from "node:crypto";
 
 export interface AejsRuntimeConfig {
   readonly baseUrl: string;
@@ -9,9 +8,6 @@ export interface AejsRuntimeConfig {
   readonly password: string;
   readonly path: string;
 }
-
-export const AEJS_AUTH_STATE_PATH = resolve("playwright", ".auth", "aejs.json");
-export const AEJS_AUTH_METADATA_PATH = resolve("playwright", ".auth", "aejs.meta.json");
 
 const loadLocalModule = createRequire(resolve("package.json"));
 
@@ -54,14 +50,10 @@ export function loadAejsRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Aej
   });
 }
 
-export function aejsAuthFingerprint(config: AejsRuntimeConfig): string {
-  return createHash("sha256")
-    .update(
-      JSON.stringify({
-        baseUrl: config.baseUrl,
-        username: config.username,
-        path: config.path,
-      }),
-    )
-    .digest("hex");
+export function assertAejsRuntimeConfig(config: AejsRuntimeConfig): void {
+  if (config.baseUrl && config.username && config.password) return;
+
+  throw new Error(
+    "Execucao bloqueada: configure AEJS_URL, AEJS_USERNAME e AEJS_PASSWORD nas variaveis de ambiente para executar os testes de integracao.",
+  );
 }
