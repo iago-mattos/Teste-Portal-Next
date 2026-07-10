@@ -13,10 +13,9 @@ export class AejsOperationsPage {
   private readonly operationsGrid: ExtJsGridComponent;
 
   constructor(page: Page) {
-    this.originationMenuItem = page.getByRole("menuitem", {
-      name: "Originação",
-      exact: true,
-    });
+    this.originationMenuItem = page
+      .getByRole("toolbar")
+      .getByRole("button", { name: "Originação", exact: true });
     this.operationsMenuItem = page.getByRole("menuitem", {
       name: "Cadastro de operações",
       exact: true,
