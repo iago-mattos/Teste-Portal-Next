@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, type Response } from "@playwright/test";
 import { test } from "../../fixtures/test";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
 import {
@@ -10,8 +10,16 @@ import {
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
 
-function isPortalSave(response: { url(): string; request(): { method(): string } }): boolean {
-  return response.request().method() === "PUT" && new URL(response.url()).pathname.includes("/cadastro");
+function isProposalTransitionResponse(
+  response: Response,
+  method: "PUT" | "POST",
+  operationNumber: string,
+  endpoint: "cadastro" | "finalizar",
+): boolean {
+  const url = new URL(response.url());
+
+  return response.request().method() === method
+    && url.pathname === `/api/portal/propostas/${operationNumber}/${endpoint}`;
 }
 
 async function fillField(
@@ -29,17 +37,26 @@ async function fillField(
 async function saveAndAdvance(
   page: Page,
   proposalPage: ProposalPage,
+  operationNumber: string,
   nextTab: "Cônjuge" | "Composição de Renda" | "Motivo da Contratação" | "Imóvel" | "Garantidor",
 ): Promise<void> {
   const advanceButton = page.getByRole("button", {
     name: "Confirmar e avançar cadastro",
     exact: true,
   });
+  const saveResponsePromise = page.waitForResponse(
+    (response) => isProposalTransitionResponse(
+      response,
+      "PUT",
+      operationNumber,
+      "cadastro",
+    ),
+    { timeout: 30_000 },
+  );
 
-  const [saveResponse] = await Promise.all([
-    page.waitForResponse(isPortalSave, { timeout: 30_000 }),
-    advanceButton.click(),
-  ]);
+  await advanceButton.click();
+
+  const saveResponse = await saveResponsePromise;
   expect(saveResponse.status()).toBe(200);
   await expect(proposalPage.tabs.getTabButton(nextTab)).toHaveAttribute("aria-selected", "true");
 }
@@ -47,12 +64,22 @@ async function saveAndAdvance(
 async function saveByOpeningTab(
   page: Page,
   proposalPage: ProposalPage,
-  tab: "Sobre Você" | "Imóvel" | "Garantidor",
+  operationNumber: string,
+  tab: "Imóvel" | "Garantidor",
 ): Promise<void> {
-  const [saveResponse] = await Promise.all([
-    page.waitForResponse(isPortalSave, { timeout: 30_000 }),
-    proposalPage.tabs.select(tab),
-  ]);
+  const saveResponsePromise = page.waitForResponse(
+    (response) => isProposalTransitionResponse(
+      response,
+      "PUT",
+      operationNumber,
+      "cadastro",
+    ),
+    { timeout: 30_000 },
+  );
+
+  await proposalPage.tabs.select(tab);
+
+  const saveResponse = await saveResponsePromise;
   expect(saveResponse.status()).toBe(200);
 }
 
@@ -129,68 +156,129 @@ async function fillPjGuarantor(
 }
 
 test(
-  "Portal → AEJS | prepara e salva os dados PJ da operação descartável",
+  "Portal → AEJS | prepara e confirma a operação PJ descartável",
   integrationMutation,
   async ({ page, proposalPage }) => {
-    // A Subfase A persiste deliberadamente esta massa dedicada para a Subfase B.
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
     const { applicant, spouse, creditPurpose, property, guarantor } = scenario.preparation;
 
-    await proposalPage.open(scenario.operationNumber);
+    await test.step("abre a proposta descartável", async () => {
+      await proposalPage.open(scenario.operationNumber);
+    });
 
-    await fillField(proposalPage, "PESSOA.VA_RENDA_BRUTA", applicant.grossIncome);
-    await proposalPage.getVisibleFieldByName("PESSOA.CO_ESTCIV").selectOption(applicant.maritalStatus);
-    await selectSearchableOption(proposalPage, "PESSOA.CO_NACIONALIDADE", applicant.nationality);
-    await selectSearchableOption(proposalPage, "PESSOA.CO_UFNASC", applicant.birthState);
-    await selectSearchableOption(proposalPage, "PESSOA.CO_UFIDENTIDADE", applicant.identityState);
-    await selectSearchableOption(proposalPage, "PESSOA.CO_PROFISSAO", applicant.profession);
-    await selectSearchableOption(
-      proposalPage,
-      "PESSOA.CO_ATIVIDADE_PROFISSIONAL",
-      applicant.professionalActivity,
-    );
-    await proposalPage.getVisibleFieldByName("PESSOA.IN_RESIDE_NO_IMOVEL").selectOption(applicant.livesInProperty);
-    await saveAndAdvance(page, proposalPage, "Cônjuge");
+    await test.step("preenche titular", async () => {
+      await fillField(proposalPage, "PESSOA.VA_RENDA_BRUTA", applicant.grossIncome);
+      await proposalPage.getVisibleFieldByName("PESSOA.CO_ESTCIV").selectOption(applicant.maritalStatus);
+      await selectSearchableOption(proposalPage, "PESSOA.CO_NACIONALIDADE", applicant.nationality);
+      await selectSearchableOption(proposalPage, "PESSOA.CO_UFNASC", applicant.birthState);
+      await selectSearchableOption(proposalPage, "PESSOA.CO_UFIDENTIDADE", applicant.identityState);
+      await selectSearchableOption(proposalPage, "PESSOA.CO_PROFISSAO", applicant.profession);
+      await selectSearchableOption(
+        proposalPage,
+        "PESSOA.CO_ATIVIDADE_PROFISSIONAL",
+        applicant.professionalActivity,
+      );
+      await proposalPage.getVisibleFieldByName("PESSOA.IN_RESIDE_NO_IMOVEL").selectOption(applicant.livesInProperty);
+      await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Cônjuge");
+    });
 
-    await fillSpouse(proposalPage, spouse);
-    await saveAndAdvance(page, proposalPage, "Composição de Renda");
+    await test.step("preenche cônjuge", async () => {
+      await fillSpouse(proposalPage, spouse);
+      await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Composição de Renda");
+    });
 
-    await page.getByRole("radio", { name: "Sim", exact: true }).check();
-    await page.getByRole("radio", { name: "Conjuge", exact: true }).check();
-    await fillField(proposalPage, "CONJUGE.VA_RENDA_BRUTA", spouse.grossIncome);
-    await selectSearchableOption(proposalPage, "CONJUGE.CO_PROFISSAO", spouse.profession);
-    await selectSearchableOption(
-      proposalPage,
-      "CONJUGE.CO_ATIVIDADE_PROFISSIONAL",
-      spouse.professionalActivity,
-    );
-    await page
-      .getByRole("checkbox", {
-        name: "Autorizo a consulta de dados dos demais participantes no Sistema de Informações de Crédito (SCR) e demais instituições de proteção a fraudes, lavagem de dinheiro e risco de crédito",
+    await test.step("preenche composição de renda", async () => {
+      await page.getByRole("radio", { name: "Sim", exact: true }).check();
+      await page.getByRole("radio", { name: "Conjuge", exact: true }).check();
+      await fillField(proposalPage, "CONJUGE.VA_RENDA_BRUTA", spouse.grossIncome);
+      await selectSearchableOption(proposalPage, "CONJUGE.CO_PROFISSAO", spouse.profession);
+      await selectSearchableOption(
+        proposalPage,
+        "CONJUGE.CO_ATIVIDADE_PROFISSIONAL",
+        spouse.professionalActivity,
+      );
+      await page
+        .getByRole("checkbox", {
+          name: "Autorizo a consulta de dados dos demais participantes no Sistema de Informações de Crédito (SCR) e demais instituições de proteção a fraudes, lavagem de dinheiro e risco de crédito",
+          exact: true,
+        })
+        .check();
+      await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Motivo da Contratação");
+    });
+
+    await test.step("preenche motivo da contratação", async () => {
+      await proposalPage.getVisibleFieldByName("CO_MOTIVO_EMPRESTIMO").selectOption(creditPurpose.purpose);
+      await fillField(
+        proposalPage,
+        "OPERACAO_CREDITO.TE_OBS_MOTIVO_EMPRESTIMO",
+        creditPurpose.description,
+      );
+      await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Imóvel");
+    });
+
+    await test.step("preenche imóvel", async () => {
+      await selectSearchableOption(proposalPage, "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL", property.use);
+      await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL").selectOption(property.type);
+      await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").selectOption(property.condition);
+      await fillField(proposalPage, "OPERACAO_CREDITO.VA_INTERVENIENTE", property.outstandingBalance);
+      await selectSearchableOption(proposalPage, "INTERVENIENTE.CODIGO", property.settlementIntervenor);
+      await expect(proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_ENDERECO")).toHaveValue(/\d+/);
+      await saveByOpeningTab(page, proposalPage, scenario.operationNumber, "Garantidor");
+    });
+
+    await test.step("preenche garantidor PJ e sócios", async () => {
+      await fillPjGuarantor(page, proposalPage, guarantor);
+      await saveByOpeningTab(page, proposalPage, scenario.operationNumber, "Imóvel");
+      await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Garantidor");
+      await expect(proposalPage.tabs.getTabButton("Garantidor")).toHaveAttribute("aria-selected", "true");
+    });
+
+    await test.step("confirma o cadastro na aba Garantidor", async () => {
+      const confirmButton = page.getByRole("button", {
+        name: "Confirmar",
         exact: true,
-      })
-      .check();
-    await saveAndAdvance(page, proposalPage, "Motivo da Contratação");
+      });
+      await expect(confirmButton).toBeVisible();
+      await expect(confirmButton).toBeEnabled();
 
-    await proposalPage.getVisibleFieldByName("CO_MOTIVO_EMPRESTIMO").selectOption(creditPurpose.purpose);
-    await fillField(
-      proposalPage,
-      "OPERACAO_CREDITO.TE_OBS_MOTIVO_EMPRESTIMO",
-      creditPurpose.description,
-    );
-    await saveAndAdvance(page, proposalPage, "Imóvel");
+      const saveResponsePromise = page.waitForResponse(
+        (response) => isProposalTransitionResponse(
+          response,
+          "PUT",
+          scenario.operationNumber,
+          "cadastro",
+        ),
+        { timeout: 30_000 },
+      );
+      const finalizeResponsePromise = page.waitForResponse(
+        (response) => isProposalTransitionResponse(
+          response,
+          "POST",
+          scenario.operationNumber,
+          "finalizar",
+        ),
+        { timeout: 60_000 },
+      );
 
-    await selectSearchableOption(proposalPage, "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL", property.use);
-    await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL").selectOption(property.type);
-    await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").selectOption(property.condition);
-    await fillField(proposalPage, "OPERACAO_CREDITO.VA_INTERVENIENTE", property.outstandingBalance);
-    await selectSearchableOption(proposalPage, "INTERVENIENTE.CODIGO", property.settlementIntervenor);
-    await expect(proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_ENDERECO")).toHaveValue(/\d+/);
-    await saveByOpeningTab(page, proposalPage, "Garantidor");
+      await confirmButton.click();
 
-    await fillPjGuarantor(page, proposalPage, guarantor);
-    await saveByOpeningTab(page, proposalPage, "Imóvel");
-    await saveAndAdvance(page, proposalPage, "Garantidor");
-    await expect(page.getByRole("button", { name: "Confirmar", exact: true })).toBeVisible();
+      const saveResponse = await saveResponsePromise;
+      expect(saveResponse.status()).toBe(200);
+
+      const advanceDialog = page
+        .getByRole("alertdialog", { name: "Confirmar", exact: true })
+        .filter({ hasText: /Deseja prosseguir para a próxima fase/i });
+      if (await advanceDialog.count() > 0) {
+        await expect(advanceDialog).toBeVisible();
+        await advanceDialog.getByRole("button", { name: "Confirmar", exact: true }).click();
+      }
+
+      const finalizeResponse = await finalizeResponsePromise;
+      expect(finalizeResponse.status()).toBe(200);
+      await expect(finalizeResponse.json()).resolves.toMatchObject({ sucesso: true });
+      await expect(
+        page.getByText(/Etapa concluída|Cadastro concluído|sucesso/i),
+      ).toBeVisible({ timeout: 60_000 });
+    });
   },
 );

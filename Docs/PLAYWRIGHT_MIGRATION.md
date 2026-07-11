@@ -1014,6 +1014,16 @@ As operações descartáveis da Fase 7 ficam centralizadas exclusivamente em `te
 
 Specs não devem declarar números de operação. Qualquer substituição futura deve ocorrer somente nessa camada de dados, mantendo o mesmo caso, perfil e finalidade. O catálogo não substitui o opt-in destrutivo nem a validação da massa autorizada antes da execução.
 
+### Confirmação na última aba aplicável
+
+Cada cenário de integração deve preencher, salvar e confirmar no mesmo teste mutável. A confirmação não constitui uma etapa artificial de navegação: ela deve ocorrer na última aba real aplicável ao perfil da proposta.
+
+- `INT-CONFIRM-PJ`: confirmar na aba **Garantidor PJ**;
+- `INT-CONFIRM-PF`: confirmar na aba **Garantidor PF**;
+- `INT-CONFIRM-QUITADO`: confirmar na aba **Imóvel**.
+
+Somente uma confirmação bem-sucedida torna os dados aptos à futura validação no SCCI/AEJS.
+
 ### Critérios para iniciar
 
 - Funcionalidades de formulário necessárias já migradas.
@@ -1817,6 +1827,5 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 ### 2026-07-09 — Etapa 4: Encerramento do Hardening
 - **Ação:** Consolidação e alinhamento dos documentos de arquitetura, migração e auditoria. Validação final de consistência e typecheck da suíte.
 - **Parecer:** A arquitetura encontra-se 100% pronta e robusta para o início seguro da Fase 7 (integração Portal-AEJS).
-
 
 
