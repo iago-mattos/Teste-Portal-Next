@@ -112,6 +112,18 @@ export class AejsOperationsPage {
       this.page.getByRole("grid").filter({ visible: true }).last(),
     );
     const row = await grid.findUniqueRowByText(text);
+    await this.openSelectedGridRow(row);
+  }
+
+  async openUniqueVisibleGridRow(): Promise<void> {
+    const grid = new ExtJsGridComponent(
+      this.page.getByRole("grid").filter({ visible: true }).last(),
+    );
+    const row = await grid.findUniqueDataRow();
+    await this.openSelectedGridRow(row);
+  }
+
+  private async openSelectedGridRow(row: Locator): Promise<void> {
     await row.click();
 
     const openButton = this.page

@@ -10,6 +10,10 @@ export class ExtJsGridComponent {
     return this.root.getByRole("row");
   }
 
+  private get dataRows(): Locator {
+    return this.root.locator(".x-grid-item").filter({ visible: true });
+  }
+
   private getRowByText(expectedText: string): Locator {
     return this.rows.filter({ hasText: expectedText });
   }
@@ -23,6 +27,15 @@ export class ExtJsGridComponent {
 
     const row = this.getRowByText(expectedText);
     await expect(row).toHaveCount(1);
+    await expect(row).toBeVisible();
+    return row;
+  }
+
+  async findUniqueDataRow(): Promise<Locator> {
+    await this.waitUntilReady();
+    await expect(this.dataRows).toHaveCount(1);
+
+    const row = this.dataRows.first();
     await expect(row).toBeVisible();
     return row;
   }
