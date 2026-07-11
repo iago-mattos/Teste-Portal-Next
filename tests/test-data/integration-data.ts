@@ -52,6 +52,12 @@ export interface PropertyInput {
   readonly settlementIntervenor: string;
 }
 
+export interface PaidOffPropertyInput {
+  readonly use: string;
+  readonly type: string;
+  readonly condition: string;
+}
+
 export interface AddressInput {
   readonly postalCode: string;
   readonly streetNumber: string;
@@ -134,9 +140,17 @@ export interface PfIntegrationPreparationScenario {
   readonly guarantor: PfGuarantorInput;
 }
 
+export interface PaidOffIntegrationPreparationScenario {
+  readonly profile: "QUITADO";
+  readonly applicant: ApplicantInput;
+  readonly creditPurpose: CreditPurposeInput;
+  readonly property: PaidOffPropertyInput;
+}
+
 export type IntegrationPreparationScenario =
   | PjIntegrationPreparationScenario
-  | PfIntegrationPreparationScenario;
+  | PfIntegrationPreparationScenario
+  | PaidOffIntegrationPreparationScenario;
 
 export interface IntegrationScenarioData {
   readonly operationNumber: string;
@@ -288,6 +302,29 @@ export const integrationData = {
     operationNumber: "000436035",
     profile: "single-quitado",
     purpose: "Validar titular sem composição de renda e imóvel quitado no AEJS.",
+    preparation: {
+      profile: "QUITADO",
+      applicant: {
+        grossIncome: "745000",
+        maritalStatus: "1",
+        nationality: "Brasileira",
+        birthState: "MG",
+        identityState: "MG",
+        profession: "ADMINISTRADOR",
+        professionalActivity: "ASSALARIADO",
+        livesInProperty: "T",
+      },
+      creditPurpose: {
+        purpose: "Investir",
+        description:
+          "Preparação controlada Playwright para refletir imóvel quitado no cenário de integração AEJS.",
+      },
+      property: {
+        use: "Apartamento",
+        type: "Residencial",
+        condition: "1",
+      },
+    },
   },
   "INT-CONFIRM-WORKFLOW": {
     operationNumber: "000436036",
@@ -318,6 +355,11 @@ export interface ResolvedPjIntegrationPreparationScenario
 export interface ResolvedPfIntegrationPreparationScenario
   extends ResolvedIntegrationScenario {
   readonly preparation: PfIntegrationPreparationScenario;
+}
+
+export interface ResolvedPaidOffIntegrationPreparationScenario
+  extends ResolvedIntegrationScenario {
+  readonly preparation: PaidOffIntegrationPreparationScenario;
 }
 
 export function getIntegrationScenario(
@@ -363,6 +405,10 @@ export function getIntegrationPreparationScenario(
   caseId: "INT-CONFIRM-PF",
   env?: NodeJS.ProcessEnv,
 ): ResolvedPfIntegrationPreparationScenario;
+export function getIntegrationPreparationScenario(
+  caseId: "INT-CONFIRM-QUITADO",
+  env?: NodeJS.ProcessEnv,
+): ResolvedPaidOffIntegrationPreparationScenario;
 export function getIntegrationPreparationScenario(
   caseId: IntegrationCaseId,
   env: NodeJS.ProcessEnv = process.env,
