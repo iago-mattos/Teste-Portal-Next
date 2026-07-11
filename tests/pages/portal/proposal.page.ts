@@ -42,8 +42,16 @@ export class ProposalPage {
     return this.page.locator(`[name=${JSON.stringify(fieldName)}]`);
   }
 
+  getVisibleFieldByName(fieldName: string): Locator {
+    return this.page.locator(`[name=${JSON.stringify(fieldName)}]:visible`);
+  }
+
   getSearchableCombobox(fieldName: string): SearchableComboboxComponent {
     return new SearchableComboboxComponent(this.page, fieldName);
+  }
+
+  getVisibleSearchableCombobox(fieldName: string): SearchableComboboxComponent {
+    return new SearchableComboboxComponent(this.page, fieldName, true);
   }
 
   getDialog(name?: string | RegExp): DialogComponent {

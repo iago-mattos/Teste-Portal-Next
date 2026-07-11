@@ -6,8 +6,10 @@ export class SearchableComboboxComponent {
   constructor(
     private readonly page: Page,
     fieldName: string,
+    visibleOnly = false,
   ) {
-    this.input = page.locator(`[name=${JSON.stringify(fieldName)}]`);
+    const selector = `[name=${JSON.stringify(fieldName)}]`;
+    this.input = page.locator(visibleOnly ? `${selector}:visible` : selector);
   }
 
   get listbox(): Locator {
