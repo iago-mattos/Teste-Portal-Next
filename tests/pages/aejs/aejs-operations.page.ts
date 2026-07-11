@@ -7,8 +7,10 @@ import { ExtJsGridComponent } from "../../components/aejs/extjs-grid.component";
 export class AejsOperationsPage {
   readonly openedOperationNumber: Locator;
   readonly openedApplicantName: Locator;
+  readonly processProgressGrid: Locator;
   private readonly originationMenuItem: Locator;
   private readonly operationsMenuItem: Locator;
+  private readonly processProgressMenuItem: Locator;
   private readonly applicantTab: Locator;
   private readonly operationSearchInput: Locator;
   private readonly searchButton: Locator;
@@ -21,6 +23,10 @@ export class AejsOperationsPage {
       .getByRole("button", { name: "Originação", exact: true });
     this.operationsMenuItem = page.getByRole("menuitem", {
       name: "Cadastro de operações",
+      exact: true,
+    });
+    this.processProgressMenuItem = page.getByRole("menuitem", {
+      name: "Andamento do processo",
       exact: true,
     });
     this.applicantTab = page.getByRole("tab", {
@@ -43,6 +49,9 @@ export class AejsOperationsPage {
     this.openedApplicantName = page.locator(
       'input[name="PESSOA$NO_PESSOA"]:visible',
     );
+    this.processProgressGrid = page
+      .getByRole("grid", { name: "Andamento do Processo", exact: true })
+      .filter({ visible: true });
   }
 
   async navigateToOperations(): Promise<void> {
@@ -71,6 +80,33 @@ export class AejsOperationsPage {
   async openOperation(operationNumber: string): Promise<void> {
     await this.searchOperation(operationNumber);
     await this.operationsGrid.openRowByText(operationNumber);
+  }
+
+  async openProcessProgress(): Promise<void> {
+    await expect(this.processProgressMenuItem).toHaveCount(1);
+    await expect(this.processProgressMenuItem).toBeVisible();
+    await this.processProgressMenuItem.click();
+    await this.waitForExtJsReady();
+
+    await expect(this.processProgressGrid).toHaveCount(1);
+    await expect(this.processProgressGrid).toBeVisible();
+    for (const header of ["Tarefa", "Titulo da Tarefa", "Status"]) {
+      await expect(
+        this.processProgressGrid.getByRole("columnheader", {
+          name: header,
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+  }
+
+  getProcessTaskRow(taskCode: string): Locator {
+    const codeCell = this.page.getByRole("gridcell", {
+      name: taskCode,
+      exact: true,
+    });
+
+    return this.processProgressGrid.getByRole("row").filter({ has: codeCell });
   }
 
   getVisibleField(name: string): Locator {
