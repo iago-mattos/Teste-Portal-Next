@@ -147,10 +147,18 @@ export interface PaidOffIntegrationPreparationScenario {
   readonly property: PaidOffPropertyInput;
 }
 
+export interface WorkflowIntegrationPreparationScenario {
+  readonly profile: "WORKFLOW";
+  readonly applicant: ApplicantInput;
+  readonly creditPurpose: CreditPurposeInput;
+  readonly property: PaidOffPropertyInput;
+}
+
 export type IntegrationPreparationScenario =
   | PjIntegrationPreparationScenario
   | PfIntegrationPreparationScenario
-  | PaidOffIntegrationPreparationScenario;
+  | PaidOffIntegrationPreparationScenario
+  | WorkflowIntegrationPreparationScenario;
 
 export interface IntegrationScenarioData {
   readonly operationNumber: string;
@@ -330,6 +338,29 @@ export const integrationData = {
     operationNumber: "000436036",
     profile: "workflow",
     purpose: "Validar tarefas, documentos e o fluxo controlado de cancelamento no AEJS.",
+    preparation: {
+      profile: "WORKFLOW",
+      applicant: {
+        grossIncome: "680000",
+        maritalStatus: "1",
+        nationality: "Brasileira",
+        birthState: "PR",
+        identityState: "PR",
+        profession: "ADMINISTRADOR",
+        professionalActivity: "ASSALARIADO",
+        livesInProperty: "T",
+      },
+      creditPurpose: {
+        purpose: "Investir",
+        description:
+          "Preparação controlada Playwright para validar as transições do cenário workflow na integração AEJS.",
+      },
+      property: {
+        use: "Casa",
+        type: "Residencial",
+        condition: "1",
+      },
+    },
   },
 } as const satisfies Record<string, IntegrationScenarioData>;
 
@@ -360,6 +391,11 @@ export interface ResolvedPfIntegrationPreparationScenario
 export interface ResolvedPaidOffIntegrationPreparationScenario
   extends ResolvedIntegrationScenario {
   readonly preparation: PaidOffIntegrationPreparationScenario;
+}
+
+export interface ResolvedWorkflowIntegrationPreparationScenario
+  extends ResolvedIntegrationScenario {
+  readonly preparation: WorkflowIntegrationPreparationScenario;
 }
 
 export function getIntegrationScenario(
@@ -409,6 +445,10 @@ export function getIntegrationPreparationScenario(
   caseId: "INT-CONFIRM-QUITADO",
   env?: NodeJS.ProcessEnv,
 ): ResolvedPaidOffIntegrationPreparationScenario;
+export function getIntegrationPreparationScenario(
+  caseId: "INT-CONFIRM-WORKFLOW",
+  env?: NodeJS.ProcessEnv,
+): ResolvedWorkflowIntegrationPreparationScenario;
 export function getIntegrationPreparationScenario(
   caseId: IntegrationCaseId,
   env: NodeJS.ProcessEnv = process.env,
