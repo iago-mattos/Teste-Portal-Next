@@ -79,6 +79,30 @@ export interface PjGuarantorInput {
   readonly partners: readonly [GuarantorPartnerInput, GuarantorPartnerInput];
 }
 
+export interface ThirdPartyInput {
+  readonly name: string;
+  readonly cpf: string;
+  readonly dateOfBirth: string;
+  readonly nationality: string;
+  readonly grossIncome: string;
+  readonly profession: string;
+  readonly professionalActivity: string;
+  readonly mobileAreaCode: string;
+  readonly mobileNumber: string;
+  readonly email: string;
+}
+
+export interface PfGuarantorInput {
+  readonly name: string;
+  readonly cpf: string;
+  readonly maritalStatus: string;
+  readonly dateOfBirth: string;
+  readonly mobileAreaCode: string;
+  readonly mobileNumber: string;
+  readonly email: string;
+  readonly address: AddressInput;
+}
+
 /**
  * Dados que a Subfase A grava no Portal para um caso de integração.
  *
@@ -86,7 +110,7 @@ export interface PjGuarantorInput {
  * do Cypress. As etapas B e C devem consumir esta mesma definição, em vez de
  * declarar expectativas próprias ou reutilizar valores de massas antigas.
  */
-export interface IntegrationPreparationScenario {
+export interface PjIntegrationPreparationScenario {
   readonly profile: "PJ";
   readonly applicant: ApplicantInput;
   readonly spouse: SpouseInput;
@@ -94,6 +118,19 @@ export interface IntegrationPreparationScenario {
   readonly property: PropertyInput;
   readonly guarantor: PjGuarantorInput;
 }
+
+export interface PfIntegrationPreparationScenario {
+  readonly profile: "PF";
+  readonly applicant: ApplicantInput;
+  readonly thirdParty: ThirdPartyInput;
+  readonly creditPurpose: CreditPurposeInput;
+  readonly property: PropertyInput;
+  readonly guarantor: PfGuarantorInput;
+}
+
+export type IntegrationPreparationScenario =
+  | PjIntegrationPreparationScenario
+  | PfIntegrationPreparationScenario;
 
 export interface IntegrationScenarioData {
   readonly operationNumber: string;
@@ -185,6 +222,58 @@ export const integrationData = {
     operationNumber: "000436034",
     profile: "third-party-pf",
     purpose: "Validar terceiro na composição de renda e garantidor PF no AEJS.",
+    preparation: {
+      profile: "PF",
+      applicant: {
+        grossIncome: "910000",
+        maritalStatus: "1",
+        nationality: "Brasileira",
+        birthState: "RJ",
+        identityState: "RJ",
+        profession: "ADMINISTRADOR",
+        professionalActivity: "ASSALARIADO",
+        livesInProperty: "T",
+      },
+      thirdParty: {
+        name: "TERCEIRO PLAYWRIGHT INT PF 034",
+        cpf: "73148296087",
+        dateOfBirth: "17081992",
+        nationality: "Brasileira",
+        grossIncome: "510000",
+        profession: "ADMINISTRADOR",
+        professionalActivity: "ASSALARIADO",
+        mobileAreaCode: "21",
+        mobileNumber: "995432109",
+        email: "terceiro.pw.int034@example.test",
+      },
+      creditPurpose: {
+        purpose: "Investir",
+        description:
+          "Preparação controlada Playwright para refletir dados do cenário PF na integração AEJS.",
+      },
+      property: {
+        use: "Casa",
+        type: "Residencial",
+        condition: "4",
+        outstandingBalance: "19800000",
+        settlementIntervenor: "Banco C6 S.A.",
+      },
+      guarantor: {
+        name: "GARANTIDOR PLAYWRIGHT INT PF 034",
+        cpf: "86420975310",
+        maritalStatus: "1",
+        dateOfBirth: "09061984",
+        mobileAreaCode: "21",
+        mobileNumber: "994321098",
+        email: "garantidor.pw.int034@example.test",
+        address: {
+          postalCode: "20040002",
+          streetNumber: "340",
+          complement: "SALA 34",
+          neighborhood: "Centro",
+        },
+      },
+    },
   },
   "INT-CONFIRM-QUITADO": {
     operationNumber: "000436035",
@@ -210,6 +299,16 @@ export interface ResolvedIntegrationScenario {
 export interface ResolvedIntegrationPreparationScenario
   extends ResolvedIntegrationScenario {
   readonly preparation: IntegrationPreparationScenario;
+}
+
+export interface ResolvedPjIntegrationPreparationScenario
+  extends ResolvedIntegrationScenario {
+  readonly preparation: PjIntegrationPreparationScenario;
+}
+
+export interface ResolvedPfIntegrationPreparationScenario
+  extends ResolvedIntegrationScenario {
+  readonly preparation: PfIntegrationPreparationScenario;
 }
 
 export function getIntegrationScenario(
@@ -247,6 +346,14 @@ export function getIntegrationScenario(
   };
 }
 
+export function getIntegrationPreparationScenario(
+  caseId: "INT-CONFIRM-PJ",
+  env?: NodeJS.ProcessEnv,
+): ResolvedPjIntegrationPreparationScenario;
+export function getIntegrationPreparationScenario(
+  caseId: "INT-CONFIRM-PF",
+  env?: NodeJS.ProcessEnv,
+): ResolvedPfIntegrationPreparationScenario;
 export function getIntegrationPreparationScenario(
   caseId: IntegrationCaseId,
   env: NodeJS.ProcessEnv = process.env,
