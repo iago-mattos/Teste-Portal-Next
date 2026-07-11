@@ -59,6 +59,12 @@ export interface AddressInput {
   readonly neighborhood: string;
 }
 
+export interface PfAddressInput extends AddressInput {
+  readonly street: string;
+  readonly state: string;
+  readonly city: string;
+}
+
 export interface GuarantorPartnerInput {
   readonly name: string;
   readonly cpf: string;
@@ -100,7 +106,7 @@ export interface PfGuarantorInput {
   readonly mobileAreaCode: string;
   readonly mobileNumber: string;
   readonly email: string;
-  readonly address: AddressInput;
+  readonly address: PfAddressInput;
 }
 
 /**
@@ -268,9 +274,12 @@ export const integrationData = {
         email: "garantidor.pw.int034@example.test",
         address: {
           postalCode: "20040002",
+          street: "Avenida Rio Branco",
           streetNumber: "340",
           complement: "SALA 34",
           neighborhood: "Centro",
+          state: "RJ",
+          city: "RIO DE JANEIRO",
         },
       },
     },
