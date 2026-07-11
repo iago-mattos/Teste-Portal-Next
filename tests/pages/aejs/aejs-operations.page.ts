@@ -73,6 +73,78 @@ export class AejsOperationsPage {
     await this.operationsGrid.openRowByText(operationNumber);
   }
 
+  getVisibleField(name: string): Locator {
+    const escapedName = JSON.stringify(name);
+
+    return this.page
+      .locator(`input[name=${escapedName}], textarea[name=${escapedName}]`)
+      .filter({ visible: true })
+      .last();
+  }
+
+  getVisibleInput(name: string): Locator {
+    return this.page
+      .locator(`input[name=${JSON.stringify(name)}]`)
+      .last();
+  }
+
+  getVisibleText(text: string): Locator {
+    return this.page
+      .getByText(text, { exact: true })
+      .filter({ visible: true })
+      .last();
+  }
+
+  async selectVisibleTab(name: string): Promise<void> {
+    const tab = this.page
+      .getByRole("tab", { name, exact: true })
+      .filter({ visible: true })
+      .last();
+
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await this.waitForExtJsReady();
+  }
+
+  async openVisibleGridRow(text: string): Promise<void> {
+    const grid = new ExtJsGridComponent(
+      this.page.getByRole("grid").filter({ visible: true }).last(),
+    );
+    const row = await grid.findUniqueRowByText(text);
+    await row.click();
+
+    const openButton = this.page
+      .getByRole("button", { name: "Abrir", exact: true })
+      .filter({ visible: true })
+      .last();
+    await expect(openButton).toBeVisible();
+    await expect(openButton).toBeEnabled();
+    await openButton.click();
+    await this.waitForExtJsReady();
+  }
+
+  async openPrimaryApplicant(rowText: string): Promise<string> {
+    await this.selectVisibleTab("Pretendente");
+    await this.openVisibleGridRow(rowText);
+    await expect(this.openedApplicantName).toBeVisible();
+
+    return this.openedApplicantName.inputValue();
+  }
+
+  async closeCurrentWindow(): Promise<void> {
+    const closeButtons = this.page
+      .getByRole("button", { name: "Fechar tela", exact: true })
+      .filter({ visible: true });
+    const visibleCloseButtonCount = await closeButtons.count();
+    const closeButton = closeButtons.last();
+
+    await expect(closeButton).toBeVisible();
+    await closeButton.click();
+    await expect(closeButtons).toHaveCount(visibleCloseButtonCount - 1);
+    await this.waitForExtJsReady();
+  }
+
   async openApplicant(applicantName: string): Promise<void> {
     await expect(this.applicantTab).toHaveCount(1);
     await expect(this.applicantTab).toBeVisible();
@@ -92,5 +164,11 @@ export class AejsOperationsPage {
     await this.openApplicantButton.click();
 
     await expect(this.openedApplicantName).toBeVisible();
+  }
+
+  private async waitForExtJsReady(): Promise<void> {
+    await expect(
+      this.page.locator(".x-mask-msg:visible, .x-loading-mask:visible"),
+    ).toHaveCount(0);
   }
 }
