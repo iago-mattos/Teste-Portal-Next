@@ -1067,7 +1067,7 @@ O diagnóstico de cancelamento não chamou diretamente o endpoint, não alterou 
 
 ## Fase 8 — CI/CD
 
-**Status:** ⏳ Não iniciado
+**Status:** 🚧 Em andamento
 
 ### Objetivo
 
@@ -1081,9 +1081,23 @@ Integrar o Playwright ao pipeline de forma gradual, segura e observável.
 
 ### Critérios para iniciar
 
-- Smoke estável localmente.
-- Estratégia de instalação de browsers definida.
-- Política de retenção e segurança de traces aprovada.
+- Migração funcional e equivalência concluídas.
+- Node e npm declarados no projeto.
+- Lockfile disponível para instalação reprodutível.
+- Subconjunto seguro definido sem depender de secrets ou estado externo.
+
+### Incremento 8.1 — CI inicial e segura
+
+- GitHub Actions executa em `push` e `pull_request` sobre `ubuntu-24.04`.
+- Node é lido de `.nvmrc` e o cache npm usa `package-lock.json`.
+- Dependências são instaladas com `npm ci`; `CYPRESS_INSTALL_BINARY=0` evita baixar um binário não utilizado sem remover Cypress do projeto.
+- `npm run check` é bloqueante e valida TypeScript, ESLint, contrato dos 108 casos e coleta Playwright.
+- `npm run pw:test:list` é bloqueante e registra `playwright-test-list.txt` como artefato obrigatório.
+- Nenhum browser é instalado e nenhum projeto Playwright é executado neste incremento.
+- Smoke, readonly, mutation e integration permanecem fora da execução: todos os projetos de UI dependem de autenticação, secrets, massas consumíveis ou estado externo ainda não preparado no CI.
+- Não há `continue-on-error`, retries adicionais ou execução Cypress.
+- O antigo job manual de smoke Cypress foi removido somente do workflow: specs, scripts e dependências Cypress permanecem preservados até a Fase 9.
+- `playwright-report/` e `test-results/` ficam preparados como artefatos condicionais de falha para incrementos futuros.
 
 ### Critérios para concluir
 
@@ -1288,10 +1302,12 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 ## CI/CD
 
 - ⏳ Instalar browser e dependências no CI.
-- ⏳ Adicionar quality checks Playwright.
+- ✅ Adicionar quality checks e coleta Playwright bloqueantes.
+- ✅ Criar CI inicial sem secrets, browser ou execução de specs.
+- ✅ Publicar `playwright-test-list.txt` como evidência da coleta.
 - ⏳ Criar job de smoke Playwright.
-- ⏳ Manter job inicialmente não bloqueante.
-- ⏳ Publicar relatório e resultados.
+- ✅ Falhar o job quando quality checks ou coleta falharem.
+- 🚧 Publicar relatório e resultados — coleta publicada; relatórios de execução aguardam testes de navegador.
 - ⏳ Impedir publicação de estado autenticado.
 - ⏳ Preservar concurrency de QA.
 - ⏳ Criar jobs distintos por risco quando necessário.

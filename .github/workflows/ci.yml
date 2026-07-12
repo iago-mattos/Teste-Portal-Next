@@ -1,62 +1,58 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      run_smoke:
-        description: Executar smoke no ambiente de QA
-        required: false
-        type: boolean
-        default: false
+  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm test
-
-  smoke:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_smoke
-    concurrency:
-      group: portal-next-qa
-      cancel-in-progress: false
-    environment: qa
-    runs-on: ubuntu-latest
+    name: Quality and Playwright collection
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      CI: true
+      CYPRESS_INSTALL_BINARY: "0"
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
-      - run: npm run cy:run:smoke
-        env:
-          PORTAL_ENV: ${{ vars.PORTAL_ENV }}
-          PORTAL_URL: ${{ vars.PORTAL_URL }}
-          PORTAL_ADMIN_URL: ${{ vars.PORTAL_ADMIN_URL }}
-          PORTAL_ADMIN_USER: ${{ secrets.PORTAL_ADMIN_USER }}
-          PORTAL_ADMIN_PASSWORD: ${{ secrets.PORTAL_ADMIN_PASSWORD }}
-          PORTAL_TEST_CPF: ${{ secrets.PORTAL_TEST_CPF }}
-          PORTAL_EXPECTED_PROPOSAL_JSON: ${{ secrets.PORTAL_EXPECTED_PROPOSAL_JSON }}
-      - uses: actions/upload-artifact@v4
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality checks
+        run: npm run check
+
+      - name: Collect Playwright tests
         if: always()
+        run: npm run pw:test:list > playwright-test-list.txt 2>&1
+
+      - name: Upload Playwright test list
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: cypress-smoke
+          name: playwright-test-list-${{ github.run_id }}
+          path: playwright-test-list.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-failure-${{ github.run_id }}
           path: |
-            cypress/results
-            cypress/screenshots
-            cypress/videos
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
