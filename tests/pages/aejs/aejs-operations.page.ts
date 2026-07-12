@@ -82,6 +82,47 @@ export class AejsOperationsPage {
     await this.operationsGrid.openRowByText(operationNumber);
   }
 
+  async startEditing(): Promise<void> {
+    const editButton = this.page
+      .getByRole("button", { name: "Alterar", exact: true })
+      .filter({ visible: true });
+
+    await expect(editButton).toHaveCount(1);
+    await expect(editButton).toBeVisible();
+    await expect(editButton).toBeEnabled();
+    await editButton.click();
+    await this.waitForExtJsReady();
+    await expect(
+      this.page
+        .getByRole("button", { name: "Cancelar", exact: true })
+        .filter({ visible: true }),
+    ).toBeVisible();
+  }
+
+  async cancelEditing(): Promise<void> {
+    const cancelButton = this.page
+      .getByRole("button", { name: "Cancelar", exact: true })
+      .filter({ visible: true });
+
+    await expect(cancelButton).toHaveCount(1);
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+
+    const confirmation = this.page
+      .getByRole("alertdialog", { name: "Confirmação", exact: true })
+      .filter({ hasText: "Confirma cancelar as alterações?" });
+    await expect(confirmation).toBeVisible();
+    await confirmation
+      .getByRole("button", { name: "Sim", exact: true })
+      .click();
+    await this.waitForExtJsReady();
+    await expect(
+      this.page
+        .getByRole("button", { name: "Alterar", exact: true })
+        .filter({ visible: true }),
+    ).toBeVisible();
+  }
+
   async openProcessProgress(): Promise<void> {
     await expect(this.processProgressMenuItem).toHaveCount(1);
     await expect(this.processProgressMenuItem).toBeVisible();

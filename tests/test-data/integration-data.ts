@@ -99,6 +99,9 @@ export interface PjAejsReflectionExpectation {
     readonly state: string;
     readonly city: string;
   };
+  readonly settlementIntervenor: {
+    readonly identifier: string;
+  };
 }
 
 export interface GuarantorPartnerInput {
@@ -307,6 +310,9 @@ export const integrationData = {
           fullAddress: "Avenida Paulista, 2100, 330",
           state: "SP",
           city: "SÃO PAULO",
+        },
+        settlementIntervenor: {
+          identifier: "00000000000000",
         },
       },
     },
