@@ -106,8 +106,14 @@ test(
   { tag: ["@integration", "@readonly"] },
   async ({ aejsPage }) => {
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
-    const { applicant, spouse, creditPurpose, property, guarantor } =
-      scenario.preparation;
+    const {
+      applicant,
+      spouse,
+      creditPurpose,
+      property,
+      guarantor,
+      aejsReflection,
+    } = scenario.preparation;
     const operationsPage = new AejsOperationsPage(aejsPage);
 
     await test.step("abre a operação confirmada", async () => {
@@ -161,12 +167,62 @@ test(
         "PESSOA$CO_UFNASC",
         applicant.birthState,
       );
+      await expectFieldDigits(
+        operationsPage,
+        "PESSOA$NU_CPFCNPJ",
+        aejsReflection.applicant.cpf,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$DT_NASCIMENTO",
+        formatDate(aejsReflection.applicant.dateOfBirth),
+      );
       await expect(
         operationsPage.getVisibleInput("PESSOA$IN_E_PRINCIPAL"),
       ).toBeChecked();
       await expect(
         operationsPage.getVisibleInput("PESSOA$IN_EADQUIRENTE"),
       ).toBeChecked();
+      await expect(
+        operationsPage.getVisibleInput("PESSOA$IN_AUTORZC"),
+      ).toBeChecked();
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$DT_AUTORZC",
+        formatDate(aejsReflection.applicant.generatedScrAuthorizationDate),
+      );
+
+      await operationsPage.selectVisibleTab("Dados de Contato");
+      await expectFieldDigits(
+        operationsPage,
+        "PESSOA$NU_CEP",
+        aejsReflection.applicant.residentialAddress.postalCode,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_ENDERECO",
+        aejsReflection.applicant.residentialAddress.fullAddress,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_COMPLEMENTO",
+        aejsReflection.applicant.residentialAddress.complement,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_BAIRRO",
+        aejsReflection.applicant.residentialAddress.neighborhood,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_MUNICIPIO",
+        aejsReflection.applicant.residentialAddress.city,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_UF",
+        aejsReflection.applicant.residentialAddress.state,
+      );
 
       await operationsPage.selectVisibleTab("Ocupação");
       await expectFieldValue(
@@ -241,6 +297,11 @@ test(
       await expect(
         operationsPage.getVisibleInput("CONJUGE$IN_AUTORZC"),
       ).toBeChecked();
+      await expectFieldValue(
+        operationsPage,
+        "CONJUGE$DT_AUTORZC",
+        formatDate(aejsReflection.spouse.generatedScrAuthorizationDate),
+      );
 
       await operationsPage.selectVisibleTab("Dados de Contato");
       await expectFieldValue(
@@ -296,6 +357,41 @@ test(
       await operationsPage.selectVisibleTab("Dados do imóvel");
       await expectFieldValue(
         operationsPage,
+        "IMOVEL_OPERACAO$VA_AVALIACAO_PROVISORIA",
+        formatCurrency(aejsReflection.property.appraisalValue),
+      );
+      await expectFieldDigits(
+        operationsPage,
+        "IMOVEL_OPERACAO$NU_CEP",
+        aejsReflection.property.address.postalCode,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "IMOVEL_OPERACAO$NO_ENDERECO",
+        aejsReflection.property.address.fullAddress,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "IMOVEL_OPERACAO$NO_COMPLEMENTO",
+        aejsReflection.property.address.complement,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "IMOVEL_OPERACAO$NO_BAIRRO",
+        aejsReflection.property.address.neighborhood,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "IMOVEL_OPERACAO$NU_MUNICIPIO",
+        aejsReflection.property.address.city,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "IMOVEL_OPERACAO$CO_UF",
+        aejsReflection.property.address.state,
+      );
+      await expectFieldValue(
+        operationsPage,
         "IMOVEL_OPERACAO$IN_USO_DO_IMOVEL",
         property.use,
       );
@@ -313,9 +409,6 @@ test(
           "Condição do imóvel",
         ),
       );
-      await expect(
-        operationsPage.getVisibleField("IMOVEL_OPERACAO$NO_ENDERECO"),
-      ).toHaveValue(/\S/);
     });
 
     await test.step("valida garantidor PJ e os dois sócios", async () => {
@@ -342,9 +435,11 @@ test(
         "PESSOA$NU_CEP",
         guarantor.address.postalCode,
       );
-      await expect(
-        operationsPage.getVisibleField("PESSOA$NO_ENDERECO"),
-      ).toHaveValue(new RegExp(guarantor.address.streetNumber));
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_ENDERECO",
+        aejsReflection.guarantor.fullAddress,
+      );
       await expectFieldValue(
         operationsPage,
         "PESSOA$NO_COMPLEMENTO",
@@ -355,12 +450,16 @@ test(
         "PESSOA$NO_BAIRRO",
         guarantor.address.neighborhood,
       );
-      await expect(
-        operationsPage.getVisibleField("PESSOA$CO_UF"),
-      ).toHaveValue(/\S/);
-      await expect(
-        operationsPage.getVisibleField("PESSOA$CO_MUNICIPIO"),
-      ).toHaveValue(/\S/);
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_UF",
+        aejsReflection.guarantor.state,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_MUNICIPIO",
+        aejsReflection.guarantor.city,
+      );
       await expectFieldDigits(
         operationsPage,
         "PESSOA$NU_TELEFONE_COM",

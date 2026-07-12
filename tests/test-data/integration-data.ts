@@ -71,6 +71,36 @@ export interface PfAddressInput extends AddressInput {
   readonly city: string;
 }
 
+export interface AejsAddressExpectation {
+  readonly postalCode: string;
+  readonly fullAddress: string;
+  readonly complement: string;
+  readonly neighborhood: string;
+  readonly city: string;
+  readonly state: string;
+}
+
+export interface PjAejsReflectionExpectation {
+  readonly applicant: {
+    readonly cpf: string;
+    readonly dateOfBirth: string;
+    readonly residentialAddress: AejsAddressExpectation;
+    readonly generatedScrAuthorizationDate: string;
+  };
+  readonly spouse: {
+    readonly generatedScrAuthorizationDate: string;
+  };
+  readonly property: {
+    readonly appraisalValue: string;
+    readonly address: AejsAddressExpectation;
+  };
+  readonly guarantor: {
+    readonly fullAddress: string;
+    readonly state: string;
+    readonly city: string;
+  };
+}
+
 export interface GuarantorPartnerInput {
   readonly name: string;
   readonly cpf: string;
@@ -129,6 +159,7 @@ export interface PjIntegrationPreparationScenario {
   readonly creditPurpose: CreditPurposeInput;
   readonly property: PropertyInput;
   readonly guarantor: PjGuarantorInput;
+  readonly aejsReflection: PjAejsReflectionExpectation;
 }
 
 export interface PfIntegrationPreparationScenario {
@@ -243,6 +274,40 @@ export const integrationData = {
             email: "socio.dois.pw.int033@example.test",
           },
         ],
+      },
+      aejsReflection: {
+        applicant: {
+          cpf: "56663411543",
+          dateOfBirth: "01012001",
+          residentialAddress: {
+            postalCode: "24120440",
+            fullAddress: "Rua Doutor Carlos Imbassahy 700",
+            complement: "Casa 3",
+            neighborhood: "Fonseca",
+            city: "NITERÓI",
+            state: "RJ",
+          },
+          generatedScrAuthorizationDate: "11072026",
+        },
+        spouse: {
+          generatedScrAuthorizationDate: "11072026",
+        },
+        property: {
+          appraisalValue: "185000000",
+          address: {
+            postalCode: "24120440",
+            fullAddress: "Rua Doutor Carlos Imbassahy 700",
+            complement: "Casa 3",
+            neighborhood: "Fonseca",
+            city: "NITERÓI",
+            state: "RJ",
+          },
+        },
+        guarantor: {
+          fullAddress: "Avenida Paulista, 2100, 330",
+          state: "SP",
+          city: "SÃO PAULO",
+        },
       },
     },
   },
