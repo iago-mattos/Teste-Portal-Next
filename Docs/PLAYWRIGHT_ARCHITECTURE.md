@@ -262,7 +262,7 @@ Test data não executa navegação, assertions ou setup.
 | `INT-CONFIRM-PJ` | `000436033` | Cônjuge, imóvel, garantidor PJ, sócios e interveniente. |
 | `INT-CONFIRM-PF` | `000436034` | Terceiro na composição de renda e garantidor PF. |
 | `INT-CONFIRM-QUITADO` | `000436035` | Titular sem composição de renda e imóvel quitado. |
-| `INT-CONFIRM-WORKFLOW` | `000436036` | Tarefas, documentos e fluxo controlado de cancelamento. |
+| `INT-CONFIRM-WORKFLOW` | `000436036` | Preparação e transição 997 → 998 do workflow no AEJS. |
 
 Substituições de massa devem alterar exclusivamente esse catálogo e preservar a correspondência entre caso, perfil e finalidade. O catálogo não autoriza mutações: o opt-in e a validação da operação continuam obrigatórios no fluxo de integração.
 

@@ -408,7 +408,7 @@ export const integrationData = {
   "INT-CONFIRM-WORKFLOW": {
     operationNumber: "000436036",
     profile: "workflow",
-    purpose: "Validar tarefas, documentos e o fluxo controlado de cancelamento no AEJS.",
+    purpose: "Validar a preparação e a transição 997 → 998 do workflow no AEJS.",
     preparation: {
       profile: "WORKFLOW",
       applicant: {

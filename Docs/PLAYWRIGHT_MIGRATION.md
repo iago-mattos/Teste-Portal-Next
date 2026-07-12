@@ -988,11 +988,11 @@ Migrar os 108 casos funcionais preservando IDs, intenção, cobertura, pendênci
 
 ## Fase 7 — Integrações
 
-**Status:** ⏳ Não iniciado
+**Status:** ✅ Concluído
 
 ### Objetivo
 
-Migrar preparação, confirmação, cancelamento e validações AEJS com rastreabilidade ponta a ponta.
+Migrar os contratos funcionais aprovados de preparação, confirmação e validação AEJS com rastreabilidade ponta a ponta, classificando separadamente código Cypress sem execução funcional válida.
 
 ### Arquivos envolvidos
 
@@ -1010,7 +1010,7 @@ As operações descartáveis da Fase 7 ficam centralizadas exclusivamente em `te
 - `INT-CONFIRM-PJ` → `000436033` — cônjuge, imóvel, garantidor PJ, sócios e interveniente;
 - `INT-CONFIRM-PF` → `000436034` — terceiro na composição de renda e garantidor PF;
 - `INT-CONFIRM-QUITADO` → `000436035` — titular sem composição de renda e imóvel quitado;
-- `INT-CONFIRM-WORKFLOW` → `000436036` — tarefas, documentos e cancelamento controlado.
+- `INT-CONFIRM-WORKFLOW` → `000436036` — preparação, confirmação e andamento 997 → 998, com ausência de 996 antes da fase documental.
 
 Specs não devem declarar números de operação. Qualquer substituição futura deve ocorrer somente nessa camada de dados, mantendo o mesmo caso, perfil e finalidade. O catálogo não substitui o opt-in destrutivo nem a validação da massa autorizada antes da execução.
 
@@ -1021,6 +1021,7 @@ Cada cenário de integração deve preencher, salvar e confirmar no mesmo teste 
 - `INT-CONFIRM-PJ`: confirmar na aba **Garantidor PJ**;
 - `INT-CONFIRM-PF`: confirmar na aba **Garantidor PF**;
 - `INT-CONFIRM-QUITADO`: confirmar na aba **Imóvel**.
+- `INT-CONFIRM-WORKFLOW`: confirmar na aba **Imóvel**.
 
 Somente uma confirmação bem-sucedida torna os dados aptos à futura validação no SCCI/AEJS.
 
@@ -1038,8 +1039,25 @@ Somente uma confirmação bem-sucedida torna os dados aptos à futura validaçã
 - Cada etapa aparece no relatório.
 - Traces e evidências preservados conforme política.
 - Seletores ExtJS encapsulados.
-- Casos de confirmação, cancelamento, documentos e tarefas equivalentes ao Cypress.
+- Contratos Cypress funcionalmente aprovados classificados como S1 ou S2.
+- Código Cypress sem execução aprovada classificado como S3 e evoluções futuras classificadas como S4.
+- Nenhuma pendência real S5.
 - Execução serial e proteção de massa comprovadas.
+
+### Estado final e auditoria de equivalência
+
+A matriz oficial está em `Docs/PLAYWRIGHT_FINAL_EQUIVALENCE_AUDIT.md`. O encerramento da Fase 7 consolidou os seguintes contratos:
+
+- PJ, PF e quitado: preparação, confirmação e reflexão AEJS aprovadas;
+- PJ: cobertura completa de titular, cônjuge, SCR, finalidade, imóvel, garantidor, sócios e Interveniente Quitante;
+- workflow: preparação e confirmação aprovadas; Andamento do processo com 997 Finalizada, 998 Disponível e 996 ausente;
+- imóvel quitado: `PESSOA$IN_E_PRINCIPAL` e `PESSOA$IN_EADQUIRENTE` permanecem marcados conforme comportamento funcional confirmado;
+- tarefas e documentos históricos sem execução Cypress aprovada: S3 quando o contrato é inválido; conclusão documental e avanço futuro para 996: S4;
+- cancelamento controlado: S3, pois não existe evidência Cypress aprovada e o Portal atual não expõe a ação no estado confirmado. A reintrodução futura é S4.
+
+O diagnóstico de cancelamento não chamou diretamente o endpoint, não alterou artificialmente a operação e não enviou `POST /finalizar`. A implementação experimental foi removida e sua justificativa sem consumidor também foi eliminada.
+
+**Parecer:** não existe item S5 remanescente; a equivalência funcional Cypress → Playwright está concluída.
 
 ### Dependências
 
@@ -1227,21 +1245,22 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Integrações
 
-- ⏳ Preservar opt-in destrutivo.
-- ⏳ Migrar preparação de proposta.
-- ⏳ Migrar confirmação.
-- ⏳ Migrar cancelamento.
-- ⏳ Migrar login AEJS.
-- ⏳ Migrar abertura de operação.
-- ⏳ Migrar validação de titular e cônjuge.
-- ⏳ Migrar validação de composição de renda.
-- ⏳ Migrar validação de imóvel.
-- ⏳ Migrar garantidores PF e PJ.
-- ⏳ Migrar sócios e interveniente.
-- ⏳ Migrar tarefas e documentos.
-- ⏳ Unificar contexto Portal para AEJS.
-- ⏳ Validar evidências por cenário.
-- ⏳ Confirmar que nenhuma execução usa massa não autorizada.
+- ✅ Preservar opt-in destrutivo.
+- ✅ Migrar preparação de proposta.
+- ✅ Migrar confirmação.
+- ✅ Reclassificar cancelamento como S3 após comprovar ausência de contrato Cypress aprovado e de controle na aplicação atual.
+- ✅ Migrar login AEJS.
+- ✅ Migrar abertura de operação.
+- ✅ Migrar validação de titular e cônjuge.
+- ✅ Migrar validação de composição de renda.
+- ✅ Migrar validação de imóvel.
+- ✅ Migrar garantidores PF e PJ.
+- ✅ Migrar sócios e interveniente.
+- ✅ Corrigir o contrato de workflow para Andamento do processo.
+- ✅ Classificar tarefas/documentos sem contrato aprovado como S3 ou S4.
+- ✅ Integrar Portal e AEJS mantendo BrowserContexts isolados.
+- ✅ Validar evidências por cenário.
+- ✅ Confirmar que nenhuma execução usa massa não autorizada.
 
 ## Relatórios e debug
 
@@ -1280,8 +1299,8 @@ Remover Cypress e dependências transitórias somente após equivalência comple
 
 ## Cutover
 
-- ⏳ Aprovar equivalência dos 108 casos.
-- ⏳ Aprovar equivalência dos casos de integração.
+- ✅ Aprovar equivalência dos 108 casos.
+- ✅ Aprovar equivalência dos casos de integração.
 - ⏳ Aprovar estabilidade do CI.
 - ⏳ Confirmar substituição de relatórios e evidências.
 - ⏳ Atualizar documentação operacional.
@@ -1827,5 +1846,3 @@ Esta seção deverá ser atualizada ao longo da migração com evidências concr
 ### 2026-07-09 — Etapa 4: Encerramento do Hardening
 - **Ação:** Consolidação e alinhamento dos documentos de arquitetura, migração e auditoria. Validação final de consistência e typecheck da suíte.
 - **Parecer:** A arquitetura encontra-se 100% pronta e robusta para o início seguro da Fase 7 (integração Portal-AEJS).
-
-
