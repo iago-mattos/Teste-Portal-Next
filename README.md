@@ -92,6 +92,19 @@ npm run pw:test:functional:mutation
 npm run pw:test:integration:mutation
 ```
 
+Suites completas, incluindo casos mutaveis:
+
+```powershell
+npm run pw:test:functional
+npm run pw:test:integration
+npm run pw:test:all
+```
+
+Esses tres comandos completos somente devem ser usados depois de restaurar as
+massas descartaveis. `pw:test:all` executa todos os projetos Playwright e pode
+confirmar propostas e enviar documentos; ele nao e o comando seguro do dia a
+dia.
+
 Arquivo ou caso isolado:
 
 ```powershell
