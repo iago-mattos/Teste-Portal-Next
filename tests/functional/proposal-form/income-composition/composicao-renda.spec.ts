@@ -4,16 +4,11 @@ import type { Page } from "@playwright/test";
 const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function chooseRadio(page: Page, labelText: string): Promise<void> {
-  const label = page.locator("label", { hasText: new RegExp(`^${labelText}$`, "i") });
-  await expect(label).toBeVisible();
-  const inputId = await label.getAttribute("for");
-  expect(inputId).not.toBeNull();
-  expect(inputId).not.toBe("");
-
-  await label.click();
-
-  const input = page.locator(`#${inputId}`);
-  await expect(input).toBeChecked();
+  const panel = page.getByRole("tabpanel", { name: "Composição de Renda" });
+  const radio = panel.getByRole("radio", { name: labelText, exact: true });
+  await expect(radio).toBeVisible();
+  await radio.check();
+  await expect(radio).toBeChecked();
 }
 
 test.describe("Cadastro da Operação: Composição de Renda", () => {

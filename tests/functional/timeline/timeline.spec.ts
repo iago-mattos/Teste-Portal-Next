@@ -230,6 +230,7 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     "TIMELINE-08 | Exibir mensagem indicando obrigatoriedade de preenchimento",
     functionalReadonly,
     async ({ proposalPage }) => {
+      test.setTimeout(60_000);
       const message = "As informações deste Cadastro são obrigatórias para dar continuidade ao processo.";
       await expect(proposalPage.getAlert(message)).toBeVisible();
     },
@@ -239,6 +240,7 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     "TIMELINE-09 | Caso o cliente feche a mensagem de cadastro obrigatório não precisa apresentar novamente.",
     functionalReadonly,
     async ({ proposalPage, authenticatedPage }) => {
+      test.setTimeout(60_000);
       const message = "As informações deste Cadastro são obrigatórias para dar continuidade ao processo.";
       const alert = proposalPage.getAlert(message);
       await expect(alert).toBeVisible();

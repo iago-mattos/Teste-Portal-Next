@@ -82,6 +82,7 @@ export interface AejsAddressExpectation {
 
 export interface PjAejsReflectionExpectation {
   readonly applicant: {
+    readonly name: string;
     readonly cpf: string;
     readonly dateOfBirth: string;
     readonly residentialAddress: AejsAddressExpectation;
@@ -203,7 +204,7 @@ export interface IntegrationScenarioData {
 
 export const integrationData = {
   "INT-CONFIRM-PJ": {
-    operationNumber: "000436033",
+    operationNumber: "000436044",
     profile: "spouse-pj",
     purpose: "Validar cônjuge, imóvel, garantidor PJ, sócios e interveniente no AEJS.",
     preparation: {
@@ -280,27 +281,28 @@ export const integrationData = {
       },
       aejsReflection: {
         applicant: {
-          cpf: "56663411543",
+          name: "PLAY -- 07",
+          cpf: "95151890719",
           dateOfBirth: "01012001",
           residentialAddress: {
             postalCode: "24120440",
-            fullAddress: "Rua Doutor Carlos Imbassahy 700",
-            complement: "Casa 3",
+            fullAddress: "Rua Doutor Carlos Imbassahy 89",
+            complement: "casa 7",
             neighborhood: "Fonseca",
             city: "NITERÓI",
             state: "RJ",
           },
-          generatedScrAuthorizationDate: "11072026",
+          generatedScrAuthorizationDate: "13072026",
         },
         spouse: {
-          generatedScrAuthorizationDate: "11072026",
+          generatedScrAuthorizationDate: "13072026",
         },
         property: {
-          appraisalValue: "185000000",
+          appraisalValue: "135000000",
           address: {
             postalCode: "24120440",
-            fullAddress: "Rua Doutor Carlos Imbassahy 700",
-            complement: "Casa 3",
+            fullAddress: "Rua Doutor Carlos Imbassahy 89",
+            complement: "casa 7",
             neighborhood: "Fonseca",
             city: "NITERÓI",
             state: "RJ",
@@ -318,7 +320,7 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-PF": {
-    operationNumber: "000436034",
+    operationNumber: "000436045",
     profile: "third-party-pf",
     purpose: "Validar terceiro na composição de renda e garantidor PF no AEJS.",
     preparation: {
@@ -378,7 +380,7 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-QUITADO": {
-    operationNumber: "000436035",
+    operationNumber: "000436046",
     profile: "single-quitado",
     purpose: "Validar titular sem composição de renda e imóvel quitado no AEJS.",
     preparation: {
@@ -406,7 +408,7 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-WORKFLOW": {
-    operationNumber: "000436036",
+    operationNumber: "000436047",
     profile: "workflow",
     purpose: "Validar a preparação e a transição 997 → 998 do workflow no AEJS.",
     preparation: {

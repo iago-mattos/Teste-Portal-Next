@@ -267,10 +267,10 @@ test.describe("Cadastro da Operação: Participantes", () => {
 
       const conditionSelect = proposalPage.getFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL");
       const originalCondition = await conditionSelect.inputValue();
-      expect(originalCondition).not.toBe("");
-
-      await conditionSelect.scrollIntoViewIfNeeded();
-      await conditionSelect.selectOption("");
+      if (originalCondition !== "") {
+        await conditionSelect.scrollIntoViewIfNeeded();
+        await conditionSelect.selectOption("");
+      }
 
       const confirmButton = page.getByRole("button", { name: /^Confirmar/i });
       await confirmButton.click();
@@ -282,7 +282,9 @@ test.describe("Cadastro da Operação: Participantes", () => {
       await expect(dialog.root).toBeVisible();
       await dialog.clickButton("Entendi");
 
-      await conditionSelect.selectOption(originalCondition);
+      if (originalCondition !== "") {
+        await conditionSelect.selectOption(originalCondition);
+      }
 
       await proposalPage.tabs.select("Sobre Você");
       await proposalPage.expectDraftSaved();

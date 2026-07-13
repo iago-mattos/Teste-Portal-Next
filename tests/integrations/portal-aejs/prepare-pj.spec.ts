@@ -268,8 +268,14 @@ test(
       const advanceDialog = page
         .getByRole("alertdialog", { name: "Confirmar", exact: true })
         .filter({ hasText: /Deseja prosseguir para a próxima fase/i });
-      if (await advanceDialog.count() > 0) {
-        await expect(advanceDialog).toBeVisible();
+      const requiresDialogConfirmation = await Promise.race([
+        advanceDialog
+          .waitFor({ state: "visible", timeout: 60_000 })
+          .then(() => true),
+        finalizeResponsePromise.then(() => false),
+      ]);
+
+      if (requiresDialogConfirmation) {
         await advanceDialog.getByRole("button", { name: "Confirmar", exact: true }).click();
       }
 

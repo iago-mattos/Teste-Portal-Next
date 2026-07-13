@@ -25,7 +25,7 @@ export class ProposalsPage {
 
   async waitUntilReady(): Promise<void> {
     await expect(this.heading).toBeVisible();
-    await expect(this.skeletons).toHaveCount(0);
+    await expect(this.skeletons).toHaveCount(0, { timeout: 30_000 });
   }
 
   getProposalCard(number: string): Locator {

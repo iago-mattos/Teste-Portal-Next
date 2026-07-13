@@ -1,13 +1,13 @@
 import { AejsOperationsPage } from "../../pages/aejs/aejs-operations.page";
 import { aejsTest as test, expect } from "../../fixtures/aejs/aejs.fixture";
-import { getIntegrationScenario } from "../../test-data/integration-data";
+import { getIntegrationPreparationScenario } from "../../test-data/integration-data";
 
 test(
   "Portal → AEJS | abre a ficha do pretendente da operação",
   { tag: ["@integration", "@readonly"] },
   async ({ aejsPage, proposalsPage }) => {
-    const scenario = getIntegrationScenario("INT-CONFIRM-PJ");
-    const applicantName = "PROPOSTA 10 -- MASSA";
+    const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
+    const applicantName = scenario.preparation.aejsReflection.applicant.name;
 
     await proposalsPage.open();
     await proposalsPage.loadAll();

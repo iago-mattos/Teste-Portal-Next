@@ -20,7 +20,7 @@ export class ProposalTabsComponent {
   }
 
   getTab(name: ProposalTabName): Locator {
-    return this.page.getByText(name, { exact: true });
+    return this.tablist.getByRole("tab", { name, exact: true });
   }
 
   getTabButton(name: ProposalTabName): Locator {

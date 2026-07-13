@@ -5,18 +5,14 @@ import type { ProposalPage } from "../../../pages/portal/proposal.page";
 const functionalMutation = { tag: ["@functional", "@mutation"] };
 
 async function chooseRadio(page: Page, labelText: string): Promise<void> {
-  const label = page.locator("label", { hasText: new RegExp(`^${labelText}$`, "i") });
-  await expect(label).toBeVisible();
-  const inputId = await label.getAttribute("for");
-  expect(inputId).not.toBeNull();
-  expect(inputId).not.toBe("");
-
-  const input = page.locator(`#${inputId}`);
-  const isChecked = await input.isChecked();
+  const panel = page.getByRole("tabpanel", { name: "Composição de Renda" });
+  const radio = panel.getByRole("radio", { name: labelText, exact: true });
+  await expect(radio).toBeVisible();
+  const isChecked = await radio.isChecked();
   if (!isChecked) {
-    await label.click();
+    await radio.check();
   }
-  await expect(input).toBeChecked();
+  await expect(radio).toBeChecked();
 }
 
 async function expectRequired(page: Page, proposalPage: ProposalPage, name: string): Promise<void> {
