@@ -41,6 +41,20 @@ como fallback local, mas novas trocas de ambiente devem ser feitas somente no
 
 Nao utilize credenciais, links ou dados de clientes reais.
 
+### Finalidade das propostas funcionais
+
+| Variavel | Estado exigido | Responsabilidade |
+| --- | --- | --- |
+| `PORTAL_PROPOSAL_DEFAULT` | Visivel e em Cadastro | Proposta principal dos smokes, formularios e validacoes gerais. Deve continuar acessivel. |
+| `PORTAL_PROPOSAL_EXPIRED` | Expirada ha no maximo 30 dias | Comprova que uma proposta expirada ainda aparece em modo de consulta. |
+| `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada ha mais de 30 dias | Comprova que a proposta nao aparece mais. Se aparecer, o PROP-10 deve falhar. |
+| `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Abre a jornada `Cadastro da Proposta` pela timeline. |
+| `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Abre a jornada `Documentos da proposta`; nao use uma operacao que ja avancou para 996. |
+
+Ao trocar uma proposta, preserve o estado descrito na tabela. Apenas substituir
+o numero por qualquer operacao existente pode fazer o teste validar a jornada
+errada.
+
 ## Executar
 
 Instalacao e validacao estatica:
@@ -149,14 +163,14 @@ overrides temporarios governados, nao como configuracao principal.
 
 Cobertura Playwright configuravel:
 
-| Caso | Operacao | Cobertura |
-| --- | --- | --- |
-| `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Titular, conjuge, garantidor PJ, socios e interveniente |
-| `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF |
-| `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Sem composicao de renda e imovel quitado |
-| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Documentos e transicao 997 → 998 → 996 |
-| `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Persistencia e visualizacao Portal → SCCI |
-| `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Bloqueio de arquivos acima de 10 MB |
+| Caso | Variavel | Finalidade e estado esperado | Reexecucao |
+| --- | --- | --- | --- |
+| `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Titular, conjuge, garantidor PJ, socios e interveniente refletidos no SCCI. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
+| `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF refletidos no SCCI. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
+| `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Imovel quitado, sem composicao, terceiro ou garantidor. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
+| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Depois dos documentos: tarefas 997 e 998 finalizadas e 996 disponivel. | Fluxo Portal consome a massa; depois execute somente as validacoes read-only. |
+| `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Todos os documentos enviados no Portal devem abrir em `Documentos → Renda PF` no SCCI. | Envio consome a massa; validacao dos PDFs pode ser repetida. |
+| `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Cada seletor deve rejeitar PDFs de 25 MB e 50 MB porque o limite e 10 MB. | Reutilizavel: os arquivos rejeitados nao sao persistidos. |
 
 Operacoes consumidas por confirmacao ou avanco de workflow nao sao
 reexecutaveis sem restauracao externa. A tag `@mutation` e o opt-in evitam uma
