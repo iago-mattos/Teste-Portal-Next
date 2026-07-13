@@ -8,9 +8,15 @@ export class AejsOperationsPage {
   readonly openedOperationNumber: Locator;
   readonly openedApplicantName: Locator;
   readonly processProgressGrid: Locator;
+  readonly incomeDocumentsGrid: Locator;
+  readonly openedDocumentWindow: Locator;
+  readonly openedDocumentFrame: Locator;
+  readonly openedDocumentUploadedAt: Locator;
   private readonly originationMenuItem: Locator;
   private readonly operationsMenuItem: Locator;
   private readonly processProgressMenuItem: Locator;
+  private readonly documentsMenuItem: Locator;
+  private readonly incomeDocumentsTab: Locator;
   private readonly applicantTab: Locator;
   private readonly operationSearchInput: Locator;
   private readonly searchButton: Locator;
@@ -29,6 +35,13 @@ export class AejsOperationsPage {
       name: "Andamento do processo",
       exact: true,
     });
+    this.documentsMenuItem = page.getByRole("menuitem", {
+      name: "Documentos",
+      exact: true,
+    });
+    this.incomeDocumentsTab = page
+      .getByRole("tab", { name: "Renda PF", exact: true })
+      .filter({ visible: true });
     this.applicantTab = page.getByRole("tab", {
       name: "Pretendente",
       exact: true,
@@ -52,6 +65,24 @@ export class AejsOperationsPage {
     this.processProgressGrid = page
       .getByRole("grid", { name: "Andamento do Processo", exact: true })
       .filter({ visible: true });
+    this.incomeDocumentsGrid = page
+      .getByRole("grid")
+      .filter({
+        has: page.getByRole("columnheader", {
+          name: "Documentos",
+          exact: true,
+        }),
+        visible: true,
+      });
+    this.openedDocumentWindow = page
+      .locator(".x-window:visible")
+      .filter({ hasText: "Observações do documento" });
+    this.openedDocumentFrame = this.openedDocumentWindow.locator(
+      'iframe[src^="blob:"]',
+    );
+    this.openedDocumentUploadedAt = this.openedDocumentWindow.locator(
+      'input[name="ALT_DATA"]',
+    );
   }
 
   async navigateToOperations(): Promise<void> {
@@ -139,6 +170,60 @@ export class AejsOperationsPage {
         }),
       ).toBeVisible();
     }
+  }
+
+  async openIncomeDocuments(): Promise<void> {
+    await expect(this.documentsMenuItem).toHaveCount(1);
+    await expect(this.documentsMenuItem).toBeVisible();
+    await this.documentsMenuItem.click();
+
+    await this.selectIncomeDocumentsTab();
+  }
+
+  getIncomeDocumentRow(documentName: string): Locator {
+    return this.incomeDocumentsGrid
+      .getByRole("row")
+      .filter({ hasText: documentName });
+  }
+
+  async openIncomeDocument(documentName: string): Promise<void> {
+    await this.selectIncomeDocumentsTab();
+    const row = this.getIncomeDocumentRow(documentName);
+    await expect(row).toHaveCount(1);
+    await expect(row).toBeVisible();
+
+    const attachmentIcon = row.locator(
+      '[role="button"][data-qtip="Anexar"]',
+    );
+    await expect(attachmentIcon).toHaveCount(1);
+    await expect(attachmentIcon).toHaveClass(/\bicone-40\b/);
+    await attachmentIcon.click();
+
+    await expect(this.openedDocumentWindow).toBeVisible({ timeout: 60_000 });
+    await expect(this.openedDocumentFrame).toBeVisible({ timeout: 60_000 });
+  }
+
+  async closeOpenedDocument(): Promise<void> {
+    const closeButton = this.openedDocumentWindow.getByRole("button", {
+      name: "Fechar tela",
+      exact: true,
+    });
+    await expect(closeButton).toBeVisible();
+    await closeButton.click();
+    await expect(this.openedDocumentWindow).toHaveCount(0);
+    await this.waitForExtJsReady();
+  }
+
+  private async selectIncomeDocumentsTab(): Promise<void> {
+    await expect(this.incomeDocumentsTab).toBeVisible({ timeout: 60_000 });
+    if ((await this.incomeDocumentsTab.getAttribute("aria-selected")) !== "true") {
+      await this.incomeDocumentsTab.click();
+    }
+    await expect(this.incomeDocumentsTab).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(this.incomeDocumentsGrid).toBeVisible();
   }
 
   getProcessTaskRow(taskCode: string): Locator {
@@ -257,7 +342,9 @@ export class AejsOperationsPage {
 
   private async waitForExtJsReady(): Promise<void> {
     await expect(
-      this.page.locator(".x-mask-msg:visible, .x-loading-mask:visible"),
+      this.page.locator(
+        ".x-mask:visible, .x-mask-msg:visible, .x-loading-mask:visible",
+      ),
     ).toHaveCount(0);
   }
 }

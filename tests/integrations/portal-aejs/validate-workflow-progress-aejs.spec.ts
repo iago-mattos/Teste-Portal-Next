@@ -20,7 +20,7 @@ async function expectProcessTask(
 }
 
 test(
-  "Portal → AEJS | valida a transição do workflow após o cadastro",
+  "Portal → AEJS | valida a transição do workflow após os documentos",
   { tag: ["@integration", "@readonly"] },
   async ({ aejsPage }) => {
     const scenario = getIntegrationScenario("INT-CONFIRM-WORKFLOW");
@@ -38,7 +38,7 @@ test(
       await operationsPage.openProcessProgress();
     });
 
-    await test.step("valida cadastro finalizado e documentos disponíveis", async () => {
+    await test.step("valida cadastro e documentos finalizados", async () => {
       await expectProcessTask(
         operationsPage,
         "997",
@@ -49,12 +49,17 @@ test(
         operationsPage,
         "998",
         "Anexar documentação (Portal)",
-        "Disponível",
+        "Finalizada",
       );
     });
 
-    await test.step("confirma que a fase posterior ainda não foi criada", async () => {
-      await expect(operationsPage.getProcessTaskRow("996")).toHaveCount(0);
+    await test.step("valida a liberação da validação cadastral", async () => {
+      await expectProcessTask(
+        operationsPage,
+        "996",
+        "Validação do cadastro",
+        "Disponível",
+      );
     });
   },
 );

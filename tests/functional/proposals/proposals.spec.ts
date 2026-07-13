@@ -184,25 +184,13 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-10 | Simulações canceladas acimas de 30 dias não veremos no resumo",
     functionalReadonly,
-    async ({ proposalsPage }) => {
-      const cutoff = new Date();
-      cutoff.setHours(0, 0, 0, 0);
-      cutoff.setDate(cutoff.getDate() - 30);
-
-      const cards = proposalsPage.proposalCards;
-      const count = await cards.count();
-
-      for (let i = 0; i < count; i++) {
-        const card = cards.nth(i);
-        const text = await card.textContent();
-        if (text && /Fase Atual\s*Cancelada/i.test(text)) {
-          const match = text.match(/Data de cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i);
-          expect(match?.[1]).toBeDefined();
-
-          const regDate = parseBrazilianDate(match![1]);
-          expect(regDate.getTime()).toBeGreaterThanOrEqual(cutoff.getTime());
-        }
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaExpiradaMais30DiasId;
+      if (!proposalId) {
+        throw new Error("propostaExpiradaMais30DiasId deve estar configurada.");
       }
+
+      await expect(proposalsPage.getProposalCard(proposalId)).toHaveCount(0);
     },
   );
 
