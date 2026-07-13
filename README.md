@@ -1,6 +1,6 @@
 # PortalNext - Testes E2E
 
-Suite Cypress + TypeScript baseada nos casos de
+Suite Playwright + Cypress + TypeScript baseada nos casos de
 `Docs/TestesPortalC6(1).xlsx`.
 
 Para continuar o trabalho em outro computador ou em uma nova conversa, leia
@@ -10,34 +10,88 @@ massas que devem ser preservadas e o ponto exato de retomada.
 ## Configurar a conexao
 
 Copie `.env.example` para `.env.local` e informe apenas dados dos ambientes
-DEV/HT. A configuracao e carregada antes da inicializacao do Cypress e validada
-em um unico ponto:
+DEV/HT. Playwright e Cypress carregam esse arquivo local, que e ignorado pelo
+Git. Os grupos principais sao:
 
 - `PORTAL_ENV`: `dev` ou `ht`;
-- `PORTAL_URL`: URL base do Portal;
+- `PORTAL_URL` e `PORTAL_ACCESS_URL`: Portal e magic link opcional;
 - `PORTAL_ADMIN_URL`: URL do painel administrativo;
 - `PORTAL_ADMIN_USER` e `PORTAL_ADMIN_PASSWORD`: credenciais de QA;
-- `PORTAL_TEST_CPF`: CPF exclusivo da massa descartavel.
+- `PORTAL_TEST_CPF`: CPF exclusivo das massas de teste;
+- `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD` e `AEJS_PATH`: SCCI/AEJS;
+- `PORTAL_PROPOSAL_*`: propostas usadas pelos casos funcionais;
+- `PORTAL_INTEGRATION_*_OPERATION`: uma operacao dedicada para cada integracao;
+- `PORTAL_EXPECTED_*`: contrato visual da proposta padrao.
 
-O Cypress entra no Admin, abre Backend, gera e copia o magic link, acessa o
-Portal e guarda a sessao automaticamente. Quando a sessao deixa de ser valida,
-um link novo e gerado. O fluxo e bloqueado quando Admin e Portal nao pertencem
-ao mesmo host DEV/HT.
+Quando o Admin esta configurado, o setup entra no painel, gera o magic link,
+acessa o Portal e guarda a sessao automaticamente. `PORTAL_ACCESS_URL` e apenas
+o fallback manual. O SCCI autentica dentro do ciclo de vida da fixture porque a
+sessao ExtJS nao pode ser restaurada por `storageState`.
 
-As massas podem ser fornecidas como objetos JSON nas variaveis:
+As variaveis JSON antigas continuam aceitas apenas para compatibilidade:
 
 - `PORTAL_TEST_DATA_JSON`;
 - `PORTAL_EXPECTED_PROPOSAL_JSON`;
 - `PORTAL_CASE_ACCESS_URLS_JSON`;
 - `PORTAL_CASE_PROPOSAL_IDS_JSON`.
 
-Os antigos `connect.ts`, `connect.ht.ts` e `aejs.ts` continuam aceitos somente
-como compatibilidade local. Eles sao opcionais, ignorados pelo Git e nao sao
-mais imports obrigatorios; um checkout limpo compila sem esses arquivos.
+Os antigos `connect.ts`, `connect.ht.ts` e `aejs.ts` tambem continuam aceitos
+como fallback local, mas novas trocas de ambiente devem ser feitas somente no
+`.env.local`.
 
 Nao utilize credenciais, links ou dados de clientes reais.
 
 ## Executar
+
+Instalacao e validacao estatica:
+
+```powershell
+npm ci
+npm run pw:install
+npm run check
+```
+
+Coleta sem abrir navegador:
+
+```powershell
+npm run pw:test:list
+```
+
+Playwright seguro, sem integracoes e sem mutacoes:
+
+```powershell
+npm run pw:test:safe
+```
+
+Execucoes Playwright por grupo:
+
+```powershell
+npm run pw:test:smoke
+npm run pw:test:functional:readonly
+npm run pw:test:integration:readonly
+```
+
+Testes mutaveis exigem `ALLOW_TEST_MUTATION=true` no `.env.local`:
+
+```powershell
+npm run pw:test:functional:mutation
+npm run pw:test:integration:mutation
+```
+
+Arquivo ou caso isolado:
+
+```powershell
+npx playwright test tests/caminho/arquivo.spec.ts
+npx playwright test -g "texto do caso"
+```
+
+Relatorio HTML da ultima execucao:
+
+```powershell
+npm run pw:report
+```
+
+Comandos legados do Cypress:
 
 ```powershell
 npm run cy:open
@@ -72,69 +126,41 @@ Para executar somente um caso:
 npm run cy:run -- --spec "cypress/e2e/cliente/01-login.cy.ts" --env caseId=LOGIN-04
 ```
 
-## Integracao Portal para AEJS
+## Integracao Portal para SCCI/AEJS
 
-O fluxo de preparacao confirma propostas e, por isso, exige massa descartavel e
-opt-in explicito. Preencha no `.env.local`:
+Os cenarios mutaveis confirmam propostas ou enviam documentos e, por isso,
+exigem massas descartaveis dedicadas e opt-in explicito. Cada operacao possui
+uma variavel propria no `.env.local`:
 
 ```text
-PORTAL_INTEGRATION_CASE_ID=INT-CONFIRM-PJ
-PORTAL_INTEGRATION_OPERATION=000436021
+PORTAL_INTEGRATION_PJ_OPERATION=000000000
+PORTAL_INTEGRATION_PF_OPERATION=000000000
+PORTAL_INTEGRATION_PAID_OFF_OPERATION=000000000
+PORTAL_INTEGRATION_WORKFLOW_OPERATION=000000000
+PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION=000000000
+PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION=000000000
 ALLOW_TEST_MUTATION=true
 ```
 
-Depois execute:
+Use `pw:test:integration:readonly` para validacoes que nao alteram estado e
+`pw:test:integration:mutation` apenas quando as massas estiverem preparadas.
+`PORTAL_INTEGRATION_CASE_ID` e `PORTAL_INTEGRATION_OPERATION` permanecem como
+overrides temporarios governados, nao como configuracao principal.
 
-```powershell
-npm run cy:run:integration
-```
-
-A preparacao mantem em memoria, apenas durante a execucao atual, o caso, perfil
-e operacao efetivamente usados. O spec do AEJS le esse contexto, pesquisa
-exatamente a mesma operacao e confirma o numero aberto antes de validar os
-campos. Cookies e magic links nao sao persistidos em disco.
-
-O fluxo automatizado esta dividido em:
-
-- `14-preparar-integracao.cy.ts`: preenche o Portal, confirma a proposta e
-  publica o contexto para o processo atual do Cypress;
-- `16-verificar-aejs.cy.ts`: abre a mesma operacao no AEJS e valida os dados
-  persistidos;
-- `integration-data.ts`: centraliza os valores esperados e as operacoes de
-  cada perfil.
-
-Massas de integracao conhecidas:
+Cobertura Playwright configuravel:
 
 | Caso | Operacao | Cobertura |
 | --- | --- | --- |
-| `INT-CONFIRM-PJ` | `000436021` | Titular, conjuge, garantidor PJ, socios e interveniente |
-| `INT-CONFIRM-PF` | `000436020` | Terceiro na renda e garantidor PF |
-| `INT-CONFIRM-QUITADO` | `000436019` | Sem composicao de renda e imovel quitado |
-| `INT-CONFIRM-WORKFLOW` | `000436018` | Tarefas, documentos, fluxo e cancelamento |
+| `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Titular, conjuge, garantidor PJ, socios e interveniente |
+| `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF |
+| `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Sem composicao de renda e imovel quitado |
+| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Documentos e transicao 997 → 998 → 996 |
+| `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Persistencia e visualizacao Portal → SCCI |
+| `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Bloqueio de arquivos acima de 10 MB |
 
-As operacoes acima ja foram confirmadas e devem ser preservadas. Nao execute a
-preparacao novamente sem uma massa descartavel ou sem a intencao explicita de
-alterar seu estado.
-
-### Resultado das integracoes
-
-As integracoes representam 59 regras da planilha:
-
-- 54 regras possuem validacao completa aprovada no AEJS;
-- regra 4 possui validacao parcial, pois o AEJS exibe a autorizacao SCR e a
-  data, mas nao a hora;
-- regras 1, 2 e 5 falham por divergencias de tarefas/documentos no fluxo;
-- regra 23 falha porque a operacao `000436019`, preparada sem composicao de
-  renda, chegou ao AEJS com `PESSOA$IN_EADQUIRENTE` marcado.
-
-Essas quatro falhas sao divergencias funcionais comprovadas, nao falhas de
-seletor do Cypress. Os caminhos e campos do AEJS estao detalhados em
-`Docs/scci.md`; o estado completo e as evidencias estao em
-`cypress/ANDAMENTO_EXECUCAO.md` e `Docs/HANDOFF_CODEX.md`.
-
-No total, a cobertura do projeto e composta por 108 casos funcionais, 59 regras
-de integracao e 2 transicoes controladas (`Confirmar` e `Cancelar`), totalizando
-169 casos.
+Operacoes consumidas por confirmacao ou avanco de workflow nao sao
+reexecutaveis sem restauracao externa. A tag `@mutation` e o opt-in evitam uma
+execucao destrutiva acidental.
 
 ## Organizacao
 

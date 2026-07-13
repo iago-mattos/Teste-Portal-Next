@@ -1,3 +1,12 @@
+import { existsSync } from "node:fs";
+
+for (const envFile of [".env.local", ".env"]) {
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+    break;
+  }
+}
+
 const requireOperation = process.argv.includes("--require-operation");
 const operation = process.env.PORTAL_INTEGRATION_OPERATION?.replace(/\D/g, "") ?? "";
 

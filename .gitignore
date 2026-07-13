@@ -1,4 +1,5 @@
 node_modules/
+.DS_Store
 cypress/config/connect.ts
 cypress/config/connect.ht.ts
 cypress/config/aejs.ts

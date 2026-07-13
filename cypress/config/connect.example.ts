@@ -37,6 +37,7 @@ export const portalConnect = {
     cpfInvalido: "11111111111",
     propostaPadraoId: "",
     propostaExpiradaId: "",
+    propostaExpiradaMais30DiasId: "",
     propostaCanceladaId: "",
     propostaComConjugeId: "",
     propostaComTerceiroId: "",

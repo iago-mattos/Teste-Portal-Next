@@ -17,6 +17,7 @@ export interface LocalPortalCompatibilityConfig {
     cpfComPropostas?: string;
     cpfInvalido?: string;
     propostaExpiradaId?: string;
+    propostaExpiradaMais30DiasId?: string;
     expectedProposal?: {
       visibleNumber?: string;
       proponentName?: string;
@@ -44,6 +45,7 @@ export interface PortalRuntimeConfig {
   readonly testData: Readonly<{
     invalidCpf: string;
     propostaExpiradaId: string;
+    propostaExpiradaMais30DiasId: string;
     expectedProposal: Readonly<{
       visibleNumber: string;
       proponentName: string;
@@ -129,21 +131,58 @@ function resolveExpectedProposal(
 
   const localExpected = local?.testData?.expectedProposal ?? {};
 
-  const getString = (key: string, fallback: string | undefined): string => {
-    const val = parsed[key] !== undefined ? parsed[key] : fallback;
+  const getString = (
+    key: string,
+    envKey: string,
+    fallback: string | undefined,
+  ): string => {
+    const explicitValue = env[envKey]?.trim();
+    const val = explicitValue || (parsed[key] !== undefined ? parsed[key] : fallback);
     return val !== undefined ? String(val).trim() : "";
   };
 
   return Object.freeze({
-    visibleNumber: getString("visibleNumber", localExpected.visibleNumber),
-    proponentName: getString("proponentName", localExpected.proponentName),
-    cpfEnding: getString("cpfEnding", localExpected.cpfEnding),
-    registrationDate: getString("registrationDate", localExpected.registrationDate),
-    propertyValue: getString("propertyValue", localExpected.propertyValue),
-    financedValue: getString("financedValue", localExpected.financedValue),
-    term: getString("term", localExpected.term),
-    currentPhase: getString("currentPhase", localExpected.currentPhase),
-    deadline: getString("deadline", localExpected.deadline),
+    visibleNumber: getString(
+      "visibleNumber",
+      "PORTAL_PROPOSAL_DEFAULT",
+      localExpected.visibleNumber,
+    ),
+    proponentName: getString(
+      "proponentName",
+      "PORTAL_EXPECTED_PROPONENT_NAME",
+      localExpected.proponentName,
+    ),
+    cpfEnding: getString(
+      "cpfEnding",
+      "PORTAL_EXPECTED_CPF_ENDING",
+      localExpected.cpfEnding,
+    ),
+    registrationDate: getString(
+      "registrationDate",
+      "PORTAL_EXPECTED_REGISTRATION_DATE",
+      localExpected.registrationDate,
+    ),
+    propertyValue: getString(
+      "propertyValue",
+      "PORTAL_EXPECTED_PROPERTY_VALUE",
+      localExpected.propertyValue,
+    ),
+    financedValue: getString(
+      "financedValue",
+      "PORTAL_EXPECTED_FINANCED_VALUE",
+      localExpected.financedValue,
+    ),
+    term: getString("term", "PORTAL_EXPECTED_TERM", localExpected.term),
+    currentPhase: getString(
+      "currentPhase",
+      "PORTAL_EXPECTED_CURRENT_PHASE",
+      localExpected.currentPhase,
+    ),
+    deadline: getString(
+      "deadline",
+      "PORTAL_EXPECTED_DEADLINE",
+      localExpected.deadline,
+    ),
   });
 }
 
@@ -151,25 +190,35 @@ function resolveCaseProposalIds(
   env: NodeJS.ProcessEnv,
   local: LocalPortalCompatibilityConfig | undefined,
 ): Readonly<Record<string, string>> {
+  let parsedRecord: Record<string, string> = {};
   const rawRecord = env.PORTAL_CASE_PROPOSAL_IDS_JSON?.trim();
   if (rawRecord) {
     try {
       const parsed = JSON.parse(rawRecord) as unknown;
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        return Object.freeze(
-          Object.fromEntries(
-            Object.entries(parsed).map(([key, entry]) => [key, String(entry)]),
-          ),
+        parsedRecord = Object.fromEntries(
+          Object.entries(parsed).map(([key, entry]) => [key, String(entry)]),
         );
+      } else {
+        throw new Error("o valor precisa ser um objeto JSON");
       }
-      throw new Error("o valor precisa ser um objeto JSON");
     } catch (error) {
       throw new Error("PORTAL_CASE_PROPOSAL_IDS_JSON possui JSON invalido.", {
         cause: error,
       });
     }
   }
-  return Object.freeze(local?.caseProposalIds ?? {});
+
+  const configured = {
+    ...(local?.caseProposalIds ?? {}),
+    ...parsedRecord,
+  };
+  const timelineCadastro = env.PORTAL_PROPOSAL_TIMELINE_CADASTRO?.trim();
+  const timelineDocuments = env.PORTAL_PROPOSAL_TIMELINE_DOCUMENTS?.trim();
+  if (timelineCadastro) configured.TIMELINE_04_CADASTRO = timelineCadastro;
+  if (timelineDocuments) configured.TIMELINE_04_DOCUMENTOS = timelineDocuments;
+
+  return Object.freeze(configured);
 }
 
 function resolveExternalSimulationUrl(
@@ -215,6 +264,9 @@ function resolvePropostaExpiradaId(
   env: NodeJS.ProcessEnv,
   local: LocalPortalCompatibilityConfig | undefined,
 ): string {
+  const explicitValue = env.PORTAL_PROPOSAL_EXPIRED?.trim();
+  if (explicitValue) return explicitValue;
+
   const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
   if (!rawTestData) {
     return local?.testData?.propostaExpiradaId?.trim() || "";
@@ -232,6 +284,42 @@ function resolvePropostaExpiradaId(
     }
 
     return propostaExpiradaId?.trim() || "";
+  } catch (error) {
+    throw new Error("PORTAL_TEST_DATA_JSON possui JSON invalido.", {
+      cause: error,
+    });
+  }
+}
+
+function resolvePropostaExpiradaMais30DiasId(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): string {
+  const explicitValue = env.PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS?.trim();
+  if (explicitValue) return explicitValue;
+
+  const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
+  if (!rawTestData) {
+    return local?.testData?.propostaExpiradaMais30DiasId?.trim() || "";
+  }
+
+  try {
+    const parsed = JSON.parse(rawTestData) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("o valor precisa ser um objeto JSON");
+    }
+
+    const propostaExpiradaMais30DiasId = (
+      parsed as { propostaExpiradaMais30DiasId?: unknown }
+    ).propostaExpiradaMais30DiasId;
+    if (
+      propostaExpiradaMais30DiasId !== undefined &&
+      typeof propostaExpiradaMais30DiasId !== "string"
+    ) {
+      throw new Error("propostaExpiradaMais30DiasId precisa ser texto");
+    }
+
+    return propostaExpiradaMais30DiasId?.trim() || "";
   } catch (error) {
     throw new Error("PORTAL_TEST_DATA_JSON possui JSON invalido.", {
       cause: error,
@@ -278,6 +366,10 @@ export function loadPortalRuntimeConfig(
     testData: Object.freeze({
       invalidCpf: resolveInvalidCpf(env, local),
       propostaExpiradaId: resolvePropostaExpiradaId(env, local),
+      propostaExpiradaMais30DiasId: resolvePropostaExpiradaMais30DiasId(
+        env,
+        local,
+      ),
       expectedProposal: resolveExpectedProposal(env, local),
     }),
     pageErrors: Object.freeze({

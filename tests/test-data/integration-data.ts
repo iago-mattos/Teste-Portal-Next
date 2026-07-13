@@ -9,7 +9,21 @@ export type IntegrationScenarioProfile =
   | "spouse-pj"
   | "third-party-pf"
   | "single-quitado"
-  | "workflow";
+  | "workflow"
+  | "document-persistence"
+  | "document-size";
+
+export interface IntegrationDocumentFile {
+  readonly path: string;
+  readonly fileName: string;
+}
+
+export interface IntegrationDocumentScenario {
+  readonly documentNames: readonly string[];
+  readonly validFile: IntegrationDocumentFile;
+  readonly oversizedFiles: readonly IntegrationDocumentFile[];
+  readonly maximumSizeMb: number;
+}
 
 export interface ApplicantInput {
   readonly grossIncome: string;
@@ -197,14 +211,49 @@ export type IntegrationPreparationScenario =
 
 export interface IntegrationScenarioData {
   readonly operationNumber: string;
+  readonly operationEnv: string;
   readonly profile: IntegrationScenarioProfile;
   readonly purpose: string;
   readonly preparation?: IntegrationPreparationScenario;
+  readonly documents?: IntegrationDocumentScenario;
 }
+
+const portalRequiredDocumentNames = [
+  "Extratos da c/c PF ou PJ 1",
+  "Extratos da c/c PF ou PJ 2",
+  "Extratos da c/c PF ou PJ 3",
+  "IRPF - Imposto de Renda",
+  "IRPF - Recibo de entrega",
+] as const;
+
+const workflowRequiredDocumentNames = [
+  "Holerite 1",
+  "IRPF - Imposto de Renda",
+  "IRPF - Recibo de entrega",
+] as const;
+
+const portalDocumentFiles = {
+  validFile: {
+    path: "Docs/Dummys/DUMMY.pdf",
+    fileName: "DUMMY.pdf",
+  },
+  oversizedFiles: [
+    {
+      path: "Docs/Dummys/DUMMY-25mb.pdf",
+      fileName: "DUMMY-25mb.pdf",
+    },
+    {
+      path: "Docs/Dummys/DUMMY-50mb.pdf",
+      fileName: "DUMMY-50mb.pdf",
+    },
+  ],
+  maximumSizeMb: 10,
+} as const;
 
 export const integrationData = {
   "INT-CONFIRM-PJ": {
     operationNumber: "000436044",
+    operationEnv: "PORTAL_INTEGRATION_PJ_OPERATION",
     profile: "spouse-pj",
     purpose: "Validar cônjuge, imóvel, garantidor PJ, sócios e interveniente no AEJS.",
     preparation: {
@@ -321,6 +370,7 @@ export const integrationData = {
   },
   "INT-CONFIRM-PF": {
     operationNumber: "000436045",
+    operationEnv: "PORTAL_INTEGRATION_PF_OPERATION",
     profile: "third-party-pf",
     purpose: "Validar terceiro na composição de renda e garantidor PF no AEJS.",
     preparation: {
@@ -381,6 +431,7 @@ export const integrationData = {
   },
   "INT-CONFIRM-QUITADO": {
     operationNumber: "000436046",
+    operationEnv: "PORTAL_INTEGRATION_PAID_OFF_OPERATION",
     profile: "single-quitado",
     purpose: "Validar titular sem composição de renda e imóvel quitado no AEJS.",
     preparation: {
@@ -409,8 +460,13 @@ export const integrationData = {
   },
   "INT-CONFIRM-WORKFLOW": {
     operationNumber: "000436047",
+    operationEnv: "PORTAL_INTEGRATION_WORKFLOW_OPERATION",
     profile: "workflow",
     purpose: "Validar a preparação e a transição 997 → 998 do workflow no AEJS.",
+    documents: {
+      documentNames: workflowRequiredDocumentNames,
+      ...portalDocumentFiles,
+    },
     preparation: {
       profile: "WORKFLOW",
       applicant: {
@@ -435,6 +491,28 @@ export const integrationData = {
       },
     },
   },
+  "INT-DOCUMENT-PERSISTENCE": {
+    operationNumber: "000436049",
+    operationEnv: "PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION",
+    profile: "document-persistence",
+    purpose:
+      "Validar persistência e visualização de todos os documentos enviados do Portal para o SCCI.",
+    documents: {
+      documentNames: portalRequiredDocumentNames,
+      ...portalDocumentFiles,
+    },
+  },
+  "INT-DOCUMENT-SIZE": {
+    operationNumber: "000436050",
+    operationEnv: "PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION",
+    profile: "document-size",
+    purpose:
+      "Validar o bloqueio de arquivos maiores que 10 MB em todos os controles documentais do Portal.",
+    documents: {
+      documentNames: portalRequiredDocumentNames,
+      ...portalDocumentFiles,
+    },
+  },
 } as const satisfies Record<string, IntegrationScenarioData>;
 
 export type IntegrationCaseId = keyof typeof integrationData;
@@ -449,6 +527,11 @@ export interface ResolvedIntegrationScenario {
 export interface ResolvedIntegrationPreparationScenario
   extends ResolvedIntegrationScenario {
   readonly preparation: IntegrationPreparationScenario;
+}
+
+export interface ResolvedIntegrationDocumentScenario
+  extends ResolvedIntegrationScenario {
+  readonly documents: IntegrationDocumentScenario;
 }
 
 export interface ResolvedPjIntegrationPreparationScenario
@@ -471,6 +554,15 @@ export interface ResolvedWorkflowIntegrationPreparationScenario
   readonly preparation: WorkflowIntegrationPreparationScenario;
 }
 
+function resolveIntegrationOperation(
+  caseId: IntegrationCaseId,
+  env: NodeJS.ProcessEnv,
+): string {
+  const scenario = integrationData[caseId];
+  const configured = env[scenario.operationEnv]?.trim().replace(/\D/g, "");
+  return (configured || scenario.operationNumber).padStart(9, "0");
+}
+
 export function getIntegrationScenario(
   caseIdInput: IntegrationCaseId,
   env: NodeJS.ProcessEnv = process.env,
@@ -484,7 +576,10 @@ export function getIntegrationScenario(
   const operationOverride = env.PORTAL_INTEGRATION_OPERATION?.trim().replace(/\D/g, "");
 
   if (operationOverride) {
-    const officialOperations = Object.values(integrationData).map((d) => d.operationNumber.replace(/\D/g, ""));
+    const officialOperations = (Object.keys(integrationData) as IntegrationCaseId[])
+      .map((configuredCaseId) =>
+        resolveIntegrationOperation(configuredCaseId, env).replace(/\D/g, ""),
+      );
     if (!officialOperations.includes(operationOverride)) {
       throw new Error(
         `Erro de Governanca: A proposta de override '${operationOverride}' nao esta cadastrada no catalogo oficial de massas de integracao.`,
@@ -492,7 +587,7 @@ export function getIntegrationScenario(
     }
   }
 
-  const operationNumber = operationOverride || scenario.operationNumber;
+  const operationNumber = operationOverride || resolveIntegrationOperation(caseId, env);
 
   if (!operationNumber) {
     throw new Error(`Numero de operacao nao configurado para o cenario: ${caseId}`);
@@ -503,6 +598,23 @@ export function getIntegrationScenario(
     operationNumber: operationNumber.padStart(9, "0"),
     profile: scenario.profile,
     purpose: scenario.purpose,
+  };
+}
+
+export function getIntegrationDocumentScenario(
+  caseId: "INT-CONFIRM-WORKFLOW" | "INT-DOCUMENT-PERSISTENCE" | "INT-DOCUMENT-SIZE",
+  env: NodeJS.ProcessEnv = process.env,
+): ResolvedIntegrationDocumentScenario {
+  const scenario = getIntegrationScenario(caseId, env);
+  const selectedScenario = integrationData[scenario.caseId];
+
+  if (!("documents" in selectedScenario) || !selectedScenario.documents) {
+    throw new Error(`Dados documentais nao configurados para o cenario: ${scenario.caseId}`);
+  }
+
+  return {
+    ...scenario,
+    documents: selectedScenario.documents,
   };
 }
 
@@ -527,14 +639,14 @@ export function getIntegrationPreparationScenario(
   env: NodeJS.ProcessEnv = process.env,
 ): ResolvedIntegrationPreparationScenario {
   const scenario = getIntegrationScenario(caseId, env);
-  const requestedScenario = integrationData[caseId];
+  const requestedOperation = resolveIntegrationOperation(caseId, env);
 
   if (
     scenario.caseId !== caseId
-    || scenario.operationNumber !== requestedScenario.operationNumber
+    || scenario.operationNumber !== requestedOperation
   ) {
     throw new Error(
-      `Erro de Governanca: a preparacao ${caseId} deve usar exclusivamente a operacao ${requestedScenario.operationNumber}.`,
+      `Erro de Governanca: a preparacao ${caseId} deve usar exclusivamente a operacao ${requestedOperation}.`,
     );
   }
 
