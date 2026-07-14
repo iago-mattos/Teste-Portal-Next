@@ -12,6 +12,7 @@ export class AejsOperationsPage {
   readonly openedDocumentWindow: Locator;
   readonly openedDocumentFrame: Locator;
   readonly openedDocumentUploadedAt: Locator;
+  private readonly operationApplicantName: Locator;
   private readonly originationMenuItem: Locator;
   private readonly operationsMenuItem: Locator;
   private readonly processProgressMenuItem: Locator;
@@ -62,6 +63,10 @@ export class AejsOperationsPage {
     this.openedApplicantName = page.locator(
       'input[name="PESSOA$NO_PESSOA"]:visible',
     );
+    this.operationApplicantName = page.getByRole("textbox", {
+      name: "Nome do cliente:",
+      exact: true,
+    });
     this.processProgressGrid = page
       .getByRole("grid", { name: "Andamento do Processo", exact: true })
       .filter({ visible: true });
@@ -338,6 +343,12 @@ export class AejsOperationsPage {
     await this.openApplicantButton.click();
 
     await expect(this.openedApplicantName).toBeVisible();
+  }
+
+  async getOperationApplicantName(): Promise<string> {
+    await expect(this.operationApplicantName).toBeVisible();
+    await expect(this.operationApplicantName).not.toHaveValue("");
+    return this.operationApplicantName.inputValue();
   }
 
   private async waitForExtJsReady(): Promise<void> {

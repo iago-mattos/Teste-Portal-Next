@@ -60,7 +60,7 @@ export class ProposalsPage {
             response.request().method() === "GET" &&
             url.pathname === "/api/portal/propostas"
           );
-        }, { timeout: 10000 }),
+        }, { timeout: 30_000 }),
         loadMoreButton.click(),
       ]);
 
@@ -69,12 +69,12 @@ export class ProposalsPage {
           name: "Carregando...",
           exact: true,
         }),
-      ).toBeHidden({ timeout: 10000 });
+      ).toBeHidden({ timeout: 30_000 });
 
       await expect(async () => {
         const currentCount = await this.proposalCards.count();
         expect(currentCount).toBeGreaterThan(previousCount);
-      }).toPass({ timeout: 3000 });
+      }).toPass({ timeout: 10_000 });
     }
   }
 

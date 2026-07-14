@@ -37,7 +37,10 @@ async function authenticateAejsPage(
   await passwordInput.fill(config.password);
 
   if (config.path) {
-    const pathInput = page.locator('input[name="path"]:visible');
+    const pathInput = page.getByRole("textbox", {
+      name: "Ambiente:",
+      exact: true,
+    });
     await expect(pathInput).toBeVisible();
     await pathInput.fill(config.path);
   }
