@@ -1,6 +1,9 @@
 import { AejsOperationsPage } from "../../pages/aejs/aejs-operations.page";
 import { aejsTest as test, expect } from "../../fixtures/aejs/aejs.fixture";
-import { getIntegrationScenario } from "../../test-data/integration-data";
+import {
+  getIntegrationScenario,
+  getWorkflowProgressExpectation,
+} from "../../test-data/integration-data";
 
 async function expectProcessTask(
   operationsPage: AejsOperationsPage,
@@ -24,6 +27,7 @@ test(
   { tag: ["@integration", "@readonly"] },
   async ({ aejsPage }) => {
     const scenario = getIntegrationScenario("INT-CONFIRM-WORKFLOW");
+    const workflow = getWorkflowProgressExpectation();
     const operationsPage = new AejsOperationsPage(aejsPage);
 
     await test.step("abre a operação confirmada", async () => {
@@ -41,24 +45,24 @@ test(
     await test.step("valida cadastro e documentos finalizados", async () => {
       await expectProcessTask(
         operationsPage,
-        "997",
-        "Preencher dados cadastrais (Portal)",
-        "Finalizada",
+        workflow.registration.code,
+        workflow.registration.title,
+        workflow.registration.status,
       );
       await expectProcessTask(
         operationsPage,
-        "998",
-        "Anexar documentação (Portal)",
-        "Finalizada",
+        workflow.documents.code,
+        workflow.documents.title,
+        workflow.documents.status,
       );
     });
 
     await test.step("valida a liberação da validação cadastral", async () => {
       await expectProcessTask(
         operationsPage,
-        "996",
-        "Validação do cadastro",
-        "Disponível",
+        workflow.validation.code,
+        workflow.validation.title,
+        workflow.validation.status,
       );
     });
   },

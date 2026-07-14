@@ -98,6 +98,17 @@ const integrationOperations = [
   "PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION",
   "PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION",
 ];
+const workflowTaskKeys = [
+  "AEJS_WORKFLOW_REGISTRATION_TASK_CODE",
+  "AEJS_WORKFLOW_REGISTRATION_TASK_TITLE",
+  "AEJS_WORKFLOW_REGISTRATION_TASK_STATUS",
+  "AEJS_WORKFLOW_DOCUMENTS_TASK_CODE",
+  "AEJS_WORKFLOW_DOCUMENTS_TASK_TITLE",
+  "AEJS_WORKFLOW_DOCUMENTS_TASK_STATUS",
+  "AEJS_WORKFLOW_VALIDATION_TASK_CODE",
+  "AEJS_WORKFLOW_VALIDATION_TASK_TITLE",
+  "AEJS_WORKFLOW_VALIDATION_TASK_STATUS",
+];
 
 assertRequired(portalRequiredKeys);
 if (scope === "all") {
@@ -107,6 +118,7 @@ if (scope === "all") {
     "AEJS_PASSWORD",
     "AEJS_USE_PLATFORM_ACCESS",
     ...integrationOperations,
+    ...workflowTaskKeys,
   ]);
 }
 
@@ -151,6 +163,18 @@ if (scope === "all") {
 
   validateOperations(integrationOperations);
   validateUniqueOperations(integrationOperations, "Massas de integracao");
+  const workflowTaskCodeKeys = workflowTaskKeys.filter((key) =>
+    key.endsWith("_CODE"),
+  );
+  for (const key of workflowTaskCodeKeys) {
+    if (!/^\d+$/.test(required(key))) {
+      throw new Error(`${key} precisa conter somente digitos.`);
+    }
+  }
+  validateUniqueOperations(
+    workflowTaskCodeKeys,
+    "Tarefas do workflow",
+  );
   integrationCount = integrationOperations.length;
 }
 

@@ -298,7 +298,7 @@ test(
       );
     });
 
-    await test.step("finaliza a tarefa documental 998", async () => {
+    await test.step("finaliza a tarefa documental configurada", async () => {
       const submissionResponse = await documentsPage.sendForAnalysis(
         scenario.operationNumber,
       );

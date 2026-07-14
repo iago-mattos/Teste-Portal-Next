@@ -77,6 +77,7 @@ versione os perfis, credenciais, CPFs, magic links, cookies ou tokens.
 - `PORTAL_EXPECTED_*`: contrato visual da massa padrão;
 - `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD`: acesso ao SCCI/AEJS;
 - `AEJS_USE_PLATFORM_ACCESS`, `AEJS_PATH`: modalidade de login do SCCI/AEJS;
+- `AEJS_WORKFLOW_*`: códigos, títulos e status do workflow no SCCI/AEJS;
 - `PORTAL_INTEGRATION_*_OPERATION`: operações exclusivas das integrações;
 - `ALLOW_TEST_MUTATION`: autorização explícita para testes que alteram estado;
 - `ALLOW_REACT_418_QUARANTINE`: exceção diagnóstica temporária do frontend.
@@ -109,7 +110,7 @@ Os scripts que executam navegador também validam o perfil automaticamente.
 | `PORTAL_PROPOSAL_EXPIRED` | Expirada há no máximo 30 dias | Deve permanecer visível em modo de consulta. |
 | `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada há mais de 30 dias | Não deve aparecer; se aparecer, `PROP-10` deve falhar. |
 | `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Jornada de cadastro pela timeline. |
-| `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Jornada de documentos; não pode ter avançado para 996. |
+| `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Jornada de documentos; não pode ter avançado para a tarefa seguinte configurada no ambiente. |
 
 Não reutilize a mesma operação em estados incompatíveis. O validador rejeita
 massas exclusivas duplicadas, mas o responsável pelo ambiente ainda deve
@@ -209,12 +210,17 @@ Cada cenário usa uma operação própria definida no perfil ativo:
 | `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Cônjuge, garantidor PJ, sócios e interveniente refletidos no SCCI. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
 | `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF refletidos no SCCI. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
 | `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Imóvel quitado, sem terceiro ou garantidor. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
-| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Envio de documentos e transição 997 → 998 → 996. | O avanço consome o estado da massa. |
+| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Envio de documentos e validação das tarefas configuradas em `AEJS_WORKFLOW_*`. | O avanço consome o estado da massa. |
 | `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Envia todos os documentos do Portal e os abre em `Documentos → Renda PF` no SCCI. | O envio consome a massa; leitura dos PDFs é repetível. |
 | `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Todos os seletores rejeitam PDFs de 25 MB e 50 MB, acima do limite de 10 MB. | Repetível, pois arquivos rejeitados não são persistidos. |
 
 Não existem números históricos de fallback. Se uma variável de integração não
 estiver configurada, a execução falha antes de usar uma operação indevida.
+
+As três etapas verificadas em **Andamento do Processo** são parametrizadas por
+ambiente: cadastro concluído, documentos concluídos e próxima validação. Cada
+etapa possui `TASK_CODE`, `TASK_TITLE` e `TASK_STATUS`; assim, uma Esteira com
+códigos ou descrições diferentes não exige alteração nas specs.
 
 ## Arquitetura Playwright
 

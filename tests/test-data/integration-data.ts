@@ -25,6 +25,18 @@ export interface IntegrationDocumentScenario {
   readonly maximumSizeMb: number;
 }
 
+export interface WorkflowTaskExpectation {
+  readonly code: string;
+  readonly title: string;
+  readonly status: string;
+}
+
+export interface WorkflowProgressExpectation {
+  readonly registration: WorkflowTaskExpectation;
+  readonly documents: WorkflowTaskExpectation;
+  readonly validation: WorkflowTaskExpectation;
+}
+
 export interface ApplicantInput {
   readonly grossIncome: string;
   readonly maritalStatus: string;
@@ -457,7 +469,7 @@ export const integrationData = {
   "INT-CONFIRM-WORKFLOW": {
     operationEnv: "PORTAL_INTEGRATION_WORKFLOW_OPERATION",
     profile: "workflow",
-    purpose: "Validar a preparação e a transição 997 → 998 do workflow no AEJS.",
+    purpose: "Validar a preparação e as transições configuradas do workflow no AEJS.",
     documents: {
       documentNames: workflowRequiredDocumentNames,
       ...portalDocumentFiles,
@@ -597,6 +609,51 @@ export function getIntegrationScenario(
     profile: scenario.profile,
     purpose: scenario.purpose,
   };
+}
+
+function requireWorkflowValue(
+  env: NodeJS.ProcessEnv,
+  key: string,
+): string {
+  const value = env[key]?.trim();
+  if (!value) {
+    throw new Error(
+      `Configure ${key} para validar o andamento do workflow no AEJS.`,
+    );
+  }
+  return value;
+}
+
+export function getWorkflowProgressExpectation(
+  env: NodeJS.ProcessEnv = process.env,
+): WorkflowProgressExpectation {
+  const task = (
+    codeKey: string,
+    titleKey: string,
+    statusKey: string,
+  ): WorkflowTaskExpectation => Object.freeze({
+    code: requireWorkflowValue(env, codeKey),
+    title: requireWorkflowValue(env, titleKey),
+    status: requireWorkflowValue(env, statusKey),
+  });
+
+  return Object.freeze({
+    registration: task(
+      "AEJS_WORKFLOW_REGISTRATION_TASK_CODE",
+      "AEJS_WORKFLOW_REGISTRATION_TASK_TITLE",
+      "AEJS_WORKFLOW_REGISTRATION_TASK_STATUS",
+    ),
+    documents: task(
+      "AEJS_WORKFLOW_DOCUMENTS_TASK_CODE",
+      "AEJS_WORKFLOW_DOCUMENTS_TASK_TITLE",
+      "AEJS_WORKFLOW_DOCUMENTS_TASK_STATUS",
+    ),
+    validation: task(
+      "AEJS_WORKFLOW_VALIDATION_TASK_CODE",
+      "AEJS_WORKFLOW_VALIDATION_TASK_TITLE",
+      "AEJS_WORKFLOW_VALIDATION_TASK_STATUS",
+    ),
+  });
 }
 
 export function getIntegrationDocumentScenario(
