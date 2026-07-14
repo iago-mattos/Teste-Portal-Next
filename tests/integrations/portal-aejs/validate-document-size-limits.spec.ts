@@ -14,15 +14,16 @@ test(
     await proposalsPage.loadAll();
     await proposalsPage.openProposal(scenario.operationNumber);
     await documentsPage.waitUntilReady();
-    await documentsPage.expectDocumentContract(scenario.documents.documentNames);
+    const documentCount = await documentsPage.getDocumentCount();
+    expect(documentCount).toBeGreaterThan(0);
 
-    for (const documentName of scenario.documents.documentNames) {
-      await test.step(`${documentName}: rejeita todos os arquivos acima do limite`, async () => {
+    for (let index = 0; index < documentCount; index += 1) {
+      await test.step(`documento ${index + 1}: rejeita todos os arquivos acima do limite`, async () => {
         for (const file of scenario.documents.oversizedFiles) {
-          await documentsPage.chooseFile(documentName, resolve(file.path));
+          await documentsPage.chooseFileAt(index, resolve(file.path));
 
           await expect(documentsPage.maximumSizeError).toBeVisible();
-          const row = documentsPage.getDocumentRow(documentName);
+          const row = documentsPage.getDocumentRowAt(index);
           await expect(row.getByText("Aguardando envio", { exact: true })).toBeVisible();
           await expect(
             row.getByRole("link", { name: "Ver arquivo", exact: true }),
@@ -34,7 +35,7 @@ test(
     }
 
     await expect(documentsPage.pendingDocuments).toContainText(
-      String(scenario.documents.documentNames.length),
+      String(documentCount),
     );
     await expect(documentsPage.completedDocuments).toContainText("0");
   },

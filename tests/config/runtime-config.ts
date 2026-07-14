@@ -18,6 +18,7 @@ export interface LocalPortalCompatibilityConfig {
     cpfInvalido?: string;
     propostaExpiradaId?: string;
     propostaExpiradaMais30DiasId?: string;
+    propostaCanceladaId?: string;
     expectedProposal?: {
       visibleNumber?: string;
       proponentName?: string;
@@ -27,7 +28,7 @@ export interface LocalPortalCompatibilityConfig {
       financedValue?: string;
       term?: string;
       currentPhase?: string;
-      deadline?: string;
+      interestType?: string;
     };
   };
 }
@@ -46,6 +47,9 @@ export interface PortalRuntimeConfig {
     invalidCpf: string;
     propostaExpiradaId: string;
     propostaExpiradaMais30DiasId: string;
+    propostaCanceladaId: string;
+    propostaCreditoReprovadoId: string;
+    propostaCreditoAprovadoId: string;
     expectedProposal: Readonly<{
       visibleNumber: string;
       proponentName: string;
@@ -55,7 +59,7 @@ export interface PortalRuntimeConfig {
       financedValue: string;
       term: string;
       currentPhase: string;
-      deadline: string;
+      interestType: string;
     }>;
   }>;
   readonly pageErrors: Readonly<{
@@ -109,7 +113,7 @@ function resolveExpectedProposal(
   financedValue: string;
   term: string;
   currentPhase: string;
-  deadline: string;
+  interestType: string;
 }> {
   const rawExpectedProposal = env.PORTAL_EXPECTED_PROPOSAL_JSON?.trim();
   let parsed: Record<string, unknown> = {};
@@ -178,10 +182,10 @@ function resolveExpectedProposal(
       "PORTAL_EXPECTED_CURRENT_PHASE",
       localExpected.currentPhase,
     ),
-    deadline: getString(
-      "deadline",
-      "PORTAL_EXPECTED_DEADLINE",
-      localExpected.deadline,
+    interestType: getString(
+      "interestType",
+      "PORTAL_EXPECTED_INTEREST_TYPE",
+      localExpected.interestType,
     ),
   });
 }
@@ -327,6 +331,14 @@ function resolvePropostaExpiradaMais30DiasId(
   }
 }
 
+function resolveConfiguredProposalId(
+  env: NodeJS.ProcessEnv,
+  envKey: string,
+  fallback = "",
+): string {
+  return env[envKey]?.trim() || fallback.trim();
+}
+
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
@@ -369,6 +381,19 @@ export function loadPortalRuntimeConfig(
       propostaExpiradaMais30DiasId: resolvePropostaExpiradaMais30DiasId(
         env,
         local,
+      ),
+      propostaCanceladaId: resolveConfiguredProposalId(
+        env,
+        "PORTAL_PROPOSAL_CANCELED",
+        local?.testData?.propostaCanceladaId,
+      ),
+      propostaCreditoReprovadoId: resolveConfiguredProposalId(
+        env,
+        "PORTAL_PROPOSAL_CREDIT_REJECTED",
+      ),
+      propostaCreditoAprovadoId: resolveConfiguredProposalId(
+        env,
+        "PORTAL_PROPOSAL_CREDIT_APPROVED",
       ),
       expectedProposal: resolveExpectedProposal(env, local),
     }),

@@ -1,9 +1,21 @@
+import { resolve } from "node:path";
 import { expect, type Page, type Response } from "@playwright/test";
 import { test } from "../../fixtures/test";
+import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
-import { getIntegrationPreparationScenario } from "../../test-data/integration-data";
+import {
+  getIntegrationDocumentScenario,
+  getIntegrationPreparationScenario,
+} from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
+
+interface DocumentSubmissionResult {
+  readonly sucesso?: boolean;
+  readonly mensagem?: string;
+}
+
+test.describe.configure({ mode: "serial" });
 
 function isProposalTransitionResponse(
   response: Response,
@@ -236,6 +248,70 @@ test(
       });
       await expect(
         page.getByText(/Etapa concluída|Cadastro concluído|sucesso/i),
+      ).toBeVisible({ timeout: 60_000 });
+    });
+  },
+);
+
+test(
+  "Portal | envia documentos e avança o workflow para validação cadastral",
+  integrationMutation,
+  async ({ proposalsPage, authenticatedPage }) => {
+    const scenario = getIntegrationDocumentScenario("INT-CONFIRM-WORKFLOW");
+    const documentsPage = new ProposalDocumentsPage(authenticatedPage);
+    let documentCount = 0;
+
+    await test.step("abre a etapa documental da proposta de workflow", async () => {
+      await proposalsPage.open();
+      await proposalsPage.loadAll();
+      await proposalsPage.openProposal(scenario.operationNumber);
+      await documentsPage.waitUntilReady();
+      documentCount = await documentsPage.getDocumentCount();
+      expect(documentCount).toBeGreaterThan(0);
+    });
+
+    await test.step("envia e abre todos os documentos solicitados", async () => {
+      for (let index = 0; index < documentCount; index += 1) {
+        await test.step(`documento ${index + 1} de ${documentCount}`, async () => {
+          await documentsPage.chooseFileAt(
+            index,
+            resolve(scenario.documents.validFile.path),
+          );
+          await documentsPage.expectUploadedDocumentAt(
+            index,
+            scenario.documents.validFile.fileName,
+          );
+
+          const openedDocument = await documentsPage.openUploadedDocumentAt(index);
+          expect(openedDocument.response.status()).toBe(200);
+          expect(openedDocument.response.headers()["content-type"]).toContain(
+            "application/pdf",
+          );
+          expect((await openedDocument.response.body()).byteLength).toBeGreaterThan(0);
+          await openedDocument.popup.close();
+        });
+      }
+
+      await expect(documentsPage.pendingDocuments).toContainText("0");
+      await expect(documentsPage.completedDocuments).toContainText(
+        String(documentCount),
+      );
+    });
+
+    await test.step("finaliza a tarefa documental 998", async () => {
+      const submissionResponse = await documentsPage.sendForAnalysis(
+        scenario.operationNumber,
+      );
+      expect(submissionResponse.status()).toBe(200);
+      const submissionResult =
+        (await submissionResponse.json()) as DocumentSubmissionResult;
+      if (submissionResult.sucesso !== true) {
+        throw new Error(
+          `O Portal recusou o avanço documental da operacao ${scenario.operationNumber}: ${submissionResult.mensagem ?? "resposta sem mensagem"}`,
+        );
+      }
+      await expect(
+        authenticatedPage.getByText(/documentos.*enviados|etapa.*concluída|sucesso/i),
       ).toBeVisible({ timeout: 60_000 });
     });
   },

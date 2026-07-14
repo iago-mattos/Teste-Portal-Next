@@ -26,8 +26,21 @@ export const portalTest = authTest.extend<PortalFixtures>({
 
     const expiredSessionMessage = page.getByText(portalSessionExpiredPattern);
     await page.addLocatorHandler(expiredSessionMessage, async () => {
+      const currentUrl = page.url();
+      const portalOrigin = new URL(portalConfig.portalUrl).origin;
+      let returnUrl = portalConfig.paths.proposals;
+
+      try {
+        const parsedCurrentUrl = new URL(currentUrl);
+        if (parsedCurrentUrl.origin === portalOrigin) {
+          returnUrl = parsedCurrentUrl.toString();
+        }
+      } catch {
+        // A pagina ainda pode estar sem uma URL navegavel; nesse caso volta à listagem.
+      }
+
       await renewPortalSession(authenticatedContext, portalConfig);
-      await page.goto(portalConfig.paths.proposals, {
+      await page.goto(returnUrl, {
         waitUntil: "domcontentloaded",
       });
     });

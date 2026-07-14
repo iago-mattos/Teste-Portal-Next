@@ -1,5 +1,10 @@
 import { expect, test } from "../../fixtures/test";
-import { parseBrazilianDate, countBusinessDays } from "../../helpers/dates";
+import {
+  addCalendarDays,
+  countBusinessDays,
+  formatBrazilianDate,
+  parseBrazilianDate,
+} from "../../helpers/dates";
 import { normalizeWhitespace } from "../../helpers/strings";
 
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
@@ -21,7 +26,8 @@ test.describe("Minhas Propostas", () => {
       const textContent = await card.textContent();
       const normalized = normalizeWhitespace(textContent || "");
 
-      expect(normalized).toContain(`Proposta #${expected.visibleNumber}`);
+      const displayedNumber = expected.visibleNumber.replace(/^0+(?=\d)/, "");
+      expect(normalized).toContain(`Proposta #${displayedNumber}`);
       expect(normalized).toContain(`Data de cadastro: ${expected.registrationDate}`);
       expect(normalized).toContain(expected.propertyValue);
       expect(normalized).toContain(expected.financedValue);
@@ -46,15 +52,28 @@ test.describe("Minhas Propostas", () => {
       await proposalPage.waitUntilReady();
 
       await proposalPage.tabs.select("Motivo da Contratação");
-      await expect(
-        authenticatedPage.locator("label").filter({ hasText: "Valor solicitado do Crédito" }),
-      ).toHaveCount(0);
-      await expect(
-        authenticatedPage.locator("label").filter({ hasText: "Prazo estimado" }),
-      ).toHaveCount(0);
-      await expect(
-        authenticatedPage.locator("label").filter({ hasText: "Tipo de Juros" }),
-      ).toHaveCount(0);
+      const requestedCredit = authenticatedPage.getByRole("textbox", {
+        name: "Valor solicitado do Crédito",
+        exact: true,
+      });
+      const estimatedTerm = authenticatedPage.getByRole("textbox", {
+        name: "Prazo estimado",
+        exact: true,
+      });
+      const interestType = authenticatedPage.getByRole("textbox", {
+        name: "Tipo de Juros",
+        exact: true,
+      });
+
+      await expect(requestedCredit).toBeVisible();
+      await expect(requestedCredit).toBeDisabled();
+      await expect(requestedCredit).toHaveValue(expected.financedValue);
+      await expect(estimatedTerm).toBeVisible();
+      await expect(estimatedTerm).toBeDisabled();
+      await expect(estimatedTerm).toHaveValue(expected.term.replace(/\s*meses$/i, ""));
+      await expect(interestType).toBeVisible();
+      await expect(interestType).toBeDisabled();
+      await expect(interestType).toHaveValue(expected.interestType);
 
       await proposalPage.tabs.select("Imóvel");
       await expect(proposalPage.getFieldByName("OPERACAO_CREDITO.VA_PRECO_IMOVEL")).toBeDisabled();
@@ -145,24 +164,33 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-07 | Deverá aparecer em “Etapa” “proposta expirada” de forma automática quando atingir parametrizado em uma das tarefas sem atuação do cliente.",
     functionalReadonly,
-    async ({ proposalsPage }) => {
-      const card = proposalsPage.proposalCards.filter({ hasText: /Expirad[ao]/i });
-      await expect(card.first()).toBeVisible();
-      await expect(card.first()).toContainText(/Expirad/);
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaExpiradaId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_EXPIRED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(/Expirad/);
     },
   );
 
   test(
     "PROP-08 | Deverá ser informado para o cliente a mensagem “Verifique seu e-mail ou entre em contato com o consultor”, propostas negadas pela mesa de crédito",
     functionalReadonly,
-    async ({ proposalsPage }) => {
-      const card = proposalsPage.proposalCards.filter({ hasText: /Cr[eé]dito Reprovado/i });
-      await expect(card.first()).toBeVisible();
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaCreditoReprovadoId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_CREDIT_REJECTED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(/Cr[eé]dito Reprovado/i);
       await expect(
-        card.first().getByText(/Verifique seu e-mail ou entre em contato com o consultor/i),
+        card.getByText(/Verifique seu e-mail ou entre em contato com o consultor/i),
       ).toBeVisible();
       await expect(
-        card.first().getByRole("button", { name: /Completar cadastro/i }),
+        card.getByRole("button", { name: /Completar cadastro/i }),
       ).toHaveCount(0);
     },
   );
@@ -170,13 +198,18 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-09 | Deverá ser informado para o cliente a mensagem “Verifique seu e-mail ou entre em contato com o consultor”, propostas com status a partir da Análise de Crédito.",
     functionalReadonly,
-    async ({ proposalsPage, authenticatedPage }) => {
-      const card = proposalsPage.proposalCards.filter({
-        hasText: /Fase Atual\s*(Cr[eé]dito|Negocia[cç][aã]o|An[aá]lise)/i,
-      });
-      await expect(card.first()).toBeVisible();
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaCreditoAprovadoId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_CREDIT_APPROVED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(
+        /Fase Atual\s*(Cr[eé]dito|Negocia[cç][aã]o|An[aá]lise)/i,
+      );
       await expect(
-        authenticatedPage.getByText(/Verifique seu e-mail ou entre em contato com o consultor/i),
+        card.getByText(/Verifique seu e-mail ou entre em contato com o consultor/i),
       ).toBeVisible();
     },
   );
@@ -197,11 +230,15 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-11 | Simulações canceladas até e igual 30 dias deverão constar em tela",
     functionalReadonly,
-    async ({ proposalsPage, authenticatedPage }) => {
-      const cards = proposalsPage.proposalCards;
-      await expect(cards.first()).toBeVisible();
+    async ({ proposalsPage, authenticatedPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaExpiradaId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_EXPIRED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
 
-      const firstCardButton = cards.first().getByRole("button", {
+      const firstCardButton = card.getByRole("button", {
         name: /Acompanhar proposta|Completar cadastro/i,
       });
 
@@ -217,11 +254,16 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-12 | Simulações canceladas na Prognum, também precisam estar canceladas no portal, tem que refletir exatamente o que está na Prognum em relação a proposta",
     functionalReadonly,
-    async ({ proposalsPage }) => {
-      const card = proposalsPage.proposalCards.filter({ hasText: /Cancelad[ao]/i });
-      await expect(card.first()).toBeVisible();
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaCanceladaId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_CANCELED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(/Cancelad[ao]/i);
       await expect(
-        card.first().getByRole("button", { name: /Completar cadastro/i }),
+        card.getByRole("button", { name: /Completar cadastro/i }),
       ).toHaveCount(0);
     },
   );
@@ -234,11 +276,16 @@ test.describe("Minhas Propostas", () => {
       const card = proposalsPage.getProposalCard(expected.visibleNumber);
       await expect(card).toBeVisible();
 
+      const deadline = addCalendarDays(
+        parseBrazilianDate(expected.registrationDate),
+        30,
+      );
+      const formattedDeadline = formatBrazilianDate(deadline);
+
       await expect(card).toContainText(
-        `Data limite para preenchimento do cadastro: ${expected.deadline}`,
+        `Data limite para preenchimento do cadastro: ${formattedDeadline}`,
       );
 
-      const deadline = parseBrazilianDate(expected.deadline);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -261,7 +308,10 @@ test.describe("Minhas Propostas", () => {
       const card = proposalsPage.getProposalCard(expected.visibleNumber);
       await expect(card).toBeVisible();
 
-      const deadline = parseBrazilianDate(expected.deadline);
+      const deadline = addCalendarDays(
+        parseBrazilianDate(expected.registrationDate),
+        30,
+      );
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -287,8 +337,11 @@ test.describe("Minhas Propostas", () => {
       const expected = portalConfig.testData.expectedProposal;
       const card = proposalsPage.getProposalCard(expected.visibleNumber);
       await expect(card).toBeVisible();
+      const deadline = formatBrazilianDate(
+        addCalendarDays(parseBrazilianDate(expected.registrationDate), 30),
+      );
       await expect(card).toContainText(
-        `Data limite para preenchimento do cadastro: ${expected.deadline}`,
+        `Data limite para preenchimento do cadastro: ${deadline}`,
       );
     },
   );
@@ -320,11 +373,16 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-17 | Propostas que tiveram o cadastro finalizado irão para crédito e exibir um modal que ele concluiu a etapa e irá aguardar contato por e-mail ou whatsapp.",
     functionalReadonly,
-    async ({ proposalsPage }) => {
-      const card = proposalsPage.proposalCards.filter({ hasText: /Fase Atual\s*Cr[eé]dito/i });
-      await expect(card.first()).toBeVisible();
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaCreditoAprovadoId;
+      if (!proposalId) {
+        throw new Error("PORTAL_PROPOSAL_CREDIT_APPROVED deve estar configurada.");
+      }
+      const card = proposalsPage.getProposalCard(proposalId);
+      await expect(card).toBeVisible();
+      await expect(card).toContainText(/Fase Atual\s*Cr[eé]dito/i);
       await expect(
-        card.first().getByRole("button", { name: /Completar cadastro/i }),
+        card.getByRole("button", { name: /Completar cadastro/i }),
       ).toHaveCount(0);
     },
   );
@@ -403,8 +461,11 @@ test.describe("Minhas Propostas", () => {
       const expected = portalConfig.testData.expectedProposal;
       const card = proposalsPage.getProposalCard(expected.visibleNumber);
       await expect(card).toBeVisible();
+      const deadline = formatBrazilianDate(
+        addCalendarDays(parseBrazilianDate(expected.registrationDate), 30),
+      );
       await expect(card).toContainText(
-        `Data limite para preenchimento do cadastro: ${expected.deadline}`,
+        `Data limite para preenchimento do cadastro: ${deadline}`,
       );
 
       const dialog = proposalsPage.getDialog();

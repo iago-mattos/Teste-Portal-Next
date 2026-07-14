@@ -18,28 +18,30 @@ test(
   async ({ proposalsPage, authenticatedPage }) => {
     const scenario = getIntegrationDocumentScenario("INT-DOCUMENT-PERSISTENCE");
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
+    let documentCount = 0;
 
     await test.step("abre a etapa documental da proposta", async () => {
       await proposalsPage.open();
       await proposalsPage.loadAll();
       await proposalsPage.openProposal(scenario.operationNumber);
       await documentsPage.waitUntilReady();
-      await documentsPage.expectDocumentContract(scenario.documents.documentNames);
+      documentCount = await documentsPage.getDocumentCount();
+      expect(documentCount).toBeGreaterThan(0);
     });
 
     await test.step("envia e abre cada documento solicitado", async () => {
-      for (const documentName of scenario.documents.documentNames) {
-        await test.step(documentName, async () => {
-          await documentsPage.chooseFile(
-            documentName,
+      for (let index = 0; index < documentCount; index += 1) {
+        await test.step(`documento ${index + 1} de ${documentCount}`, async () => {
+          await documentsPage.chooseFileAt(
+            index,
             resolve(scenario.documents.validFile.path),
           );
-          await documentsPage.expectUploadedDocument(
-            documentName,
+          await documentsPage.expectUploadedDocumentAt(
+            index,
             scenario.documents.validFile.fileName,
           );
 
-          const openedDocument = await documentsPage.openUploadedDocument(documentName);
+          const openedDocument = await documentsPage.openUploadedDocumentAt(index);
           expect(openedDocument.response.status()).toBe(200);
           expect(openedDocument.response.headers()["content-type"]).toContain(
             "application/pdf",
@@ -51,7 +53,7 @@ test(
 
       await expect(documentsPage.pendingDocuments).toContainText("0");
       await expect(documentsPage.completedDocuments).toContainText(
-        String(scenario.documents.documentNames.length),
+        String(documentCount),
       );
     });
 

@@ -21,7 +21,8 @@ Git. Os grupos principais sao:
 - `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD` e `AEJS_PATH`: SCCI/AEJS;
 - `PORTAL_PROPOSAL_*`: propostas usadas pelos casos funcionais;
 - `PORTAL_INTEGRATION_*_OPERATION`: uma operacao dedicada para cada integracao;
-- `PORTAL_EXPECTED_*`: contrato visual da proposta padrao.
+- `PORTAL_EXPECTED_*`: contrato visual da proposta padrao; a data limite e
+  calculada automaticamente como data de cadastro + 30 dias.
 
 Quando o Admin esta configurado, o setup entra no painel, gera o magic link,
 acessa o Portal e guarda a sessao automaticamente. `PORTAL_ACCESS_URL` e apenas
@@ -46,10 +47,14 @@ Nao utilize credenciais, links ou dados de clientes reais.
 | Variavel | Estado exigido | Responsabilidade |
 | --- | --- | --- |
 | `PORTAL_PROPOSAL_DEFAULT` | Visivel e em Cadastro | Proposta principal dos smokes, formularios e validacoes gerais. Deve continuar acessivel. |
+| `PORTAL_PROPOSAL_CANCELED` | Cancelada no SCCI | Deve aparecer cancelada e sem acao para completar cadastro. |
+| `PORTAL_PROPOSAL_CREDIT_REJECTED` | Credito Reprovado | Deve exibir a mensagem para verificar e-mail ou contatar o consultor. |
+| `PORTAL_PROPOSAL_CREDIT_APPROVED` | Fase Credito ou posterior | Deve estar finalizada no cadastro e aguardando contato. |
 | `PORTAL_PROPOSAL_EXPIRED` | Expirada ha no maximo 30 dias | Comprova que uma proposta expirada ainda aparece em modo de consulta. |
 | `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada ha mais de 30 dias | Comprova que a proposta nao aparece mais. Se aparecer, o PROP-10 deve falhar. |
 | `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Abre a jornada `Cadastro da Proposta` pela timeline. |
 | `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Abre a jornada `Documentos da proposta`; nao use uma operacao que ja avancou para 996. |
+| `PORTAL_PROPOSAL_RESERVE_1..3` | Nova e sem consumidor | Reservas para substituir massas consumidas sem reaproveitar operacoes de outro cenario. |
 
 Ao trocar uma proposta, preserve o estado descrito na tabela. Apenas substituir
 o numero por qualquer operacao existente pode fazer o teste validar a jornada

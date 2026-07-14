@@ -17,15 +17,19 @@ test.describe("Cadastro da Operação: Motivo da Contratação", () => {
   test(
     "MOTIVO-01 | Valor solicitado do Crédito, Prazo estimado, Tipo de juros devem ser preenchidos com dados do lead",
     functionalMutation,
-    async ({ page }) => {
-      const labels = [
-        "Valor solicitado do Crédito",
-        "Prazo estimado",
-        "Tipo de Juros",
-      ];
-      for (const text of labels) {
-        const label = page.locator("label", { hasText: new RegExp(`^${text}$`, "i") });
-        await expect(label).toHaveCount(0);
+    async ({ page, portalConfig }) => {
+      const expected = portalConfig.testData.expectedProposal;
+      const fields = [
+        ["Valor solicitado do Crédito", expected.financedValue],
+        ["Prazo estimado", expected.term.replace(/\s*meses$/i, "")],
+        ["Tipo de Juros", expected.interestType],
+      ] as const;
+
+      for (const [name, value] of fields) {
+        const field = page.getByRole("textbox", { name, exact: true });
+        await expect(field).toBeVisible();
+        await expect(field).toBeDisabled();
+        await expect(field).toHaveValue(value);
       }
     },
   );

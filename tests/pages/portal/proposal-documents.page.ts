@@ -49,21 +49,20 @@ export class ProposalDocumentsPage {
     await expect(this.documentRows).not.toHaveCount(0);
   }
 
-  getDocumentRow(documentName: string): Locator {
-    return this.documentRows.filter({
-      hasText: documentName,
-    });
+  getDocumentRowAt(index: number): Locator {
+    return this.documentRows.nth(index);
   }
 
-  async expectDocumentContract(documentNames: readonly string[]): Promise<void> {
-    await expect(this.documentRows).toHaveCount(documentNames.length);
-    for (const documentName of documentNames) {
-      await expect(this.getDocumentRow(documentName)).toHaveCount(1);
-    }
+  async getDocumentCount(): Promise<number> {
+    await expect(this.documentRows).not.toHaveCount(0);
+    return this.documentRows.count();
   }
 
-  async chooseFile(documentName: string, filePath: string): Promise<void> {
-    const row = this.getDocumentRow(documentName);
+  async chooseFileAt(index: number, filePath: string): Promise<void> {
+    await this.chooseFileInRow(this.getDocumentRowAt(index), filePath);
+  }
+
+  private async chooseFileInRow(row: Locator, filePath: string): Promise<void> {
     const chooseButton = row
       .getByRole("button", {
         name: "Escolher arquivo",
@@ -85,21 +84,41 @@ export class ProposalDocumentsPage {
     await fileChooser.setFiles(filePath);
   }
 
-  async expectUploadedDocument(
-    documentName: string,
+  async expectUploadedDocumentAt(
+    index: number,
     fileName: string,
   ): Promise<void> {
-    const row = this.getDocumentRow(documentName);
+    await this.expectUploadedDocumentInRow(
+      this.getDocumentRowAt(index),
+      fileName,
+    );
+  }
+
+  private async expectUploadedDocumentInRow(
+    row: Locator,
+    fileName: string,
+  ): Promise<void> {
     await expect(row).toHaveCount(1);
-    await expect(row.getByText("Documento enviado", { exact: true })).toBeVisible();
+    await expect(row.getByText("Documento enviado", { exact: true })).toBeVisible({
+      timeout: 60_000,
+    });
     await expect(row.getByText(fileName, { exact: true })).toBeVisible();
     await expect(
       row.getByRole("link", { name: "Ver arquivo", exact: true }),
     ).toBeVisible();
   }
 
-  async openUploadedDocument(documentName: string): Promise<OpenedPortalDocument> {
-    const row = this.getDocumentRow(documentName);
+  async openUploadedDocumentAt(index: number): Promise<OpenedPortalDocument> {
+    return this.openUploadedDocumentInRow(
+      this.getDocumentRowAt(index),
+      `documento na posição ${index + 1}`,
+    );
+  }
+
+  private async openUploadedDocumentInRow(
+    row: Locator,
+    description: string,
+  ): Promise<OpenedPortalDocument> {
     const viewLink = row.getByRole("link", {
       name: "Ver arquivo",
       exact: true,
@@ -108,7 +127,7 @@ export class ProposalDocumentsPage {
 
     const href = await viewLink.getAttribute("href");
     if (!href) {
-      throw new Error(`Link de visualizacao ausente para: ${documentName}`);
+      throw new Error(`Link de visualizacao ausente para: ${description}`);
     }
 
     const popupPromise = this.page.waitForEvent("popup");

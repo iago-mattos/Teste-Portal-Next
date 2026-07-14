@@ -1,4 +1,9 @@
 import { expect, test } from "../../fixtures/test";
+import {
+  addCalendarDays,
+  formatBrazilianDate,
+  parseBrazilianDate,
+} from "../../helpers/dates";
 
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
 
@@ -21,7 +26,8 @@ function convertShortMonthToNumericDate(value: string): string {
     Jan: "01", Fev: "02", Mar: "03", Abr: "04", Mai: "05", Jun: "06",
     Jul: "07", Ago: "08", Set: "09", Out: "10", Nov: "11", Dez: "12",
   };
-  const [day, month, year] = value.split("/");
+  const [rawDay, month, year] = value.trim().split("/");
+  const day = rawDay.trim().padStart(2, "0");
   return `${day}/${monthNumbers[month]}/${year}`;
 }
 
@@ -220,7 +226,12 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     "TIMELINE-07 | Trazer mensagem informativa da data fim para preenchimento do cadastro",
     functionalReadonly,
     async ({ authenticatedPage, portalConfig }) => {
-      const deadline = formatBrazilianDateWithShortMonth(portalConfig.testData.expectedProposal.deadline);
+      const registrationDate = parseBrazilianDate(
+        portalConfig.testData.expectedProposal.registrationDate,
+      );
+      const deadline = formatBrazilianDateWithShortMonth(
+        formatBrazilianDate(addCalendarDays(registrationDate, 30)),
+      );
       const regex = new RegExp(`Você tem até o dia\\s*${deadline.replace(/\//g, "\\/")}\\s*para finalizar o cadastro`, "i");
       await expect(authenticatedPage.getByText(regex)).toBeVisible();
     },

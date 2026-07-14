@@ -65,7 +65,7 @@ function loadAdminConfig(
   admin.url = normalizeUrl(admin.url, "PORTAL_ADMIN_URL");
   const adminUrl = new URL(admin.url);
   const portal = new URL(portalUrl);
-  const safeEnvironment = /(^|[.-])(dev|hml|homolog|localhost)([.-]|$)/i.test(
+  const safeEnvironment = /(^|[.-])(dev|desenv|hml|homolog|localhost)([.-]|$)/i.test(
     adminUrl.hostname,
   );
 
