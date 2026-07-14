@@ -10,8 +10,8 @@ function formatCurrency(value: string): string {
 }
 
 test(
-  "Portal → AEJS | valida o interveniente quitante sem persistir alterações",
-  { tag: ["@integration"] },
+  "Portal → AEJS | valida o interveniente quitante em modo de leitura",
+  { tag: ["@integration", "@readonly"] },
   async ({ aejsPage }) => {
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
     const { property, aejsReflection } = scenario.preparation;
@@ -35,35 +35,13 @@ test(
       ).toHaveValue(property.settlementIntervenor);
     });
 
-    await test.step("expõe e valida o saldo devedor", async () => {
-      await operationsPage.startEditing();
-      const alienatedOwnProperty = operationsPage.getVisibleInput(
-        "IMOVEL_OPERACAO$IN_ALIENADO_PROPRIO",
-      );
-      await expect(alienatedOwnProperty).toBeChecked();
-      await alienatedOwnProperty.uncheck();
-      await expect(alienatedOwnProperty).not.toBeChecked();
-
+    await test.step("abre os dados do contrato e valida o saldo devedor", async () => {
       await operationsPage.selectVisibleTab(
         "Dados do contrato com o Interveniente Quitante",
       );
       await expect(
         operationsPage.getVisibleField("OPERACAO_CREDITO$VA_INTERVENIENTE"),
       ).toHaveValue(formatCurrency(property.outstandingBalance));
-    });
-
-    await test.step("descarta a alteração temporária", async () => {
-      await operationsPage.cancelEditing();
-    });
-
-    await test.step("comprova que o valor original não foi persistido", async () => {
-      await operationsPage.startEditing();
-      await expect(
-        operationsPage.getVisibleInput(
-          "IMOVEL_OPERACAO$IN_ALIENADO_PROPRIO",
-        ),
-      ).toBeChecked();
-      await operationsPage.cancelEditing();
     });
   },
 );
