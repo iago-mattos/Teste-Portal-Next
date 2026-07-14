@@ -1,9 +1,14 @@
-# Handoff PortalNext Cypress
+# Handoff histórico do Cypress
 
 Snapshot de continuidade em 30/06/2026.
 
-Este documento e o ponto de entrada para retomar o projeto em outro computador
-ou em uma nova conversa com o Codex. Leia tambem:
+> **Documento legado:** este snapshot preserva o estado histórico anterior à
+> migração. A suíte principal atual é Playwright. Para instalação, execução e
+> configuração vigentes, consulte `README.md`; para decisões oficiais, consulte
+> `Docs/PLAYWRIGHT_MIGRATION.md` e `Docs/PLAYWRIGHT_ARCHITECTURE.md`.
+
+Este documento deve ser consultado apenas quando for necessário recuperar o
+contexto histórico do Cypress. Para o estado atual, leia:
 
 - `README.md`: instalacao, configuracao e comandos;
 - `cypress/ANDAMENTO_EXECUCAO.md`: historico detalhado das execucoes;
@@ -74,14 +79,15 @@ risco de HTTP 429.
 
 ### Ambientes
 
-`cypress/config/active-connect.ts` seleciona:
+`cypress/config/active-connect.ts` ainda seleciona:
 
 - DEV por padrao;
 - HT quando `PORTAL_ENV=ht`.
 
-A configuracao principal vem do `.env.local`. `connect.ts`, `connect.ht.ts` e
-`aejs.ts` permanecem opcionais apenas para compatibilidade com ambientes locais
-anteriores; um checkout limpo nao depende deles.
+No Playwright, o `.env.local` contém somente `PW_PROFILE`. A configuração
+completa vem de `.env.<perfil>.local`, por exemplo `.env.desenv.local` ou
+`.env.ht.local`. `connect.ts`, `connect.ht.ts` e `aejs.ts` permanecem opcionais
+apenas para compatibilidade com ambientes locais anteriores.
 
 ### Integracoes
 
@@ -106,12 +112,14 @@ Massas conhecidas:
 1. Clonar `https://github.com/iago-mattos/Teste-Portal-Next.git` e usar a
    branch `main`.
 2. Executar `npm ci`.
-3. Criar `.env.local` a partir de `.env.example`.
-4. Criar `cypress/config/connect.ts` a partir de `connect.example.ts`.
-5. Criar `cypress/config/connect.ht.ts` com as massas de HT, se necessario.
-6. Criar `cypress/config/aejs.ts` a partir de `aejs.example.ts`.
-7. Executar primeiro `npm run cy:run:smoke`.
-8. Executar `npx tsc --noEmit` antes de alterar os specs.
+3. Criar `.env.<perfil>.local` a partir de `.env.example`.
+4. Criar `.env.local` contendo somente `PW_PROFILE=<perfil>`.
+5. Criar `cypress/config/connect.ts` a partir de `connect.example.ts`.
+6. Criar `cypress/config/connect.ht.ts` com as massas de HT, se necessario.
+7. Criar `cypress/config/aejs.ts` a partir de `aejs.example.ts`.
+8. Executar `npm run config:check` antes de abrir navegador.
+9. Executar primeiro `npm run cy:run:smoke`.
+10. Executar `npx tsc --noEmit` antes de alterar os specs.
 
 Nunca versionar credenciais, magic links, cookies ou CPFs reais.
 
@@ -120,7 +128,7 @@ Nunca versionar credenciais, magic links, cookies ou CPFs reais.
 Transferir de forma segura somente quando for necessario preservar o estado
 local:
 
-- `.env.local`;
+- `.env.local` e os arquivos `.env.<perfil>.local`;
 - `cypress/config/connect.ts`;
 - `cypress/config/connect.ht.ts`;
 - `cypress/config/aejs.ts`;
@@ -128,9 +136,9 @@ local:
 - `cypress/results/`, para manter os JSON/HTML Mochawesome.
 
 Nao e necessario transferir `.codex-tmp`: sessoes, cookies e contexto de
-execucao devem ser regenerados no computador novo. Se for executar apenas a
-verificacao AEJS sem preparar novamente o Portal, use as operacoes fixas de
-`integration-data.ts` e preserve as massas listadas acima.
+execucao devem ser regenerados no computador novo. As operações Playwright não
+possuem fallback histórico; todas as massas devem estar explícitas no perfil
+selecionado.
 
 ## Primeira mensagem para um novo Codex
 

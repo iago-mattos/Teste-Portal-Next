@@ -12,7 +12,7 @@ playwright-report/
 test-results/
 .env
 .env.local
-.env.local-ht
+.env.*.local
 .codex-tmp/
 evidencias/
 

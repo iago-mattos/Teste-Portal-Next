@@ -7,6 +7,7 @@ export interface AejsRuntimeConfig {
   readonly username: string;
   readonly password: string;
   readonly path: string;
+  readonly usePlatformAccess: boolean;
 }
 
 const loadLocalModule = createRequire(resolve("package.json"));
@@ -19,6 +20,14 @@ function normalizeUrl(value: string, field: string): string {
   }
 }
 
+function parseBoolean(value: string, field: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+
+  throw new Error(`${field} precisa ser true ou false.`);
+}
+
 export function loadAejsRuntimeConfig(env: NodeJS.ProcessEnv = process.env): AejsRuntimeConfig {
   let localConfig: {
     aejsConnect?: {
@@ -26,6 +35,7 @@ export function loadAejsRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Aej
       username?: string;
       password?: string;
       path?: string;
+      usePlatformAccess?: boolean;
     };
   } = {};
 
@@ -41,12 +51,18 @@ export function loadAejsRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Aej
 
   const local = localConfig.aejsConnect ?? {};
   const rawBaseUrl = env.AEJS_URL?.trim() || local.baseUrl?.trim() || "";
+  const path = env.AEJS_PATH?.trim() || local.path?.trim() || "";
+  const explicitPlatformAccess = env.AEJS_USE_PLATFORM_ACCESS?.trim();
+  const configuredPlatformAccess = explicitPlatformAccess
+    ? parseBoolean(explicitPlatformAccess, "AEJS_USE_PLATFORM_ACCESS")
+    : local.usePlatformAccess;
 
   return Object.freeze({
     baseUrl: rawBaseUrl ? normalizeUrl(rawBaseUrl, "AEJS_URL") : "",
     username: env.AEJS_USERNAME ?? local.username ?? "",
     password: env.AEJS_PASSWORD ?? local.password ?? "",
-    path: env.AEJS_PATH ?? local.path ?? "",
+    path,
+    usePlatformAccess: path ? false : (configuredPlatformAccess ?? true),
   });
 }
 

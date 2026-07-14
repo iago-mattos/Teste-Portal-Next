@@ -1,14 +1,9 @@
-import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
 import { PORTAL_AUTH_STATE_PATH } from "./tests/config/auth-config";
+import { loadEnvironmentProfile } from "./tests/config/environment-profile";
 import { resolvePortalBaseUrl } from "./tests/config/runtime-config";
 
-for (const envFile of [".env.local", ".env"]) {
-  if (existsSync(envFile)) {
-    process.loadEnvFile(envFile);
-    break;
-  }
-}
+loadEnvironmentProfile();
 
 const portalBaseUrl = resolvePortalBaseUrl();
 const desktopChromium = {

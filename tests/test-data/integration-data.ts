@@ -210,7 +210,6 @@ export type IntegrationPreparationScenario =
   | WorkflowIntegrationPreparationScenario;
 
 export interface IntegrationScenarioData {
-  readonly operationNumber: string;
   readonly operationEnv: string;
   readonly profile: IntegrationScenarioProfile;
   readonly purpose: string;
@@ -252,7 +251,6 @@ const portalDocumentFiles = {
 
 export const integrationData = {
   "INT-CONFIRM-PJ": {
-    operationNumber: "000436044",
     operationEnv: "PORTAL_INTEGRATION_PJ_OPERATION",
     profile: "spouse-pj",
     purpose: "Validar cônjuge, imóvel, garantidor PJ, sócios e interveniente no AEJS.",
@@ -369,7 +367,6 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-PF": {
-    operationNumber: "000436045",
     operationEnv: "PORTAL_INTEGRATION_PF_OPERATION",
     profile: "third-party-pf",
     purpose: "Validar terceiro na composição de renda e garantidor PF no AEJS.",
@@ -430,7 +427,6 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-QUITADO": {
-    operationNumber: "000436046",
     operationEnv: "PORTAL_INTEGRATION_PAID_OFF_OPERATION",
     profile: "single-quitado",
     purpose: "Validar titular sem composição de renda e imóvel quitado no AEJS.",
@@ -459,7 +455,6 @@ export const integrationData = {
     },
   },
   "INT-CONFIRM-WORKFLOW": {
-    operationNumber: "000436047",
     operationEnv: "PORTAL_INTEGRATION_WORKFLOW_OPERATION",
     profile: "workflow",
     purpose: "Validar a preparação e a transição 997 → 998 do workflow no AEJS.",
@@ -492,7 +487,6 @@ export const integrationData = {
     },
   },
   "INT-DOCUMENT-PERSISTENCE": {
-    operationNumber: "000436049",
     operationEnv: "PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION",
     profile: "document-persistence",
     purpose:
@@ -503,7 +497,6 @@ export const integrationData = {
     },
   },
   "INT-DOCUMENT-SIZE": {
-    operationNumber: "000436050",
     operationEnv: "PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION",
     profile: "document-size",
     purpose:
@@ -560,7 +553,12 @@ function resolveIntegrationOperation(
 ): string {
   const scenario = integrationData[caseId];
   const configured = env[scenario.operationEnv]?.trim().replace(/\D/g, "");
-  return (configured || scenario.operationNumber).padStart(9, "0");
+  if (!configured || /^0+$/.test(configured)) {
+    throw new Error(
+      `Configure ${scenario.operationEnv} para executar o cenario ${caseId}. Nao existe fallback para massas historicas.`,
+    );
+  }
+  return configured.padStart(9, "0");
 }
 
 export function getIntegrationScenario(

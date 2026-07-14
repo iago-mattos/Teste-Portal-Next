@@ -21,11 +21,13 @@ async function authenticateAejsPage(
 ): Promise<void> {
   await page.goto(config.baseUrl, { waitUntil: "domcontentloaded" });
 
-  const platformAccessButton = page.getByText("Acesso via Plataforma", {
-    exact: true,
-  });
-  await expect(platformAccessButton).toBeVisible({ timeout: 30_000 });
-  await platformAccessButton.click();
+  if (config.usePlatformAccess) {
+    const platformAccessButton = page.getByText("Acesso via Plataforma", {
+      exact: true,
+    });
+    await expect(platformAccessButton).toBeVisible({ timeout: 30_000 });
+    await platformAccessButton.click();
+  }
 
   const usernameInput = page.locator('input[name="name"]:visible');
   const passwordInput = page.locator('input[name="password"]:visible');
@@ -36,9 +38,8 @@ async function authenticateAejsPage(
 
   if (config.path) {
     const pathInput = page.locator('input[name="path"]:visible');
-    if (await pathInput.isVisible()) {
-      await pathInput.fill(config.path);
-    }
+    await expect(pathInput).toBeVisible();
+    await pathInput.fill(config.path);
   }
 
   const loginButton = page.getByText("Login", { exact: true });

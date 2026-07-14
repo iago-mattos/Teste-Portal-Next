@@ -1,241 +1,286 @@
-# PortalNext - Testes E2E
+# PortalNext — Testes E2E
 
-Suite Playwright + Cypress + TypeScript baseada nos casos de
-`Docs/TestesPortalC6(1).xlsx`.
+Suíte E2E principal em **Playwright + TypeScript**, baseada nos casos oficiais de
+[`Docs/TestesPortalC6(1).xlsx`](Docs/TestesPortalC6(1).xlsx).
 
-Para continuar o trabalho em outro computador ou em uma nova conversa, leia
-primeiro `Docs/HANDOFF_CODEX.md`. Ele registra o estado dos 169 casos, as
-massas que devem ser preservadas e o ponto exato de retomada.
+O Cypress permanece no repositório apenas como legado temporário e referência
+histórica. Novos testes, correções e execuções oficiais devem utilizar
+Playwright.
 
-## Configurar a conexao
+## Estado atual
 
-Copie `.env.example` para `.env.local` e informe apenas dados dos ambientes
-DEV/HT. Playwright e Cypress carregam esse arquivo local, que e ignorado pelo
-Git. Os grupos principais sao:
+- 108/108 casos funcionais migrados para Playwright;
+- 128 testes coletados em 31 arquivos, incluindo setup, smoke e integrações;
+- integrações Portal → SCCI/AEJS disponíveis com massas dedicadas;
+- execução protegida por tags `@readonly` e `@mutation`;
+- Cypress preservado, mas fora do fluxo principal e da CI.
 
-- `PORTAL_ENV`: `dev` ou `ht`;
-- `PORTAL_URL` e `PORTAL_ACCESS_URL`: Portal e magic link opcional;
-- `PORTAL_ADMIN_URL`: URL do painel administrativo;
-- `PORTAL_ADMIN_USER` e `PORTAL_ADMIN_PASSWORD`: credenciais de QA;
-- `PORTAL_TEST_CPF`: CPF exclusivo das massas de teste;
-- `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD` e `AEJS_PATH`: SCCI/AEJS;
-- `PORTAL_PROPOSAL_*`: propostas usadas pelos casos funcionais;
-- `PORTAL_INTEGRATION_*_OPERATION`: uma operacao dedicada para cada integracao;
-- `PORTAL_EXPECTED_*`: contrato visual da proposta padrao; a data limite e
-  calculada automaticamente como data de cadastro + 30 dias.
+A coleta é a fonte atual do total de testes:
 
-Quando o Admin esta configurado, o setup entra no painel, gera o magic link,
-acessa o Portal e guarda a sessao automaticamente. `PORTAL_ACCESS_URL` e apenas
-o fallback manual. O SCCI autentica dentro do ciclo de vida da fixture porque a
-sessao ExtJS nao pode ser restaurada por `storageState`.
-
-As variaveis JSON antigas continuam aceitas apenas para compatibilidade:
-
-- `PORTAL_TEST_DATA_JSON`;
-- `PORTAL_EXPECTED_PROPOSAL_JSON`;
-- `PORTAL_CASE_ACCESS_URLS_JSON`;
-- `PORTAL_CASE_PROPOSAL_IDS_JSON`.
-
-Os antigos `connect.ts`, `connect.ht.ts` e `aejs.ts` tambem continuam aceitos
-como fallback local, mas novas trocas de ambiente devem ser feitas somente no
-`.env.local`.
-
-Nao utilize credenciais, links ou dados de clientes reais.
-
-### Finalidade das propostas funcionais
-
-| Variavel | Estado exigido | Responsabilidade |
-| --- | --- | --- |
-| `PORTAL_PROPOSAL_DEFAULT` | Visivel e em Cadastro | Proposta principal dos smokes, formularios e validacoes gerais. Deve continuar acessivel. |
-| `PORTAL_PROPOSAL_CANCELED` | Cancelada no SCCI | Deve aparecer cancelada e sem acao para completar cadastro. |
-| `PORTAL_PROPOSAL_CREDIT_REJECTED` | Credito Reprovado | Deve exibir a mensagem para verificar e-mail ou contatar o consultor. |
-| `PORTAL_PROPOSAL_CREDIT_APPROVED` | Fase Credito ou posterior | Deve estar finalizada no cadastro e aguardando contato. |
-| `PORTAL_PROPOSAL_EXPIRED` | Expirada ha no maximo 30 dias | Comprova que uma proposta expirada ainda aparece em modo de consulta. |
-| `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada ha mais de 30 dias | Comprova que a proposta nao aparece mais. Se aparecer, o PROP-10 deve falhar. |
-| `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Abre a jornada `Cadastro da Proposta` pela timeline. |
-| `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Abre a jornada `Documentos da proposta`; nao use uma operacao que ja avancou para 996. |
-| `PORTAL_PROPOSAL_RESERVE_1..3` | Nova e sem consumidor | Reservas para substituir massas consumidas sem reaproveitar operacoes de outro cenario. |
-
-Ao trocar uma proposta, preserve o estado descrito na tabela. Apenas substituir
-o numero por qualquer operacao existente pode fazer o teste validar a jornada
-errada.
-
-## Executar
-
-Instalacao e validacao estatica:
-
-```powershell
-npm ci
-npm run pw:install
-npm run check
-```
-
-Coleta sem abrir navegador:
-
-```powershell
+```bash
 npm run pw:test:list
 ```
 
-Playwright seguro, sem integracoes e sem mutacoes:
+As decisões da migração e da arquitetura estão registradas em:
 
-```powershell
+- [`Docs/PLAYWRIGHT_MIGRATION.md`](Docs/PLAYWRIGHT_MIGRATION.md);
+- [`Docs/PLAYWRIGHT_ARCHITECTURE.md`](Docs/PLAYWRIGHT_ARCHITECTURE.md);
+- [`Docs/PLAYWRIGHT_FINAL_EQUIVALENCE_AUDIT.md`](Docs/PLAYWRIGHT_FINAL_EQUIVALENCE_AUDIT.md).
+
+## Pré-requisitos
+
+- Node.js conforme [`.nvmrc`](.nvmrc);
+- npm conforme `packageManager` do [`package.json`](package.json);
+- acesso à VPN quando o ambiente exigir;
+- credenciais e massas exclusivas de QA;
+- Chromium do Playwright instalado.
+
+Instalação inicial:
+
+```bash
+npm ci
+npm run pw:install
+```
+
+## Configuração por ambiente
+
+Cada ambiente possui um perfil completo, local e ignorado pelo Git. O arquivo
+`.env.local` serve somente para escolher o perfil ativo:
+
+```env
+PW_PROFILE=desenv
+```
+
+Os dados ficam em `.env.<perfil>.local`, por exemplo:
+
+```text
+.env.desenv.local
+.env.ht.local
+.env.esteira.local
+```
+
+Para criar outro perfil:
+
+```bash
+cp .env.example .env.esteira.local
+```
+
+Preencha o novo arquivo e troque apenas `PW_PROFILE` no `.env.local`. Nunca
+versione os perfis, credenciais, CPFs, magic links, cookies ou tokens.
+
+### Grupos de configuração
+
+- `PORTAL_URL`, `PORTAL_ADMIN_URL`: URLs do Portal e do Admin;
+- `PORTAL_ADMIN_USER`, `PORTAL_ADMIN_PASSWORD`: autenticação do Admin de QA;
+- `PORTAL_TEST_CPF`: CPF associado às massas do ambiente;
+- `PORTAL_PROPOSAL_*`: operações dos casos funcionais;
+- `PORTAL_EXPECTED_*`: contrato visual da massa padrão;
+- `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD`: acesso ao SCCI/AEJS;
+- `AEJS_USE_PLATFORM_ACCESS`, `AEJS_PATH`: modalidade de login do SCCI/AEJS;
+- `PORTAL_INTEGRATION_*_OPERATION`: operações exclusivas das integrações;
+- `ALLOW_TEST_MUTATION`: autorização explícita para testes que alteram estado;
+- `ALLOW_REACT_418_QUARANTINE`: exceção diagnóstica temporária do frontend.
+
+O setup do Portal acessa o Admin, gera um magic link e cria o `storageState` da
+sessão. `PORTAL_ACCESS_URL` existe somente como fallback manual. O SCCI/AEJS é
+autenticado dentro da fixture porque a sessão ExtJS não pode ser restaurada por
+`storageState`.
+
+Para o login C6, use `AEJS_USE_PLATFORM_ACCESS=true`. Para login direto, use
+`false`. Quando `AEJS_PATH` estiver preenchido, o login direto será usado
+independentemente dessa flag.
+
+Valide o perfil sem abrir navegador e sem exibir segredos:
+
+```bash
+npm run config:check
+```
+
+Os scripts que executam navegador também validam o perfil automaticamente.
+
+### Massas funcionais
+
+| Variável | Estado exigido | Responsabilidade |
+| --- | --- | --- |
+| `PORTAL_PROPOSAL_DEFAULT` | Visível e em Cadastro | Smokes, formulários e validações gerais. |
+| `PORTAL_PROPOSAL_CANCELED` | Cancelada no SCCI | Deve aparecer cancelada e sem ação de preenchimento. |
+| `PORTAL_PROPOSAL_CREDIT_REJECTED` | Crédito Reprovado | Deve exibir a orientação de contato/e-mail. |
+| `PORTAL_PROPOSAL_CREDIT_APPROVED` | Crédito ou fase posterior | Deve estar com o cadastro concluído. |
+| `PORTAL_PROPOSAL_EXPIRED` | Expirada há no máximo 30 dias | Deve permanecer visível em modo de consulta. |
+| `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada há mais de 30 dias | Não deve aparecer; se aparecer, `PROP-10` deve falhar. |
+| `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Jornada de cadastro pela timeline. |
+| `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Jornada de documentos; não pode ter avançado para 996. |
+
+Não reutilize a mesma operação em estados incompatíveis. O validador rejeita
+massas exclusivas duplicadas, mas o responsável pelo ambiente ainda deve
+garantir o estado funcional correto de cada uma.
+
+## Execução Playwright
+
+### Qualidade, contrato e coleta
+
+Não abrem navegador:
+
+```bash
+npm run check
+npm run pw:test:list
+```
+
+`npm test` é um alias de `npm run check`.
+
+### Execução segura
+
+Smoke e casos funcionais somente leitura:
+
+```bash
 npm run pw:test:safe
 ```
 
-Execucoes Playwright por grupo:
+Grupos somente leitura:
 
-```powershell
+```bash
 npm run pw:test:smoke
 npm run pw:test:functional:readonly
 npm run pw:test:integration:readonly
 ```
 
-Testes mutaveis exigem `ALLOW_TEST_MUTATION=true` no `.env.local`:
+### Execução mutável
 
-```powershell
+Testes `@mutation` podem preencher, confirmar ou consumir propostas e enviar
+documentos. Antes de executá-los, configure no perfil ativo:
+
+```env
+ALLOW_TEST_MUTATION=true
+```
+
+Comandos:
+
+```bash
 npm run pw:test:functional:mutation
 npm run pw:test:integration:mutation
 ```
 
-Suites completas, incluindo casos mutaveis:
+### Suítes completas
 
-```powershell
+Exigem `ALLOW_TEST_MUTATION=true` e todas as massas no estado esperado:
+
+```bash
 npm run pw:test:functional
 npm run pw:test:integration
 npm run pw:test:all
 ```
 
-Esses tres comandos completos somente devem ser usados depois de restaurar as
-massas descartaveis. `pw:test:all` executa todos os projetos Playwright e pode
-confirmar propostas e enviar documentos; ele nao e o comando seguro do dia a
-dia.
+Para executar toda a suíte com navegador visível:
 
-Arquivo ou caso isolado:
+```bash
+npm run pw:test:all -- --headed
+```
 
-```powershell
+O comando `pw:test:all` executa setup, smoke, funcionais e integrações. Não o
+utilize como verificação cotidiana quando as massas mutáveis não puderem ser
+restauradas.
+
+### Arquivo ou caso isolado
+
+Prefira validar o perfil antes de usar diretamente o CLI:
+
+```bash
+npm run config:check
 npx playwright test tests/caminho/arquivo.spec.ts
 npx playwright test -g "texto do caso"
 ```
 
-Relatorio HTML da ultima execucao:
+Interface interativa e relatório HTML:
 
-```powershell
+```bash
+npm run pw:ui
 npm run pw:report
 ```
 
-Comandos legados do Cypress:
+Em falhas, o Playwright mantém screenshot, vídeo e trace em `test-results/` e o
+relatório em `playwright-report/`.
 
-```powershell
+## Integração Portal → SCCI/AEJS
+
+Cada cenário usa uma operação própria definida no perfil ativo:
+
+| Caso | Variável | Finalidade | Reexecução |
+| --- | --- | --- | --- |
+| `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Cônjuge, garantidor PJ, sócios e interveniente refletidos no SCCI. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
+| `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF refletidos no SCCI. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
+| `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Imóvel quitado, sem terceiro ou garantidor. | Preparação exige massa nova/restaurada; validação SCCI é repetível. |
+| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Envio de documentos e transição 997 → 998 → 996. | O avanço consome o estado da massa. |
+| `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Envia todos os documentos do Portal e os abre em `Documentos → Renda PF` no SCCI. | O envio consome a massa; leitura dos PDFs é repetível. |
+| `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Todos os seletores rejeitam PDFs de 25 MB e 50 MB, acima do limite de 10 MB. | Repetível, pois arquivos rejeitados não são persistidos. |
+
+Não existem números históricos de fallback. Se uma variável de integração não
+estiver configurada, a execução falha antes de usar uma operação indevida.
+
+## Arquitetura Playwright
+
+```text
+tests/
+├── components/       # widgets reutilizáveis do Portal e do AEJS
+├── config/           # runtime config e seleção de ambiente
+├── fixtures/         # composição, lifecycle, autenticação e teardown
+├── functional/       # 108 contratos funcionais oficiais
+├── helpers/          # funções puras e transformações
+├── integrations/     # fluxos Portal → SCCI/AEJS
+├── pages/            # Page Objects do Portal e do AEJS
+├── setup/            # autenticação e validação de setup
+├── smoke/            # verificações mínimas da fundação
+└── test-data/        # contratos e massas tipadas
+```
+
+Projetos definidos em [`playwright.config.ts`](playwright.config.ts):
+
+- `setup`: autenticação do Portal;
+- `aejs-setup`: validação da configuração AEJS;
+- `smoke`: fundação autenticada;
+- `functional-readonly`: casos funcionais sem alteração persistente;
+- `functional-mutation`: casos funcionais que alteram estado;
+- `integration`: cenários Portal → SCCI/AEJS.
+
+A suíte permanece serial (`workers: 1`) porque ainda há sessão, operações e
+estados externos compartilhados. Não aumente workers sem comprovar isolamento
+das massas envolvidas.
+
+## CI
+
+O GitHub Actions executa em `push` e `pull_request`:
+
+1. `npm ci` sem baixar o binário do Cypress;
+2. `npm run check`;
+3. coleta completa do Playwright;
+4. publicação da lista coletada como artefato.
+
+A CI inicial não abre navegador nem executa cenários autenticados ou mutáveis.
+Falhas de TypeScript, ESLint, contrato ou coleta quebram corretamente o job.
+
+## Cypress legado
+
+O diretório `cypress/`, seus scripts e dependências permanecem apenas para
+consulta histórica e coexistência temporária. Eles não são a arquitetura
+principal, não recebem novos casos e não são executados pela CI atual.
+
+Quando uma comparação histórica for necessária:
+
+```bash
 npm run cy:open
-```
-
-```powershell
-npm run cy:run
-```
-
-O comando padrao executa apenas os smokes seguros. Verificacoes locais de
-qualidade, sem acesso a sistemas externos, podem ser executadas com:
-
-```powershell
-npm test
-```
-
-Smokes de autenticacao e abertura da proposta:
-
-```powershell
 npm run cy:run:smoke
-```
-
-Casos funcionais:
-
-```powershell
 npm run cy:run:functional
 ```
 
-Para executar somente um caso:
+A remoção definitiva ocorrerá somente mediante decisão específica, depois de
+confirmado que nenhum consumidor depende dos relatórios ou comandos legados.
 
-```powershell
-npm run cy:run -- --spec "cypress/e2e/cliente/01-login.cy.ts" --env caseId=LOGIN-04
-```
+## Regras de segurança
 
-## Integracao Portal para SCCI/AEJS
-
-Os cenarios mutaveis confirmam propostas ou enviam documentos e, por isso,
-exigem massas descartaveis dedicadas e opt-in explicito. Cada operacao possui
-uma variavel propria no `.env.local`:
-
-```text
-PORTAL_INTEGRATION_PJ_OPERATION=000000000
-PORTAL_INTEGRATION_PF_OPERATION=000000000
-PORTAL_INTEGRATION_PAID_OFF_OPERATION=000000000
-PORTAL_INTEGRATION_WORKFLOW_OPERATION=000000000
-PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION=000000000
-PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION=000000000
-ALLOW_TEST_MUTATION=true
-```
-
-Use `pw:test:integration:readonly` para validacoes que nao alteram estado e
-`pw:test:integration:mutation` apenas quando as massas estiverem preparadas.
-`PORTAL_INTEGRATION_CASE_ID` e `PORTAL_INTEGRATION_OPERATION` permanecem como
-overrides temporarios governados, nao como configuracao principal.
-
-Cobertura Playwright configuravel:
-
-| Caso | Variavel | Finalidade e estado esperado | Reexecucao |
-| --- | --- | --- | --- |
-| `INT-CONFIRM-PJ` | `PORTAL_INTEGRATION_PJ_OPERATION` | Titular, conjuge, garantidor PJ, socios e interveniente refletidos no SCCI. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
-| `INT-CONFIRM-PF` | `PORTAL_INTEGRATION_PF_OPERATION` | Terceiro na renda e garantidor PF refletidos no SCCI. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
-| `INT-CONFIRM-QUITADO` | `PORTAL_INTEGRATION_PAID_OFF_OPERATION` | Imovel quitado, sem composicao, terceiro ou garantidor. | Preparacao mutavel somente com massa nova/restaurada; validacao SCCI e read-only. |
-| `INT-CONFIRM-WORKFLOW` | `PORTAL_INTEGRATION_WORKFLOW_OPERATION` | Depois dos documentos: tarefas 997 e 998 finalizadas e 996 disponivel. | Fluxo Portal consome a massa; depois execute somente as validacoes read-only. |
-| `INT-DOCUMENT-PERSISTENCE` | `PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION` | Todos os documentos enviados no Portal devem abrir em `Documentos → Renda PF` no SCCI. | Envio consome a massa; validacao dos PDFs pode ser repetida. |
-| `INT-DOCUMENT-SIZE` | `PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION` | Cada seletor deve rejeitar PDFs de 25 MB e 50 MB porque o limite e 10 MB. | Reutilizavel: os arquivos rejeitados nao sao persistidos. |
-
-Operacoes consumidas por confirmacao ou avanco de workflow nao sao
-reexecutaveis sem restauracao externa. A tag `@mutation` e o opt-in evitam uma
-execucao destrutiva acidental.
-
-## Organizacao
-
-Os specs em `cypress/e2e/cliente` seguem os nomes da primeira coluna da
-planilha. Os arquivos possuem prefixos de `01` a `13`, preservando a ordem
-funcional do documento:
-
-1. Login
-2. Minhas propostas
-3. Linha do Tempo e Alertas
-4. Participantes
-5. Dados do Conjuge
-6. Composicao de Renda
-7. Composicao de Renda com conjuge
-8. Composicao de Renda com terceiros
-9. Motivo da Contratacao
-10. Imovel
-11. Garantidor PF
-12. Garantidor PJ
-13. Detalhamento
-
-Cada caso possui ID, regra, status e observacao de origem.
-
-Casos automatizados sao executados normalmente. Casos ainda sem codigo
-precisam estar declarados em `cypress/config/known-pending.json`, com motivo e
-data de revisao. `npm test` falha quando surge uma pendencia nao declarada.
-
-Arquivos `.env.local`, links, videos e relatorios nao sao versionados.
-
-## Quality gate e CI
-
-O gate executado em toda pull request inclui TypeScript, ESLint e consistencia
-entre o catalogo de casos e suas implementacoes:
-
-```powershell
-npm test
-```
-
-O smoke com credenciais e executado manualmente pelo workflow `CI`, usando o
-ambiente protegido `qa`. Fluxos de confirmacao/cancelamento nunca fazem parte
-do gate padrao e exigem `ALLOW_TEST_MUTATION=true`.
-
-O defeito conhecido de hidratacao React #418 falha por padrao. Enquanto a
-correcao do frontend nao estiver implantada, uma execucao diagnostica pode usar
-`ALLOW_REACT_418_QUARANTINE=true`; a excecao fica explicita no log e deve ser
-revisada ate 31/08/2026.
+- nunca execute `@mutation` sem massa descartável ou restaurável;
+- nunca compartilhe uma operação entre cenários com estados incompatíveis;
+- nunca versione `.env.local` ou `.env.*.local`;
+- nunca use credenciais ou dados de clientes reais;
+- não aumente workers nem retries para mascarar colisões ou instabilidade;
+- não use números de operações diretamente nas specs: altere somente o perfil;
+- preserve o Cypress apenas como baseline histórica, não como modelo para novas
+  implementações.
