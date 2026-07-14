@@ -1,7 +1,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseEnv } from "node:util";
 
 const profilePattern = /^[a-z0-9][a-z0-9_-]*$/;
+const allowedMassKeyPatterns = [
+  /^PORTAL_TEST_CPF$/,
+  /^PORTAL_PROPOSAL_/,
+  /^PORTAL_INTEGRATION_/,
+  /^PORTAL_EXPECTED_/,
+  /^PORTAL_MASS_/,
+];
 
 function configuredKeys(filePath) {
   return readFileSync(filePath, "utf8")
@@ -10,7 +18,24 @@ function configuredKeys(filePath) {
     .filter(Boolean);
 }
 
+function loadMassesOverlay(filePath, initialEnvironmentKeys) {
+  const values = parseEnv(readFileSync(filePath, "utf8"));
+  const unexpectedKeys = Object.keys(values).filter(
+    (key) => !allowedMassKeyPatterns.some((pattern) => pattern.test(key)),
+  );
+  if (unexpectedKeys.length > 0) {
+    throw new Error(
+      `${filePath} deve conter somente massas e expectativas do Portal. Remova ${unexpectedKeys.join(", ")}.`,
+    );
+  }
+
+  for (const [key, value] of Object.entries(values)) {
+    if (!initialEnvironmentKeys.has(key)) process.env[key] = value;
+  }
+}
+
 export function loadEnvironmentProfile({ required = true } = {}) {
+  const initialEnvironmentKeys = new Set(Object.keys(process.env));
   const selectorPath = resolve(".env.local");
   if (existsSync(selectorPath)) {
     const unexpectedKeys = configuredKeys(selectorPath).filter(
@@ -40,6 +65,16 @@ export function loadEnvironmentProfile({ required = true } = {}) {
   const profilePath = resolve(`.env.${profile}.local`);
   if (existsSync(profilePath)) {
     process.loadEnvFile(profilePath);
+    const massesPath = resolve(`.env.${profile}.masses.local`);
+    if (existsSync(massesPath)) {
+      loadMassesOverlay(massesPath, initialEnvironmentKeys);
+      return Object.freeze({
+        name: profile,
+        source: profilePath,
+        massesSource: massesPath,
+      });
+    }
+
     return Object.freeze({ name: profile, source: profilePath });
   }
   if (process.env.CI) {

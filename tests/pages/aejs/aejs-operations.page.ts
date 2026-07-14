@@ -7,6 +7,7 @@ import { ExtJsGridComponent } from "../../components/aejs/extjs-grid.component";
 export class AejsOperationsPage {
   readonly openedOperationNumber: Locator;
   readonly openedApplicantName: Locator;
+  readonly openedTerm: Locator;
   readonly processProgressGrid: Locator;
   readonly incomeDocumentsGrid: Locator;
   readonly openedDocumentWindow: Locator;
@@ -17,6 +18,7 @@ export class AejsOperationsPage {
   private readonly operationsMenuItem: Locator;
   private readonly processProgressMenuItem: Locator;
   private readonly documentsMenuItem: Locator;
+  private readonly simulationMenuItem: Locator;
   private readonly incomeDocumentsTab: Locator;
   private readonly applicantTab: Locator;
   private readonly operationSearchInput: Locator;
@@ -38,6 +40,10 @@ export class AejsOperationsPage {
     });
     this.documentsMenuItem = page.getByRole("menuitem", {
       name: "Documentos",
+      exact: true,
+    });
+    this.simulationMenuItem = page.getByRole("menuitem", {
+      name: "Simulação",
       exact: true,
     });
     this.incomeDocumentsTab = page
@@ -62,6 +68,9 @@ export class AejsOperationsPage {
     );
     this.openedApplicantName = page.locator(
       'input[name="PESSOA$NO_PESSOA"]:visible',
+    );
+    this.openedTerm = page.locator(
+      'input[name="OPERACAO_CREDITO$NU_PRAZO_MESES_OPERACAO"]',
     );
     this.operationApplicantName = page.getByRole("textbox", {
       name: "Nome do cliente:",
@@ -118,6 +127,21 @@ export class AejsOperationsPage {
     await this.operationsGrid.openRowByText(operationNumber);
   }
 
+  async openOperationEventually(
+    operationNumber: string,
+    timeout = 3 * 60_000,
+  ): Promise<void> {
+    await expect(async () => {
+      await this.searchOperation(operationNumber);
+      await this.operationsGrid.findUniqueRowByText(operationNumber);
+    }).toPass({
+      timeout,
+      intervals: [1_000, 2_000, 5_000, 10_000],
+    });
+
+    await this.operationsGrid.openRowByText(operationNumber);
+  }
+
   async openProcessProgress(): Promise<void> {
     await expect(this.processProgressMenuItem).toHaveCount(1);
     await expect(this.processProgressMenuItem).toBeVisible();
@@ -142,6 +166,16 @@ export class AejsOperationsPage {
     await this.documentsMenuItem.click();
 
     await this.selectIncomeDocumentsTab();
+  }
+
+  async openSimulation(): Promise<void> {
+    await expect(this.simulationMenuItem).toHaveCount(1);
+    await expect(this.simulationMenuItem).toBeVisible();
+    await this.simulationMenuItem.click();
+    await this.waitForExtJsReady();
+    await expect(
+      this.getVisibleControlByLabel("Modalidade de financiamento:"),
+    ).toBeVisible();
   }
 
   getIncomeDocumentRow(documentName: string): Locator {
@@ -217,6 +251,13 @@ export class AejsOperationsPage {
   getVisibleText(text: string): Locator {
     return this.page
       .getByText(text, { exact: true })
+      .filter({ visible: true })
+      .last();
+  }
+
+  getVisibleControlByLabel(label: string): Locator {
+    return this.page
+      .getByLabel(label, { exact: true })
       .filter({ visible: true })
       .last();
   }
@@ -313,7 +354,7 @@ export class AejsOperationsPage {
   private async waitForExtJsReady(): Promise<void> {
     await expect(
       this.page.locator(
-        ".x-mask:visible, .x-mask-msg:visible, .x-loading-mask:visible",
+        ".x-mask-msg:visible, .x-loading-mask:visible",
       ),
     ).toHaveCount(0);
   }

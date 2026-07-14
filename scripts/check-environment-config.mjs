@@ -62,6 +62,19 @@ function validateUniqueOperations(keys, groupName) {
 }
 
 const profile = loadEnvironmentProfile().name;
+if (profile === "esteira-ht") {
+  const targetCount = Number(process.env.PORTAL_MASS_TARGET_COUNT?.trim());
+  if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > 15) {
+    throw new Error(
+      "PORTAL_MASS_TARGET_COUNT precisa ser um inteiro entre 1 e 15.",
+    );
+  }
+  if (process.env.PORTAL_MASS_BATCH_STATUS?.trim().toLowerCase() !== "ready") {
+    throw new Error(
+      "Perfil esteira-ht ainda nao possui um lote de massas pronto. Execute o provisionamento e a preparacao dos estados antes da suite completa.",
+    );
+  }
+}
 const functionalOperations = [
   "PORTAL_PROPOSAL_DEFAULT",
   "PORTAL_PROPOSAL_CANCELED",

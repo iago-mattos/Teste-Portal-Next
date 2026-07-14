@@ -9,6 +9,7 @@ import {
 export interface AejsFixtures {
   aejsContext: BrowserContext;
   aejsPage: Page;
+  openAuthenticatedAejsPage: () => Promise<Page>;
 }
 
 export interface AejsWorkerFixtures {
@@ -77,6 +78,25 @@ export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>(
     assertAejsRuntimeConfig(aejsConfig);
     await authenticateAejsPage(page, aejsConfig);
     await use(page);
+  },
+
+  openAuthenticatedAejsPage: async ({ browser, aejsConfig }, use) => {
+    let context: BrowserContext | undefined;
+    let page: Page | undefined;
+
+    await use(async () => {
+      if (page) return page;
+
+      context = await browser.newContext({
+        viewport: { width: 1440, height: 900 },
+      });
+      page = await context.newPage();
+      assertAejsRuntimeConfig(aejsConfig);
+      await authenticateAejsPage(page, aejsConfig);
+      return page;
+    });
+
+    await context?.close();
   },
 });
 

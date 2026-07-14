@@ -7,7 +7,7 @@ import type { DigitalMortgageSimulationScenario } from "../types/simulator";
  * a digitação. O nome completo e o protocolo são gerados por execução e serão
  * registrados pelo provisionador, sem transformar dados dinâmicos em contrato.
  */
-export const DIGITAL_MORTGAGE_SIMULATION = Object.freeze({
+const DIGITAL_MORTGAGE_SIMULATION_BASE = Object.freeze({
   journey: {
     modality: "Financiamento Imobiliário",
     borrowerType: "Pessoa Física",
@@ -26,10 +26,35 @@ export const DIGITAL_MORTGAGE_SIMULATION = Object.freeze({
     composeIncome: false,
   },
   insurer: "MAPFRE",
-  applicantSeed: {
-    cpfDigits: "75940275311",
-    namePrefix: "Play --",
-    email: "Teste@prognum.com.br",
-    mobileDigits: "21998078467",
+  scciReflection: {
+    financingModality: "Nova Operação",
+    conditions: "Cliente da Esteira Digital",
+    familyIncomeCents: "5000000",
+    constructionFinancingValueCents: "0",
+    amortizationSystem: "2 - SAC",
   },
-} satisfies DigitalMortgageSimulationScenario);
+} as const);
+
+function requiredEnvironmentValue(
+  env: NodeJS.ProcessEnv,
+  key: string,
+): string {
+  const value = env[key]?.trim();
+  if (!value) throw new Error(`Configuração obrigatória ausente: ${key}.`);
+  return value;
+}
+
+export function getDigitalMortgageSimulation(
+  env: NodeJS.ProcessEnv = process.env,
+): DigitalMortgageSimulationScenario {
+  return Object.freeze({
+    ...DIGITAL_MORTGAGE_SIMULATION_BASE,
+    applicantSeed: Object.freeze({
+      email: requiredEnvironmentValue(env, "PORTAL_SIMULATOR_EMAIL"),
+      mobileDigits: requiredEnvironmentValue(
+        env,
+        "PORTAL_SIMULATOR_MOBILE",
+      ).replace(/\D/g, ""),
+    }),
+  }) satisfies DigitalMortgageSimulationScenario;
+}

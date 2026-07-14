@@ -24,8 +24,6 @@ export interface SimulationFinancialInput {
 }
 
 export interface SimulationApplicantSeed {
-  readonly cpfDigits: string;
-  readonly namePrefix: string;
   readonly email: string;
   readonly mobileDigits: string;
 }
@@ -37,9 +35,18 @@ export interface SimulationApplicantInput {
   readonly mobileDigits: string;
 }
 
+export interface SimulationScciReflectionExpectation {
+  readonly financingModality: "Nova Operação";
+  readonly conditions: "Cliente da Esteira Digital";
+  readonly familyIncomeCents: string;
+  readonly constructionFinancingValueCents: string;
+  readonly amortizationSystem: "2 - SAC";
+}
+
 export interface DigitalMortgageSimulationScenario {
   readonly journey: SimulationJourneyInput;
   readonly financial: SimulationFinancialInput;
   readonly insurer: "MAPFRE";
   readonly applicantSeed: SimulationApplicantSeed;
+  readonly scciReflection: SimulationScciReflectionExpectation;
 }

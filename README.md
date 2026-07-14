@@ -10,7 +10,7 @@ Playwright.
 ## Estado atual
 
 - 108/108 casos funcionais migrados para Playwright;
-- 128 testes coletados em 31 arquivos, incluindo setup, smoke e integrações;
+- 129 testes coletados em 32 arquivos, incluindo setup, smoke e integrações;
 - integrações Portal → SCCI/AEJS disponíveis com massas dedicadas;
 - execução protegida por tags `@readonly` e `@mutation`;
 - Cypress preservado, mas fora do fluxo principal e da CI.
@@ -59,10 +59,18 @@ Os dados ficam em `.env.<perfil>.local`, por exemplo:
 .env.esteira.local
 ```
 
+Em ambientes cujas propostas são criadas pelo simulador, as massas ficam em
+um segundo arquivo local, `.env.<perfil>.masses.local`. O carregamento ocorre
+na ordem: variáveis do terminal/CI, perfil estático e overlay de massas. O
+overlay aceita apenas `PORTAL_TEST_CPF`, `PORTAL_PROPOSAL_*`,
+`PORTAL_INTEGRATION_*`, `PORTAL_EXPECTED_*` e `PORTAL_MASS_*`; por isso ele não
+consegue sobrescrever URLs, credenciais ou proteções de execução.
+
 Para criar outro perfil:
 
 ```bash
 cp .env.example .env.esteira.local
+cp .env.masses.example .env.esteira.masses.local
 ```
 
 Preencha o novo arquivo e troque apenas `PW_PROFILE` no `.env.local`. Nunca
@@ -73,6 +81,8 @@ versione os perfis, credenciais, CPFs, magic links, cookies ou tokens.
 - `PORTAL_URL`, `PORTAL_ADMIN_URL`: URLs do Portal e do Admin;
 - `PORTAL_ADMIN_USER`, `PORTAL_ADMIN_PASSWORD`: autenticação do Admin de QA;
 - `PORTAL_TEST_CPF`: CPF associado às massas do ambiente;
+- `PORTAL_SIMULATOR_*`: CPF, prefixo de nome, e-mail e celular usados para
+  gerar novas propostas pelo simulador;
 - `PORTAL_PROPOSAL_*`: operações dos casos funcionais;
 - `PORTAL_EXPECTED_*`: contrato visual da massa padrão;
 - `AEJS_URL`, `AEJS_USERNAME`, `AEJS_PASSWORD`: acesso ao SCCI/AEJS;
@@ -98,6 +108,112 @@ npm run config:check
 ```
 
 Os scripts que executam navegador também validam o perfil automaticamente.
+
+### Provisionamento de massas pela EsteiraHT
+
+O simulador possui um provisionador separado da suíte funcional. Cada uma das
+15 propostas tem nome, finalidade, estado esperado e variável de ambiente
+próprios em `tests/test-data/provisioning-slots.json`. Os protocolos e o
+progresso ficam somente em
+`.playwright/generated-simulations/<perfil>.json`; esse registro é atômico,
+ignorado pelo Git e permite retomar uma execução sem trocar silenciosamente a
+massa de um caso.
+
+A quantidade desejada é configurada no overlay local:
+
+```env
+PORTAL_MASS_BATCH_STATUS=pending
+PORTAL_MASS_TARGET_COUNT=5
+```
+
+O valor pode variar de 1 a 15 e seleciona os papéis na ordem do catálogo. Cada
+slot automático recebe um CPF sintético válido e exclusivo, gerado somente no
+momento da reserva e persistido no registro local. Assim, uma retomada reutiliza
+o mesmo CPF e protocolo em vez de trocar a identidade silenciosamente.
+
+Os nomes são curtos e identificam a finalidade diretamente, por exemplo
+`Playwright CANC`, `Playwright BASE`, `Playwright PJ`, `Playwright FLOW` e
+`Playwright DOCMAX`. O catálogo é a fonte oficial desses nomes.
+
+Primeiro execute o piloto no slot `CANCELED`, que é o primeiro papel oficial:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:pilot
+```
+
+Para acompanhar visualmente todo o fluxo do piloto — simulador, criação da
+proposta e validação dos dados refletidos no SCCI — execute:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:pilot -- --headed
+```
+
+Os argumentos escritos depois de `--` são encaminhados diretamente ao
+Playwright. O mesmo padrão aceita, por exemplo, `--debug`.
+
+O piloto abre primeiro o simulador, cria o slot `Playwright CANC`, captura o
+protocolo e somente então autentica na EsteiraHT para validar no SCCI os dados
+pessoais, contato e simulação. Após a validação, essa primeira operação deve ser
+movida externamente para o estado Cancelada e confirmada com
+`npm run pw:provision:mark-ready -- CANCELED`.
+
+Após o piloto aprovado, um slot pode ser criado isoladamente:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:create -- DEFAULT
+npm run pw:provision:status
+```
+
+Para criar e validar visualmente um slot oficial específico:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:create -- DEFAULT --headed
+```
+
+Para executar sequencialmente a quantidade configurada:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:create-batch
+```
+
+O lote é fail-fast: na primeira rejeição ou falha ele para e mantém o registro
+dos slots já processados. Uma nova execução reutiliza protocolos existentes em
+vez de criar propostas duplicadas. Dos 15 papéis, 14 são criados pelo simulador.
+`TIMELINE_DOCUMENTS` é ignorado deliberadamente porque precisa compartilhar o
+CPF de `DEFAULT` para validar várias propostas no mesmo login.
+
+Depois de criar manualmente a segunda proposta com o CPF exibido para
+`Playwright BASE`, use o nome `Playwright BASE 02`, registre sua operação e
+avance-a para Documentos:
+
+```bash
+npm run pw:provision:register-manual -- TIMELINE_DOCUMENTS 000000000
+npm run pw:provision:mark-ready -- TIMELINE_DOCUMENTS
+```
+
+Propostas que exigem estado externo — cancelada, expirada, crédito ou
+documentos — devem ser preparadas no SCCI/Admin e somente então confirmadas no
+registro. O comando não altera o SCCI; ele declara que o responsável verificou
+a pré-condição:
+
+```bash
+npm run pw:provision:mark-ready -- CANCELED
+```
+
+Quando os 14 slots oficiais estiverem prontos, confirme no perfil estático
+`PORTAL_MASS_DEFAULT_PHASE` e `PORTAL_MASS_DEFAULT_INTEREST_TYPE` observados na
+massa `DEFAULT` e publique o overlay:
+
+```bash
+npm run pw:provision:publish
+npm run config:check
+```
+
+`config:check` bloqueia a suíte completa no perfil `esteira-ht` enquanto o
+overlay não estiver com `PORTAL_MASS_BATCH_STATUS=ready`. O slot `RESERVE`
+existe apenas para reposição e não é publicado como massa oficial.
+Um lote menor que 14 pode ser usado em validações focadas, mas não publica a
+configuração completa porque faltariam aliases obrigatórios para `pw:test:all`.
 
 ### Massas funcionais
 

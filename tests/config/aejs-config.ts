@@ -51,7 +51,10 @@ export function loadAejsRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Aej
 
   const local = localConfig.aejsConnect ?? {};
   const rawBaseUrl = env.AEJS_URL?.trim() || local.baseUrl?.trim() || "";
-  const path = env.AEJS_PATH?.trim() || local.path?.trim() || "";
+  const path =
+    env.AEJS_PATH !== undefined
+      ? env.AEJS_PATH.trim()
+      : (local.path?.trim() ?? "");
   const explicitPlatformAccess = env.AEJS_USE_PLATFORM_ACCESS?.trim();
   const configuredPlatformAccess = explicitPlatformAccess
     ? parseBoolean(explicitPlatformAccess, "AEJS_USE_PLATFORM_ACCESS")

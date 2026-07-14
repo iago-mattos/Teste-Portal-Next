@@ -37,8 +37,7 @@ export class PortalSimulatorPage {
       level: 1,
     });
     this.startSimulationButton = page.getByRole("button", {
-      name: "Realizar nova simulacao",
-      exact: true,
+      name: /Realizar nova simula[cç][aã]o/i,
     });
     this.simulationDataHeading = page.getByRole("heading", {
       name: "Dados da simulacao",
@@ -182,7 +181,19 @@ export class PortalSimulatorPage {
       name: new RegExp(`^${escapeRegExp(name)}\\b`),
     });
     await expect(insurer).toHaveCount(1);
-    await insurer.click();
+
+    const labelledBy = await insurer.getAttribute("aria-labelledby");
+    if (!labelledBy) {
+      throw new Error(
+        `A seguradora ${name} nao informou o card associado via aria-labelledby.`,
+      );
+    }
+
+    const insurerCard = this.insurersGroup.locator(
+      `[id=${JSON.stringify(labelledBy)}]`,
+    );
+    await expect(insurerCard).toHaveCount(1);
+    await insurerCard.click();
     await expect(insurer).toBeChecked();
   }
 
@@ -218,6 +229,59 @@ export class PortalSimulatorPage {
     await this.nameInput.fill(applicant.name);
     await this.emailInput.fill(applicant.email);
     await this.mobileInput.fill(applicant.mobileDigits);
+  }
+
+  async submitProposal(): Promise<string> {
+    const requestSubmissionButton = this.page.getByRole("button", {
+      name: "Enviar Proposta",
+      exact: true,
+    });
+    await expect(requestSubmissionButton).toHaveCount(1);
+    await requestSubmissionButton.click();
+
+    const confirmationDialog = this.page.getByRole("alertdialog", {
+      name: "Confirmar envio",
+      exact: true,
+    });
+    await expect(confirmationDialog).toBeVisible();
+
+    const confirmButton = confirmationDialog.getByRole("button", {
+      name: "Enviar",
+      exact: true,
+    });
+    await expect(confirmButton).toHaveCount(1);
+    await confirmButton.click();
+
+    const successMessage = this.page.getByText(
+      "Tudo certo! Enviamos o link de acesso.",
+      { exact: true },
+    );
+    const duplicateProposalAlert = this.page.getByRole("alert").filter({
+      hasText: "existe uma proposta cadastrada para este mesmo CPF",
+    });
+
+    await expect(successMessage.or(duplicateProposalAlert)).toBeVisible({
+      timeout: 60_000,
+    });
+
+    if (await duplicateProposalAlert.isVisible()) {
+      const message = (await duplicateProposalAlert.textContent())?.trim();
+      throw new Error(
+        `O Portal recusou a criação da proposta: ${message ?? "CPF com proposta em análise."}`,
+      );
+    }
+
+    const protocolText = this.page.getByText(/^Protocolo:\s*\d+$/);
+    await expect(protocolText).toHaveCount(1);
+    await expect(protocolText).toBeVisible();
+
+    const value = await protocolText.textContent();
+    const protocol = /Protocolo:\s*(\d+)/.exec(value ?? "")?.[1];
+    if (!protocol) {
+      throw new Error("O Portal concluiu o envio sem apresentar um protocolo válido.");
+    }
+
+    return protocol;
   }
 
   private async clickUniqueOption(name: string): Promise<void> {

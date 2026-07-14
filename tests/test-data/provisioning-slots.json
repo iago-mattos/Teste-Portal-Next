@@ -1,0 +1,153 @@
+[
+  {
+    "id": "CANCELED",
+    "sequence": 1,
+    "applicantName": "Playwright CANC",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_CANCELED",
+    "purpose": "Validar proposta cancelada e indisponível para cadastro.",
+    "desiredState": "Cancelada",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "DEFAULT",
+    "sequence": 2,
+    "applicantName": "Playwright BASE",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_DEFAULT",
+    "purpose": "Massa principal dos testes funcionais e do contrato visual.",
+    "desiredState": "Cadastro",
+    "stateOwner": "provisioner"
+  },
+  {
+    "id": "EXPIRED",
+    "sequence": 3,
+    "applicantName": "Playwright EXP30",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_EXPIRED",
+    "purpose": "Validar expiração visível ocorrida há no máximo trinta dias.",
+    "desiredState": "Expirada até 30 dias",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "CREDIT_REJECTED",
+    "sequence": 4,
+    "applicantName": "Playwright REPROV",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_CREDIT_REJECTED",
+    "purpose": "Validar proposta reprovada pela mesa de crédito.",
+    "desiredState": "Crédito Reprovado",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "CREDIT_APPROVED",
+    "sequence": 5,
+    "applicantName": "Playwright APROV",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_CREDIT_APPROVED",
+    "purpose": "Validar proposta aprovada e avançada após o cadastro.",
+    "desiredState": "Crédito Aprovado",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "EXPIRED_OVER_30_DAYS",
+    "sequence": 6,
+    "applicantName": "Playwright EXP31",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS",
+    "purpose": "Validar que proposta expirada há mais de trinta dias não aparece.",
+    "desiredState": "Expirada há mais de 30 dias",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "TIMELINE_REGISTRATION",
+    "sequence": 7,
+    "applicantName": "Playwright CAD",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_TIMELINE_CADASTRO",
+    "purpose": "Abrir a jornada de cadastro pela timeline.",
+    "desiredState": "Cadastro",
+    "stateOwner": "provisioner"
+  },
+  {
+    "id": "TIMELINE_DOCUMENTS",
+    "sequence": 8,
+    "applicantName": "Playwright BASE 02",
+    "creationMode": "manual-shared",
+    "sharedCpfWith": "DEFAULT",
+    "environmentKey": "PORTAL_PROPOSAL_TIMELINE_DOCUMENTS",
+    "purpose": "Abrir a jornada de documentos pela timeline.",
+    "desiredState": "Documentos",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "INTEGRATION_PJ",
+    "sequence": 9,
+    "applicantName": "Playwright PJ",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_PJ_OPERATION",
+    "purpose": "Preparação e reflexão SCCI do cenário com garantidor PJ.",
+    "desiredState": "Cadastro disponível para preparação PJ",
+    "stateOwner": "existing-integration-test"
+  },
+  {
+    "id": "INTEGRATION_PF",
+    "sequence": 10,
+    "applicantName": "Playwright PF",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_PF_OPERATION",
+    "purpose": "Preparação e reflexão SCCI do cenário com garantidor PF.",
+    "desiredState": "Cadastro disponível para preparação PF",
+    "stateOwner": "existing-integration-test"
+  },
+  {
+    "id": "INTEGRATION_PAID_OFF",
+    "sequence": 11,
+    "applicantName": "Playwright QUIT",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_PAID_OFF_OPERATION",
+    "purpose": "Preparação e reflexão SCCI do cenário com imóvel quitado.",
+    "desiredState": "Cadastro disponível para preparação sem garantidor",
+    "stateOwner": "existing-integration-test"
+  },
+  {
+    "id": "INTEGRATION_WORKFLOW",
+    "sequence": 12,
+    "applicantName": "Playwright FLOW",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_WORKFLOW_OPERATION",
+    "purpose": "Validar preparação, documentos e avanço do workflow.",
+    "desiredState": "Cadastro disponível para preparação do workflow",
+    "stateOwner": "existing-integration-test"
+  },
+  {
+    "id": "DOCUMENT_PERSISTENCE",
+    "sequence": 13,
+    "applicantName": "Playwright DOCOK",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION",
+    "purpose": "Enviar todos os documentos e validar sua reflexão no SCCI.",
+    "desiredState": "Documentos",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "DOCUMENT_SIZE",
+    "sequence": 14,
+    "applicantName": "Playwright DOCMAX",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION",
+    "purpose": "Validar rejeição de documentos acima de dez megabytes.",
+    "desiredState": "Documentos",
+    "stateOwner": "external-preparation"
+  },
+  {
+    "id": "RESERVE",
+    "sequence": 15,
+    "applicantName": "Playwright RES",
+    "creationMode": "simulator",
+    "environmentKey": "PORTAL_PROPOSAL_RESERVE",
+    "purpose": "Reposição controlada de uma massa consumida ou inválida.",
+    "desiredState": "Cadastro",
+    "stateOwner": "provisioner"
+  }
+]
