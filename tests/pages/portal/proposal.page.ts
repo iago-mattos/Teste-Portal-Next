@@ -34,7 +34,7 @@ export class ProposalPage {
   }
 
   async waitUntilReady(): Promise<void> {
-    await expect(this.heading).toBeVisible();
+    await expect(this.heading).toBeVisible({ timeout: 30_000 });
     await expect(this.tabs.root).toBeVisible();
   }
 
@@ -52,6 +52,26 @@ export class ProposalPage {
 
   getVisibleSearchableCombobox(fieldName: string): SearchableComboboxComponent {
     return new SearchableComboboxComponent(this.page, fieldName, true);
+  }
+
+  async selectVisibleOption(fieldName: string, label: string): Promise<void> {
+    const field = this.getVisibleFieldByName(fieldName);
+    await expect(field).toBeVisible();
+    await expect(field).toBeEnabled();
+
+    if ((await field.evaluate((element) => element.tagName)) === "SELECT") {
+      const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const option = field
+        .locator("option")
+        .filter({ hasText: new RegExp(`^${escapedLabel}$`, "i") });
+      await expect(option, `Opcao ${label} deve existir`).toHaveCount(1);
+      const value = await option.getAttribute("value");
+      expect(value).not.toBeNull();
+      await field.selectOption(value as string);
+      return;
+    }
+
+    await this.getVisibleSearchableCombobox(fieldName).selectOption(label);
   }
 
   getDialog(name?: string | RegExp): DialogComponent {

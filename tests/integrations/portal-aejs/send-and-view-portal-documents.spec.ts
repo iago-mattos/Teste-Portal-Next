@@ -6,6 +6,7 @@ import { getIntegrationDocumentScenario } from "../../test-data/integration-data
 const integrationMutation = {
   tag: ["@integration", "@mutation"],
 };
+test.use({ skipPortalSessionBootstrap: true });
 
 interface DocumentSubmissionResult {
   readonly sucesso?: boolean;
@@ -15,8 +16,9 @@ interface DocumentSubmissionResult {
 test(
   "Portal | envia e visualiza todos os documentos da operação dedicada",
   integrationMutation,
-  async ({ proposalsPage, authenticatedPage }) => {
+  async ({ proposalsPage, authenticatedPage, portalSession }) => {
     const scenario = getIntegrationDocumentScenario("INT-DOCUMENT-PERSISTENCE");
+    await portalSession.useOperation(scenario.operationNumber);
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
     let documentCount = 0;
 

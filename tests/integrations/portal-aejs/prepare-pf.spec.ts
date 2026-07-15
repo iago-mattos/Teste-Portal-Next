@@ -8,6 +8,7 @@ import {
 } from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
+test.use({ skipPortalSessionBootstrap: true });
 
 function isProposalTransitionResponse(
   response: Response,
@@ -157,8 +158,9 @@ async function fillPfGuarantor(
 test(
   "Portal → AEJS | prepara e confirma a operação PF descartável",
   integrationMutation,
-  async ({ page, proposalPage }) => {
+  async ({ page, proposalPage, portalSession }) => {
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PF");
+    await portalSession.useOperation(scenario.operationNumber);
     const { applicant, thirdParty, creditPurpose, property, guarantor } =
       scenario.preparation;
 
@@ -255,8 +257,7 @@ test(
     });
 
     await test.step("preenche imóvel de terceiro alienado", async () => {
-      await selectSearchableOption(
-        proposalPage,
+      await proposalPage.selectVisibleOption(
         "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
         property.use,
       );

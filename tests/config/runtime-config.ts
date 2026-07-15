@@ -45,6 +45,7 @@ export interface PortalRuntimeConfig {
   }>;
   readonly testData: Readonly<{
     invalidCpf: string;
+    operationCpfs: Readonly<Record<string, string>>;
     propostaExpiradaId: string;
     propostaExpiradaMais30DiasId: string;
     propostaCanceladaId: string;
@@ -339,6 +340,37 @@ function resolveConfiguredProposalId(
   return env[envKey]?.trim() || fallback.trim();
 }
 
+function resolveOperationCpfs(
+  env: NodeJS.ProcessEnv,
+): Readonly<Record<string, string>> {
+  const raw = env.PORTAL_MASS_OPERATION_CPFS_JSON?.trim();
+  if (!raw) return Object.freeze({});
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("o valor precisa ser um objeto JSON");
+    }
+
+    const entries = Object.entries(parsed).map(([operation, cpf]) => {
+      const normalizedOperation = operation.replace(/\D/g, "");
+      const normalizedCpf = String(cpf).replace(/\D/g, "");
+      if (!normalizedOperation || normalizedCpf.length !== 11) {
+        throw new Error(
+          `mapeamento invalido para a operacao ${operation}`,
+        );
+      }
+      return [normalizedOperation, normalizedCpf] as const;
+    });
+
+    return Object.freeze(Object.fromEntries(entries));
+  } catch (error) {
+    throw new Error("PORTAL_MASS_OPERATION_CPFS_JSON possui JSON invalido.", {
+      cause: error,
+    });
+  }
+}
+
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
@@ -377,6 +409,7 @@ export function loadPortalRuntimeConfig(
     }),
     testData: Object.freeze({
       invalidCpf: resolveInvalidCpf(env, local),
+      operationCpfs: resolveOperationCpfs(env),
       propostaExpiradaId: resolvePropostaExpiradaId(env, local),
       propostaExpiradaMais30DiasId: resolvePropostaExpiradaMais30DiasId(
         env,

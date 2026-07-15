@@ -96,8 +96,11 @@ export default defineConfig({
       workers: 1,
       retries: 0,
       timeout: 15 * 60_000,
-      dependencies: ["setup", "aejs-setup"],
-      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
+      dependencies: ["aejs-setup"],
+      use: {
+        ...desktopChromium,
+        storageState: { cookies: [], origins: [] },
+      },
     },
     {
       name: "simulator-integration",

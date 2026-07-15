@@ -45,9 +45,12 @@ export class AdminAccessPage {
     const cpfInput = this.page.getByLabel("CPF/CNPJ para o link", {
       exact: true,
     });
-    await cpfInput.fill("");
-    await cpfInput.pressSequentially(cpf);
+    const normalizedCpf = cpf.replace(/\D/g, "");
+    await cpfInput.fill(normalizedCpf);
     await cpfInput.blur();
+    await expect
+      .poll(async () => (await cpfInput.inputValue()).replace(/\D/g, ""))
+      .toBe(normalizedCpf);
 
     const generateButton = this.page.getByRole("button", {
       name: "Gerar link",

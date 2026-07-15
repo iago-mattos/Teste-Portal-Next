@@ -49,7 +49,7 @@ function loadAdminConfig(
     url: env.PORTAL_ADMIN_URL?.trim() ?? "",
     username: env.PORTAL_ADMIN_USER ?? "",
     password: env.PORTAL_ADMIN_PASSWORD ?? "",
-    cpf: (env.PORTAL_TEST_CPF ?? fallbackCpf).replace(/\D/g, ""),
+    cpf: fallbackCpf.replace(/\D/g, ""),
   };
   const configuredValues = [admin.url, admin.username, admin.password].filter(
     Boolean,
@@ -80,13 +80,17 @@ function loadAdminConfig(
 
 export function loadPortalAuthConfig(
   env: NodeJS.ProcessEnv = process.env,
+  testCpfOverride?: string,
 ): PortalAuthConfig {
   const local = loadLocalPortalCompatibilityConfig(env);
   const runtime = loadPortalRuntimeConfig(env);
 
   const accessUrl = env.PORTAL_ACCESS_URL?.trim() || local?.accessUrl?.trim();
   const testCpf = (
-    env.PORTAL_TEST_CPF ?? local?.testData?.cpfComPropostas ?? ""
+    testCpfOverride ??
+    env.PORTAL_TEST_CPF ??
+    local?.testData?.cpfComPropostas ??
+    ""
   ).replace(/\D/g, "");
 
   return {

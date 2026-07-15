@@ -5,17 +5,57 @@ import {
   authTest,
   portalSessionExpiredPattern,
   renewPortalSession,
+  restorePortalOperationSession,
 } from "./auth.fixture";
 
 export interface PortalFixtures {
   authenticatedPage: Page;
+  portalSession: PortalSession;
   proposalPage: ProposalPage;
   proposalsPage: ProposalsPage;
 }
 
+export interface PortalSession {
+  useOperation(operationNumber: string): Promise<void>;
+  renewCurrent(): Promise<void>;
+}
+
 export const portalTest = authTest.extend<PortalFixtures>({
+  portalSession: async (
+    { authenticatedContext, portalConfig },
+    use,
+  ) => {
+    let currentCpf: string | undefined;
+
+    const renewCurrent = async (): Promise<void> => {
+      await renewPortalSession(authenticatedContext, portalConfig, {
+        cpf: currentCpf,
+        persist: true,
+      });
+    };
+
+    await use({
+      async useOperation(operationNumber) {
+        const normalizedOperation = operationNumber.replace(/\D/g, "");
+        const cpf = portalConfig.testData.operationCpfs[normalizedOperation];
+        if (!cpf) {
+          throw new Error(
+            `CPF nao configurado para a operacao ${operationNumber}. Publique PORTAL_MASS_OPERATION_CPFS_JSON.`,
+          );
+        }
+        currentCpf = cpf;
+        const restored = await restorePortalOperationSession(
+          authenticatedContext,
+          portalConfig,
+          cpf,
+        );
+        if (!restored) await renewCurrent();
+      },
+      renewCurrent,
+    });
+  },
   authenticatedPage: async (
-    { authenticatedContext, page, portalConfig },
+    { authenticatedContext, page, portalConfig, portalSession },
     use,
   ) => {
     if (page.context() !== authenticatedContext) {
@@ -39,7 +79,7 @@ export const portalTest = authTest.extend<PortalFixtures>({
         // A pagina ainda pode estar sem uma URL navegavel; nesse caso volta à listagem.
       }
 
-      await renewPortalSession(authenticatedContext, portalConfig);
+      await portalSession.renewCurrent();
       await page.goto(returnUrl, {
         waitUntil: "domcontentloaded",
       });

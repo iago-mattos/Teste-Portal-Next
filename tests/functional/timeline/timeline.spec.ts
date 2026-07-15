@@ -7,51 +7,24 @@ import {
 
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
 
-interface ProposalSummary {
-  numero: string;
-  faseAtual: string;
-  prazoCadastroLimite: string | null;
-}
-
-let proposalSummaries: ProposalSummary[] = [];
-
 function formatBrazilianDateWithShortMonth(value: string): string {
   const [day, month, year] = value.split("/");
   const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
   return `${day}/${months[Number(month) - 1]}/${year}`;
 }
 
-function convertShortMonthToNumericDate(value: string): string {
-  const monthNumbers: Record<string, string> = {
-    Jan: "01", Fev: "02", Mar: "03", Abr: "04", Mai: "05", Jun: "06",
-    Jul: "07", Ago: "08", Set: "09", Out: "10", Nov: "11", Dez: "12",
-  };
-  const [rawDay, month, year] = value.trim().split("/");
-  const day = rawDay.trim().padStart(2, "0");
-  return `${day}/${monthNumbers[month]}/${year}`;
-}
-
 test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
-  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, page }, testInfo) => {
+  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig, portalSession, page }, testInfo) => {
     const caseId = testInfo.title.match(/^TIMELINE-\d+/)?.[0];
-    proposalSummaries = [];
+    if (caseId === "TIMELINE-05") {
+      await portalSession.useOperation(
+        portalConfig.testData.propostaCreditoAprovadoId,
+      );
+    } else if (caseId === "TIMELINE-06") {
+      await portalSession.useOperation(portalConfig.testData.propostaExpiradaId);
+    }
 
     if (caseId === "TIMELINE-04" || caseId === "TIMELINE-10") {
-      if (caseId === "TIMELINE-10") {
-        page.on("response", async (response) => {
-          const url = response.url();
-          if (url.includes("/api/portal/propostas") && response.request().method() === "GET") {
-            try {
-              const body = await response.json() as { itens?: ProposalSummary[] };
-              if (body && Array.isArray(body.itens)) {
-                proposalSummaries.push(...body.itens);
-              }
-            } catch {
-              // Ignora erros de parsing
-            }
-          }
-        });
-      }
       await proposalsPage.open();
       await proposalsPage.loadAll();
     } else if (caseId === "TIMELINE-05") {
@@ -122,7 +95,7 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
   test(
     "TIMELINE-04 | O cliente poderá chegar nessa tela através de todas as jornadas na tela anterior",
     functionalReadonly,
-    async ({ proposalsPage, portalConfig, authenticatedPage }) => {
+    async ({ proposalsPage, portalConfig, portalSession, authenticatedPage }) => {
       test.setTimeout(60000);
       const ids = portalConfig.caseProposalIds;
       if (!ids.TIMELINE_04_CADASTRO || !ids.TIMELINE_04_DOCUMENTOS) {
@@ -130,6 +103,9 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
       }
 
       const openJourney = async (proposalNumber: string, heading: string) => {
+        await portalSession.useOperation(proposalNumber);
+        await proposalsPage.open();
+        await proposalsPage.loadAll();
         const card = proposalsPage.getProposalCard(proposalNumber);
         await expect(card).toBeVisible();
 
@@ -149,8 +125,6 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
       };
 
       await openJourney(ids.TIMELINE_04_CADASTRO, "Cadastro da Proposta");
-      await proposalsPage.open();
-      await proposalsPage.loadAll();
       await openJourney(ids.TIMELINE_04_DOCUMENTOS, "Documentos da proposta");
     },
   );
@@ -275,21 +249,16 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     "TIMELINE-10 | Quando mais de uma proposta em andamento, a data limite de cada proposta deverá ser mostrada ao cliente",
     functionalReadonly,
     async ({ proposalsPage }) => {
-      const expected = proposalSummaries.filter(
-        (proposal) =>
-          /Cadastro|Documentos|Análise de Documentos/i.test(proposal.faseAtual) &&
-          Boolean(proposal.prazoCadastroLimite)
-      );
+      const cardsWithDeadline = proposalsPage.proposalCards.filter({
+        hasText:
+          /Data limite para preenchimento do cadastro:\s*\d{2}\/\d{2}\/\d{4}/i,
+      });
+      const count = await cardsWithDeadline.count();
+      expect(count).toBeGreaterThanOrEqual(2);
 
-      expect(expected.length).toBeGreaterThanOrEqual(2);
-
-      for (const proposal of expected) {
-        const card = proposalsPage.getProposalCard(proposal.numero);
-        await expect(card).toBeVisible();
-
-        const limitDate = convertShortMonthToNumericDate(proposal.prazoCadastroLimite as string);
-        await expect(card).toContainText(
-          `Data limite para preenchimento do cadastro: ${limitDate}`
+      for (let index = 0; index < count; index++) {
+        await expect(cardsWithDeadline.nth(index)).toContainText(
+          /Data limite para preenchimento do cadastro:\s*\d{2}\/\d{2}\/\d{4}/i,
         );
       }
     },

@@ -9,6 +9,7 @@ import {
 } from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
+test.use({ skipPortalSessionBootstrap: true });
 
 interface DocumentSubmissionResult {
   readonly sucesso?: boolean;
@@ -81,10 +82,11 @@ async function saveAndAdvance(
 test(
   "Portal → AEJS | prepara e confirma a operação de workflow",
   integrationMutation,
-  async ({ page, proposalPage }) => {
+  async ({ page, proposalPage, portalSession }) => {
     const scenario = getIntegrationPreparationScenario(
       "INT-CONFIRM-WORKFLOW",
     );
+    await portalSession.useOperation(scenario.operationNumber);
     const { applicant, creditPurpose, property } = scenario.preparation;
 
     await test.step("abre a proposta descartável de workflow", async () => {
@@ -173,8 +175,7 @@ test(
     });
 
     await test.step("preenche o imóvel sem garantidor ou interveniente", async () => {
-      await selectSearchableOption(
-        proposalPage,
+      await proposalPage.selectVisibleOption(
         "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
         property.use,
       );
@@ -256,8 +257,9 @@ test(
 test(
   "Portal | envia documentos e avança o workflow para validação cadastral",
   integrationMutation,
-  async ({ proposalsPage, authenticatedPage }) => {
+  async ({ proposalsPage, authenticatedPage, portalSession }) => {
     const scenario = getIntegrationDocumentScenario("INT-CONFIRM-WORKFLOW");
+    await portalSession.useOperation(scenario.operationNumber);
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
     let documentCount = 0;
 

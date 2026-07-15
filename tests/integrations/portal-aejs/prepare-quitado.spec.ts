@@ -4,6 +4,7 @@ import type { ProposalPage } from "../../pages/portal/proposal.page";
 import { getIntegrationPreparationScenario } from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
+test.use({ skipPortalSessionBootstrap: true });
 
 function isProposalTransitionResponse(
   response: Response,
@@ -69,10 +70,11 @@ async function saveAndAdvance(
 test(
   "Portal → AEJS | prepara e confirma a operação com imóvel quitado",
   integrationMutation,
-  async ({ page, proposalPage }) => {
+  async ({ page, proposalPage, portalSession }) => {
     const scenario = getIntegrationPreparationScenario(
       "INT-CONFIRM-QUITADO",
     );
+    await portalSession.useOperation(scenario.operationNumber);
     const { applicant, creditPurpose, property } = scenario.preparation;
 
     await test.step("abre a proposta descartável", async () => {
@@ -161,8 +163,7 @@ test(
     });
 
     await test.step("preenche imóvel quitado", async () => {
-      await selectSearchableOption(
-        proposalPage,
+      await proposalPage.selectVisibleOption(
         "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
         property.use,
       );

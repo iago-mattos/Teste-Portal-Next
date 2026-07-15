@@ -559,6 +559,45 @@ export interface ResolvedWorkflowIntegrationPreparationScenario
   readonly preparation: WorkflowIntegrationPreparationScenario;
 }
 
+function resolvePreparationForEnvironment(
+  preparation: IntegrationPreparationScenario,
+  env: NodeJS.ProcessEnv,
+): IntegrationPreparationScenario {
+  const professionalActivity =
+    env.PORTAL_INTEGRATION_PROFESSIONAL_ACTIVITY?.trim()
+    || preparation.applicant.professionalActivity;
+  const configuredHouseUse = env.PORTAL_INTEGRATION_HOUSE_USE?.trim();
+  const configuredApartmentUse = env.PORTAL_INTEGRATION_APARTMENT_USE?.trim();
+  const propertyUse = preparation.property.use.toLowerCase().includes("apartamento")
+    ? configuredApartmentUse || preparation.property.use
+    : configuredHouseUse || preparation.property.use;
+  const applicant = { ...preparation.applicant, professionalActivity };
+
+  switch (preparation.profile) {
+    case "PJ":
+      return {
+        ...preparation,
+        applicant,
+        property: { ...preparation.property, use: propertyUse },
+        spouse: { ...preparation.spouse, professionalActivity },
+      };
+    case "PF":
+      return {
+        ...preparation,
+        applicant,
+        property: { ...preparation.property, use: propertyUse },
+        thirdParty: { ...preparation.thirdParty, professionalActivity },
+      };
+    case "QUITADO":
+    case "WORKFLOW":
+      return {
+        ...preparation,
+        applicant,
+        property: { ...preparation.property, use: propertyUse },
+      };
+  }
+}
+
 function resolveIntegrationOperation(
   caseId: IntegrationCaseId,
   env: NodeJS.ProcessEnv,
@@ -716,5 +755,8 @@ export function getIntegrationPreparationScenario(
     );
   }
 
-  return { ...scenario, preparation };
+  return {
+    ...scenario,
+    preparation: resolvePreparationForEnvironment(preparation, env),
+  };
 }

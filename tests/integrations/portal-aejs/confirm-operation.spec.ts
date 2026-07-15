@@ -5,8 +5,10 @@ import { getIntegrationScenario } from "../../test-data/integration-data";
 test(
   "Portal → AEJS | abre no AEJS a operação existente no Portal",
   { tag: ["@integration", "@readonly"] },
-  async ({ aejsPage, proposalsPage }) => {
+  async ({ aejsPage, proposalsPage, portalSession }) => {
     const scenario = getIntegrationScenario("INT-CONFIRM-PJ");
+
+    await portalSession.useOperation(scenario.operationNumber);
 
     await proposalsPage.open();
     await proposalsPage.loadAll();

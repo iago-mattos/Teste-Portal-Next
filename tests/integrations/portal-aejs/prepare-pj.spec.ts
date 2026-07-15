@@ -9,6 +9,7 @@ import {
 } from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
+test.use({ skipPortalSessionBootstrap: true });
 
 function isProposalTransitionResponse(
   response: Response,
@@ -158,8 +159,9 @@ async function fillPjGuarantor(
 test(
   "Portal → AEJS | prepara e confirma a operação PJ descartável",
   integrationMutation,
-  async ({ page, proposalPage }) => {
+  async ({ page, proposalPage, portalSession }) => {
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
+    await portalSession.useOperation(scenario.operationNumber);
     const { applicant, spouse, creditPurpose, property, guarantor } = scenario.preparation;
 
     await test.step("abre a proposta descartável", async () => {
@@ -217,7 +219,10 @@ test(
     });
 
     await test.step("preenche imóvel", async () => {
-      await selectSearchableOption(proposalPage, "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL", property.use);
+      await proposalPage.selectVisibleOption(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+        property.use,
+      );
       await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL").selectOption(property.type);
       await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").selectOption(property.condition);
       await fillField(proposalPage, "OPERACAO_CREDITO.VA_INTERVENIENTE", property.outstandingBalance);

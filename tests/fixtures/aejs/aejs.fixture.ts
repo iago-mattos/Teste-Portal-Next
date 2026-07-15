@@ -56,6 +56,7 @@ async function authenticateAejsPage(
 }
 
 export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>({
+  skipPortalSessionBootstrap: true,
   aejsConfig: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {

@@ -17,7 +17,7 @@
     "config:check:portal": "node scripts/check-environment-config.mjs portal",
     "pw:test": "npm run config:check && playwright test",
     "pw:test:safe": "npm run config:check:portal && playwright test --project=smoke --project=functional-readonly",
-    "pw:test:all": "npm run config:check && node scripts/require-mutation-opt-in.mjs && playwright test",
+    "pw:test:all": "npm run config:check && node scripts/require-mutation-opt-in.mjs && node scripts/run-playwright-all.mjs",
     "pw:test:smoke": "npm run config:check:portal && playwright test --project=smoke",
     "pw:test:functional": "npm run config:check:portal && node scripts/require-mutation-opt-in.mjs && playwright test --project=functional-readonly --project=functional-mutation",
     "pw:test:functional:readonly": "npm run config:check:portal && playwright test --project=functional-readonly",

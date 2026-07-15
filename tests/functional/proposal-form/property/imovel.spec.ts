@@ -88,11 +88,11 @@ test.describe("Cadastro da Operação: Imóvel", () => {
         "Flat",
         "Terreno em condominio",
       ];
-      const combobox = proposalPage.getSearchableCombobox("IMOVEL_OPERACAO.IN_USO_DO_IMOVEL");
-      await combobox.open();
-
-      const options = combobox.options;
-      await expect(options.first()).toBeVisible();
+      const select = proposalPage.getFieldByName(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+      );
+      const options = select.locator("option:not([value=''])");
+      await expect(select).toBeVisible();
 
       const count = await options.count();
       const optionTexts: string[] = [];
@@ -121,8 +121,10 @@ test.describe("Cadastro da Operação: Imóvel", () => {
     "IMOVEL-05 | Se marcado Casa em condomínio o campo tipo do imóvel deverá ser residencial por default e não habilita para alteração",
     functionalMutation,
     async ({ proposalPage }) => {
-      const combobox = proposalPage.getSearchableCombobox("IMOVEL_OPERACAO.IN_USO_DO_IMOVEL");
-      await combobox.selectOption("Casa em condomínio");
+      await proposalPage.selectVisibleOption(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+        "Casa em condomínio",
+      );
 
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL");
       await expect(select).toBeDisabled();
@@ -130,7 +132,10 @@ test.describe("Cadastro da Operação: Imóvel", () => {
       const selectedText = await select.evaluate((el: HTMLSelectElement) => el.options[el.selectedIndex]?.text);
       expect(selectedText?.trim()).toBe("Residencial");
 
-      await combobox.selectOption("Não Informado");
+      await proposalPage.selectVisibleOption(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+        "Não Informado",
+      );
     },
   );
 
@@ -146,18 +151,23 @@ test.describe("Cadastro da Operação: Imóvel", () => {
         "Prédio Comercial Misto",
         "Laje corporativa",
       ];
-      const combobox = proposalPage.getSearchableCombobox("IMOVEL_OPERACAO.IN_USO_DO_IMOVEL");
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL");
 
       for (const usage of usages) {
-        await combobox.selectOption(usage);
+        await proposalPage.selectVisibleOption(
+          "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+          usage,
+        );
         await expect(select).toBeDisabled();
 
         const selectedText = await select.evaluate((el: HTMLSelectElement) => el.options[el.selectedIndex]?.text);
         expect(selectedText?.trim()).toBe("Comercial");
       }
 
-      await combobox.selectOption("Não Informado");
+      await proposalPage.selectVisibleOption(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+        "Não Informado",
+      );
     },
   );
 
@@ -172,11 +182,13 @@ test.describe("Cadastro da Operação: Imóvel", () => {
         "Flat",
         "Terreno em condomínio",
       ];
-      const combobox = proposalPage.getSearchableCombobox("IMOVEL_OPERACAO.IN_USO_DO_IMOVEL");
       const select = proposalPage.getFieldByName("IMOVEL_OPERACAO.IN_TIPO_IMOVEL");
 
       for (const usage of usages) {
-        await combobox.selectOption(usage);
+        await proposalPage.selectVisibleOption(
+          "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+          usage,
+        );
         await expect(select).not.toBeDisabled();
 
         const id = await select.getAttribute("id");
@@ -185,7 +197,10 @@ test.describe("Cadastro da Operação: Imóvel", () => {
         await expect(label).toContainText("*");
       }
 
-      await combobox.selectOption("Não Informado");
+      await proposalPage.selectVisibleOption(
+        "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
+        "Não Informado",
+      );
     },
   );
 

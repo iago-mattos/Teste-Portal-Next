@@ -10,7 +10,20 @@ import { normalizeWhitespace } from "../../helpers/strings";
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
 
 test.describe("Minhas Propostas", () => {
-  test.beforeEach(async ({ proposalsPage }) => {
+  test.beforeEach(async ({ proposalsPage, portalConfig, portalSession }, testInfo) => {
+    const caseId = testInfo.title.match(/^PROP-\d+/)?.[0];
+    const operationByCase: Readonly<Record<string, string>> = {
+      "PROP-07": portalConfig.testData.propostaExpiradaId,
+      "PROP-08": portalConfig.testData.propostaCreditoReprovadoId,
+      "PROP-09": portalConfig.testData.propostaCreditoAprovadoId,
+      "PROP-10": portalConfig.testData.propostaExpiradaMais30DiasId,
+      "PROP-11": portalConfig.testData.propostaExpiradaId,
+      "PROP-12": portalConfig.testData.propostaCanceladaId,
+      "PROP-17": portalConfig.testData.propostaCreditoAprovadoId,
+    };
+    const operationNumber = caseId ? operationByCase[caseId] : undefined;
+    if (operationNumber) await portalSession.useOperation(operationNumber);
+
     await proposalsPage.open();
     await proposalsPage.loadAll();
   });
@@ -104,7 +117,7 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-05 | O preenchimento será dividido em duas tarefas “Preenchimento Cadastral” e “Preenchimento de Documentos”, onde a fase de preenchimento de documentos depende do término de preenchimento de cadastro",
     functionalReadonly,
-    async ({ proposalsPage, portalConfig, authenticatedPage }) => {
+    async ({ proposalsPage, portalConfig, portalSession, authenticatedPage }) => {
       test.setTimeout(60000);
       const ids = portalConfig.caseProposalIds;
       if (!ids.TIMELINE_04_CADASTRO || !ids.TIMELINE_04_DOCUMENTOS) {
@@ -112,6 +125,9 @@ test.describe("Minhas Propostas", () => {
       }
 
       const openJourney = async (proposalNumber: string, heading: string) => {
+        await portalSession.useOperation(proposalNumber);
+        await proposalsPage.open();
+        await proposalsPage.loadAll();
         const card = proposalsPage.getProposalCard(proposalNumber);
         await expect(card).toBeVisible();
 
@@ -131,8 +147,6 @@ test.describe("Minhas Propostas", () => {
       };
 
       await openJourney(ids.TIMELINE_04_CADASTRO, "Cadastro da Proposta");
-      await proposalsPage.open();
-      await proposalsPage.loadAll();
       await openJourney(ids.TIMELINE_04_DOCUMENTOS, "Documentos da proposta");
     },
   );

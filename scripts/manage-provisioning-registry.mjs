@@ -249,7 +249,7 @@ async function publishMasses() {
     }),
   );
   lines.push(
-    `PORTAL_MASS_OPERATION_CPFS_JSON=${quote(JSON.stringify(operationCpfs))}`,
+    `PORTAL_MASS_OPERATION_CPFS_JSON='${JSON.stringify(operationCpfs)}'`,
   );
 
   const financial = defaultEntry.scenario.financial;

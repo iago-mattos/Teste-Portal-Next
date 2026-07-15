@@ -89,6 +89,9 @@ versione os perfis, credenciais, CPFs, magic links, cookies ou tokens.
 - `AEJS_USE_PLATFORM_ACCESS`, `AEJS_PATH`: modalidade de login do SCCI/AEJS;
 - `AEJS_WORKFLOW_*`: códigos, títulos e status do workflow no SCCI/AEJS;
 - `PORTAL_INTEGRATION_*_OPERATION`: operações exclusivas das integrações;
+- `PORTAL_INTEGRATION_PROFESSIONAL_ACTIVITY`, `PORTAL_INTEGRATION_HOUSE_USE` e
+  `PORTAL_INTEGRATION_APARTMENT_USE`: rótulos de domínio usados na preparação
+  quando diferirem entre C6 e Esteira Digital;
 - `ALLOW_TEST_MUTATION`: autorização explícita para testes que alteram estado;
 - `ALLOW_REACT_418_QUARANTINE`: exceção diagnóstica temporária do frontend.
 
@@ -293,9 +296,11 @@ Para executar toda a suíte com navegador visível:
 npm run pw:test:all -- --headed
 ```
 
-O comando `pw:test:all` executa setup, smoke, funcionais e integrações. Não o
-utilize como verificação cotidiana quando as massas mutáveis não puderem ser
-restauradas.
+O comando `pw:test:all` executa os blocos na ordem funcional: Portal, simulador,
+preparações mutáveis Portal → SCCI e validações read-only no SCCI. Mesmo que um
+bloco falhe, os blocos seguintes são coletados e o relatório consolidado fica
+em `playwright-report/index.html`. Não o utilize como verificação cotidiana
+quando as massas mutáveis não puderem ser restauradas.
 
 ### Arquivo ou caso isolado
 

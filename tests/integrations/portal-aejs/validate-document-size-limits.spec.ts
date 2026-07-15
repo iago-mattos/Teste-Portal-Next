@@ -3,11 +3,14 @@ import { expect, test } from "../../fixtures/test";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import { getIntegrationDocumentScenario } from "../../test-data/integration-data";
 
+test.use({ skipPortalSessionBootstrap: true });
+
 test(
   "Portal | bloqueia arquivos maiores que 10 MB em todos os documentos",
   { tag: ["@integration", "@readonly"] },
-  async ({ proposalsPage, authenticatedPage }) => {
+  async ({ proposalsPage, authenticatedPage, portalSession }) => {
     const scenario = getIntegrationDocumentScenario("INT-DOCUMENT-SIZE");
+    await portalSession.useOperation(scenario.operationNumber);
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
 
     await proposalsPage.open();
