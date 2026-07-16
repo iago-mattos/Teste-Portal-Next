@@ -84,7 +84,8 @@ export class ProposalsPage {
 
     const openButton = card
       .getByRole("button", { name: "Completar cadastro", exact: true })
-      .or(card.getByRole("button", { name: "Acompanhar proposta", exact: true }));
+      .or(card.getByRole("button", { name: "Acompanhar proposta", exact: true }))
+      .or(card.getByRole("button", { name: "Enviar documentos", exact: true }));
     await expect(openButton).toHaveCount(1);
 
     await Promise.all([

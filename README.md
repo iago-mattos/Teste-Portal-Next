@@ -10,7 +10,8 @@ Playwright.
 ## Estado atual
 
 - 108/108 casos funcionais migrados para Playwright;
-- 129 testes coletados em 32 arquivos, incluindo setup, smoke e integrações;
+- 162 testes regulares coletados em 43 arquivos, incluindo setup, smoke, Core e integrações;
+- batch documental consumível isolado da coleta regular e de `pw:test:all`;
 - integrações Portal → SCCI/AEJS disponíveis com massas dedicadas;
 - execução protegida por tags `@readonly` e `@mutation`;
 - Cypress preservado, mas fora do fluxo principal e da CI.
@@ -218,6 +219,43 @@ existe apenas para reposição e não é publicado como massa oficial.
 Um lote menor que 14 pode ser usado em validações focadas, mas não publica a
 configuração completa porque faltariam aliases obrigatórios para `pw:test:all`.
 
+### Provisionamento das massas persistentes do Portal Core
+
+As massas de gaps persistentes ficam separadas do lote funcional e são
+configuradas no overlay local do ambiente:
+
+```env
+PORTAL_CORE_DOCUMENT_A_OPERATION=000000000
+PORTAL_CORE_DOCUMENT_B_OPERATION=000000000
+PORTAL_CORE_CAD_A_OPERATION=000000000
+PORTAL_CORE_CAD_B_OPERATION=000000000
+PORTAL_CORE_FINALIZATION_OPERATION=000000000
+```
+
+As cinco operações também devem constar em
+`PORTAL_MASS_OPERATION_CPFS_JSON`. O provisionador valida que DOC A/B
+compartilham uma identidade, CAD A/B compartilham outra e FINAL usa uma terceira,
+sem publicar os CPFs nos relatórios.
+
+Execute uma única vez, somente depois de criar as cinco propostas e preencher
+no Admin os dados de origem que não são editáveis no Portal:
+
+```bash
+PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:provision:core-masses
+```
+
+O comando é propositalmente separado de `pw:test:all` e executa com um worker:
+
+- DOC A/B são preenchidas, confirmadas e verificadas em Documentos com ao menos
+  dois slots vazios;
+- FINAL é preenchida e salva, mas permanece antes da confirmação final;
+- CAD A/B permanecem em Cadastro e só são classificadas como restauráveis após
+  persistir um marcador temporário, restaurar o original e comprovar ambos por
+  nova leitura.
+
+DOC A/B e FINAL são consumíveis. Não reexecute o provisionamento completo sobre
+essas mesmas operações depois da primeira preparação bem-sucedida.
+
 ### Massas funcionais
 
 | Variável | Estado exigido | Responsabilidade |
@@ -279,6 +317,18 @@ Comandos:
 npm run pw:test:functional:mutation
 npm run pw:test:integration:mutation
 ```
+
+O batch documental Portal Core possui comando isolado e não participa de
+`pw:test:all`:
+
+```bash
+PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:test:core:consumable-documents
+```
+
+Esse comando consome slots reais. Só pode ser usado com um novo par DOC A/B
+qualificado e vazio. As operações já registradas como `CONSUMED` não podem ser
+reutilizadas nem reprovisionadas; consulte
+`PORTAL_CORE_CONSUMABLE_BATCH_PLAN.md` antes de qualquer execução.
 
 ### Suítes completas
 

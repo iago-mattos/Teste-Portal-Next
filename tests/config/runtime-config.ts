@@ -51,6 +51,9 @@ export interface PortalRuntimeConfig {
     propostaCanceladaId: string;
     propostaCreditoReprovadoId: string;
     propostaCreditoAprovadoId: string;
+    corePersistenceOperation: string;
+    coreDocumentOperation: string;
+    coreDocumentMaxSizeBytes: number;
     expectedProposal: Readonly<{
       visibleNumber: string;
       proponentName: string;
@@ -340,6 +343,20 @@ function resolveConfiguredProposalId(
   return env[envKey]?.trim() || fallback.trim();
 }
 
+function resolveOptionalPositiveInteger(
+  env: NodeJS.ProcessEnv,
+  envKey: string,
+): number {
+  const raw = env[envKey]?.trim();
+  if (!raw) return 0;
+
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value <= 0) {
+    throw new Error(`${envKey} precisa ser um inteiro positivo.`);
+  }
+  return value;
+}
+
 function resolveOperationCpfs(
   env: NodeJS.ProcessEnv,
 ): Readonly<Record<string, string>> {
@@ -427,6 +444,18 @@ export function loadPortalRuntimeConfig(
       propostaCreditoAprovadoId: resolveConfiguredProposalId(
         env,
         "PORTAL_PROPOSAL_CREDIT_APPROVED",
+      ),
+      corePersistenceOperation: resolveConfiguredProposalId(
+        env,
+        "PORTAL_CORE_PERSISTENCE_OPERATION",
+      ),
+      coreDocumentOperation: resolveConfiguredProposalId(
+        env,
+        "PORTAL_CORE_DOCUMENT_OPERATION",
+      ),
+      coreDocumentMaxSizeBytes: resolveOptionalPositiveInteger(
+        env,
+        "PORTAL_CORE_DOCUMENT_MAX_SIZE_BYTES",
       ),
       expectedProposal: resolveExpectedProposal(env, local),
     }),

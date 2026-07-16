@@ -16,6 +16,7 @@ const allowedMassKeyPatterns = [
   /^PORTAL_INTEGRATION_/,
   /^PORTAL_EXPECTED_/,
   /^PORTAL_MASS_/,
+  /^PORTAL_CORE_/,
 ] as const;
 
 function getConfiguredKeys(filePath: string): string[] {

@@ -6,6 +6,7 @@ import { resolvePortalBaseUrl } from "./tests/config/runtime-config";
 loadEnvironmentProfile();
 
 const portalBaseUrl = resolvePortalBaseUrl();
+const includeConsumableTests = process.env.PW_INCLUDE_CONSUMABLE === "true";
 const desktopChromium = {
   ...devices["Desktop Chrome"],
   viewport: { width: 1440, height: 900 },
@@ -87,6 +88,35 @@ export default defineConfig({
       workers: 1,
       dependencies: ["setup"],
       use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
+    },
+    {
+      name: "core",
+      testDir: "./tests/core",
+      testMatch: "**/*.spec.ts",
+      testIgnore: [
+        "mobile/**/*.spec.ts",
+        ...(includeConsumableTests ? [] : ["consumable/**/*.spec.ts"]),
+      ],
+      grep: /@core/,
+      workers: 1,
+      retries: 0,
+      timeout: 3 * 60_000,
+      dependencies: ["setup"],
+      use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
+    },
+    {
+      name: "core-mobile",
+      testDir: "./tests/core/mobile",
+      testMatch: "**/*.spec.ts",
+      grep: /@core/,
+      workers: 1,
+      retries: 0,
+      timeout: 3 * 60_000,
+      dependencies: ["setup"],
+      use: {
+        ...devices["Pixel 7"],
+        storageState: PORTAL_AUTH_STATE_PATH,
+      },
     },
     {
       name: "integration",

@@ -760,3 +760,12 @@ export function getIntegrationPreparationScenario(
     preparation: resolvePreparationForEnvironment(preparation, env),
   };
 }
+
+export function getWorkflowPreparationTemplate(
+  env: NodeJS.ProcessEnv = process.env,
+): WorkflowIntegrationPreparationScenario {
+  return resolvePreparationForEnvironment(
+    integrationData["INT-CONFIRM-WORKFLOW"].preparation,
+    env,
+  ) as WorkflowIntegrationPreparationScenario;
+}

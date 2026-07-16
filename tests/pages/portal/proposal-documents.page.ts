@@ -6,9 +6,15 @@ import {
   type Response,
 } from "@playwright/test";
 
+export interface PortalDocumentFilePayload {
+  readonly name: string;
+  readonly mimeType: string;
+  readonly buffer: Buffer;
+}
+
 export interface OpenedPortalDocument {
   readonly popup: Page;
-  readonly response: APIResponse;
+  readonly response: Response;
 }
 
 /** Jornada de documentos de uma proposta já posicionada na fase documental. */
@@ -27,9 +33,15 @@ export class ProposalDocumentsPage {
       level: 2,
       exact: true,
     });
-    this.totalDocuments = page.getByText("Total de Documentos", { exact: true }).locator("..");
-    this.pendingDocuments = page.getByText("Pendentes", { exact: true }).locator("..");
-    this.completedDocuments = page.getByText("Completos", { exact: true }).locator("..");
+    this.totalDocuments = page
+      .getByText("Total de Documentos", { exact: true })
+      .locator("..");
+    this.pendingDocuments = page
+      .getByText("Pendentes", { exact: true })
+      .locator("..");
+    this.completedDocuments = page
+      .getByText("Completos", { exact: true })
+      .locator("..");
     this.sendForAnalysisButton = page.getByRole("button", {
       name: "Enviar para análise",
       exact: true,
@@ -44,9 +56,9 @@ export class ProposalDocumentsPage {
   }
 
   async waitUntilReady(): Promise<void> {
-    await expect(this.heading).toBeVisible();
-    await expect(this.sendForAnalysisButton).toBeVisible();
-    await expect(this.documentRows).not.toHaveCount(0);
+    await expect(this.heading).toBeVisible({ timeout: 30_000 });
+    await expect(this.sendForAnalysisButton).toBeVisible({ timeout: 30_000 });
+    await expect(this.documentRows).not.toHaveCount(0, { timeout: 30_000 });
   }
 
   getDocumentRowAt(index: number): Locator {
@@ -62,8 +74,23 @@ export class ProposalDocumentsPage {
     await this.chooseFileInRow(this.getDocumentRowAt(index), filePath);
   }
 
-  private async chooseFileInRow(row: Locator, filePath: string): Promise<void> {
-    const chooseButton = row
+  async chooseFilePayloadAt(
+    index: number,
+    file: PortalDocumentFilePayload,
+  ): Promise<void> {
+    await this.chooseFileInRow(this.getDocumentRowAt(index), file);
+  }
+
+  getUploadButtonAt(index: number): Locator {
+    return this.getUploadButtonInRow(this.getDocumentRowAt(index));
+  }
+
+  getFileInputAt(index: number): Locator {
+    return this.getDocumentRowAt(index).locator('input[type="file"]');
+  }
+
+  private getUploadButtonInRow(row: Locator): Locator {
+    return row
       .getByRole("button", {
         name: "Escolher arquivo",
         exact: true,
@@ -74,6 +101,13 @@ export class ProposalDocumentsPage {
           exact: true,
         }),
       );
+  }
+
+  private async chooseFileInRow(
+    row: Locator,
+    file: string | PortalDocumentFilePayload,
+  ): Promise<void> {
+    const chooseButton = this.getUploadButtonInRow(row);
 
     await expect(row).toHaveCount(1);
     await expect(chooseButton).toBeVisible();
@@ -81,7 +115,7 @@ export class ProposalDocumentsPage {
     const fileChooserPromise = this.page.waitForEvent("filechooser");
     await chooseButton.click();
     const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(filePath);
+    await fileChooser.setFiles(file);
   }
 
   async expectUploadedDocumentAt(
@@ -99,7 +133,9 @@ export class ProposalDocumentsPage {
     fileName: string,
   ): Promise<void> {
     await expect(row).toHaveCount(1);
-    await expect(row.getByText("Documento enviado", { exact: true })).toBeVisible({
+    await expect(
+      row.getByText("Documento enviado", { exact: true }),
+    ).toBeVisible({
       timeout: 60_000,
     });
     await expect(row.getByText(fileName, { exact: true })).toBeVisible();
@@ -113,6 +149,22 @@ export class ProposalDocumentsPage {
       this.getDocumentRowAt(index),
       `documento na posição ${index + 1}`,
     );
+  }
+
+  async readUploadedDocumentAt(index: number): Promise<APIResponse> {
+    const row = this.getDocumentRowAt(index);
+    const viewLink = row.getByRole("link", {
+      name: "Ver arquivo",
+      exact: true,
+    });
+    await expect(viewLink).toBeVisible();
+    const href = await viewLink.getAttribute("href");
+    if (!href) {
+      throw new Error(
+        `Link de visualizacao ausente para o documento ${index + 1}.`,
+      );
+    }
+    return this.page.request.get(new URL(href, this.page.url()).toString());
   }
 
   private async openUploadedDocumentInRow(
@@ -130,10 +182,17 @@ export class ProposalDocumentsPage {
       throw new Error(`Link de visualizacao ausente para: ${description}`);
     }
 
+    const documentUrl = new URL(href, this.page.url()).toString();
     const popupPromise = this.page.waitForEvent("popup");
+    const responsePromise = this.page.context().waitForEvent("response", {
+      predicate: (response) => response.url() === documentUrl,
+      timeout: 30_000,
+    });
     await viewLink.click();
-    const popup = await popupPromise;
-    const response = await this.page.request.get(new URL(href, this.page.url()).toString());
+    const [popup, response] = await Promise.all([
+      popupPromise,
+      responsePromise,
+    ]);
 
     return { popup, response };
   }
