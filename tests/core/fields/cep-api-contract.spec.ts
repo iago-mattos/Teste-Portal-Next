@@ -3,6 +3,8 @@ import { expect, test } from "../../fixtures/test";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
+import type { PortalSession } from "../../fixtures/portal.fixture";
 
 const coreMutation = { tag: ["@core", "@mutation"] };
 const cepPath = "/api/portal/cep";
@@ -31,10 +33,12 @@ function isCepRequest(request: Request, cep?: string): boolean {
 
 async function openDefaultProposal(
   portalConfig: PortalRuntimeConfig,
+  portalSession: PortalSession,
   proposalsPage: ProposalsPage,
   proposalPage: ProposalPage,
 ): Promise<string> {
-  const operation = portalConfig.testData.expectedProposal.visibleNumber;
+  const operation = portalConfig.testData.coreMasses.registration.operation;
+  await portalSession.useOperation(operation);
   await proposalsPage.open();
   await proposalsPage.loadAll();
   await proposalsPage.openProposal(operation);
@@ -132,9 +136,13 @@ async function restoreGuarantor(
   operation: string,
   originalCondition: string,
 ): Promise<void> {
-  await proposalPage.tabs.select("Garantidor");
-  await clearGuarantorAddress(proposalPage);
-  await saveBySelectingTab(page, proposalPage, operation, "Imóvel");
+  if (await proposalPage.tabs.getTab("Garantidor").isVisible()) {
+    await proposalPage.tabs.select("Garantidor");
+    await clearGuarantorAddress(proposalPage);
+    await saveBySelectingTab(page, proposalPage, operation, "Imóvel");
+  } else {
+    await proposalPage.tabs.select("Imóvel");
+  }
   const condition = proposalPage.getFieldByName(
     "IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL",
   );
@@ -177,18 +185,17 @@ async function fulfillCep(
 
 test.describe("Portal Core: CEP e contrato frontend → API", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "CORE-5 usa a massa reutilizável da EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities(["registration-form"]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(
     "CORE-5 | valida CEP inválido, indisponibilidade e resposta incompleta",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
       const operation = await openDefaultProposal(
         portalConfig,
+        portalSession,
         proposalsPage,
         proposalPage,
       );
@@ -276,9 +283,10 @@ test.describe("Portal Core: CEP e contrato frontend → API", () => {
   test(
     "CORE-5 | troca CEP durante consulta lenta sem aplicar resposta antiga",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
       const operation = await openDefaultProposal(
         portalConfig,
+        portalSession,
         proposalsPage,
         proposalPage,
       );
@@ -390,9 +398,10 @@ test.describe("Portal Core: CEP e contrato frontend → API", () => {
   test(
     "CORE-5 | envia false e não reutiliza valor removido no payload real",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
       const operation = await openDefaultProposal(
         portalConfig,
+        portalSession,
         proposalsPage,
         proposalPage,
       );
@@ -514,9 +523,10 @@ test.describe("Portal Core: CEP e contrato frontend → API", () => {
   test(
     "CORE imediato | persiste endereço válido com complemento opcional vazio",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
       const operation = await openDefaultProposal(
         portalConfig,
+        portalSession,
         proposalsPage,
         proposalPage,
       );

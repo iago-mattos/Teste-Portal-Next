@@ -8,6 +8,7 @@ import type {
   TestInfo,
 } from "@playwright/test";
 import { expect, test } from "../../fixtures/test";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 import { loadCoreMassProvisioningConfig } from "../../config/core-mass-config";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import type { PortalSession } from "../../fixtures/portal.fixture";
@@ -968,10 +969,10 @@ test.use({ skipPortalSessionBootstrap: true });
 
 test.describe.serial("Portal Core: batch documental consumível", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "ht",
-      "O batch consumivel usa exclusivamente o perfil ht.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "consumable-document-pair",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(

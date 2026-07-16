@@ -7,6 +7,7 @@ const allowedMassKeyPatterns = [
   /^PORTAL_TEST_CPF$/,
   /^PORTAL_PROPOSAL_/,
   /^PORTAL_INTEGRATION_/,
+  /^PORTAL_CORE_(?:[A-Z0-9_]+_OPERATION|[A-Z0-9_]+_EXPECTED_NAME)$/,
   /^PORTAL_EXPECTED_/,
   /^PORTAL_MASS_/,
 ];

@@ -93,6 +93,8 @@ versione os perfis, credenciais, CPFs, magic links, cookies ou tokens.
 - `PORTAL_INTEGRATION_PROFESSIONAL_ACTIVITY`, `PORTAL_INTEGRATION_HOUSE_USE` e
   `PORTAL_INTEGRATION_APARTMENT_USE`: rótulos de domínio usados na preparação
   quando diferirem entre C6 e Esteira Digital;
+- `PORTAL_CORE_CAPABILITIES`: capacidades Core comprovadas pelas massas do
+  perfil; não depende do nome do ambiente ou do cliente;
 - `ALLOW_TEST_MUTATION`: autorização explícita para testes que alteram estado;
 - `ALLOW_REACT_418_QUARANTINE`: exceção diagnóstica temporária do frontend.
 
@@ -109,9 +111,12 @@ Valide o perfil sem abrir navegador e sem exibir segredos:
 
 ```bash
 npm run config:check
+npm run config:check:core
 ```
 
-Os scripts que executam navegador também validam o perfil automaticamente.
+`config:check` valida a suíte funcional e as integrações. `config:check:core`
+valida somente as capacidades Core declaradas e as massas exigidas por elas.
+Os scripts que executam navegador também validam o escopo correspondente.
 
 ### Provisionamento de massas pela EsteiraHT
 
@@ -230,7 +235,37 @@ PORTAL_CORE_DOCUMENT_B_OPERATION=000000000
 PORTAL_CORE_CAD_A_OPERATION=000000000
 PORTAL_CORE_CAD_B_OPERATION=000000000
 PORTAL_CORE_FINALIZATION_OPERATION=000000000
+PORTAL_CORE_REGISTRATION_OPERATION=000000000
+PORTAL_CORE_REGISTRATION_EXPECTED_NAME="Playwright CORE CAD"
+PORTAL_CORE_DOCUMENTS_OPERATION=000000000
+PORTAL_CORE_DOCUMENTS_EXPECTED_NAME="Playwright CORE DOC"
+PORTAL_CORE_FOREIGN_OPERATION=000000000
+PORTAL_CORE_FOREIGN_EXPECTED_NAME="Playwright CORE IDOR"
 ```
+
+Os testes Core não são liberados pelo nome do perfil. Cada perfil declara
+somente as capacidades que suas massas realmente suportam:
+
+```env
+PORTAL_CORE_CAPABILITIES=restorable-draft,controlled-document-slot,registration-form
+```
+
+| Capacidade | Pré-condição comprovada |
+| --- | --- |
+| `restorable-draft` | Proposta dedicada em Cadastro cujo valor original pode ser restaurado e relido. |
+| `controlled-document-slot` | Proposta documental reutilizável para falhas controladas, sem consumir o workflow. |
+| `registration-form` | `PORTAL_CORE_REGISTRATION_OPERATION` editável em Cadastro para campos, datas e CEP. |
+| `same-owner-registration-documents` | `PORTAL_CORE_REGISTRATION_OPERATION` e `PORTAL_CORE_DOCUMENTS_OPERATION`, do mesmo usuário e em etapas distintas. |
+| `foreign-owner-operation` | `PORTAL_CORE_FOREIGN_OPERATION`, real e pertencente a outra identidade, para autorização horizontal read-only. |
+| `restorable-registration-pair` | CAD A/B qualificadas por mutação, restauração e nova leitura. |
+| `consumable-document-pair` | DOC A/B novas, vazias e reservadas para uma única execução consumível. |
+
+Declarar uma capacidade não substitui o preflight funcional do cenário. Se a
+massa não estiver no estado esperado, o teste deve falhar claramente. Quando a
+capacidade não for aplicável ou ainda não estiver qualificada, o teste é
+registrado como skip com a capacidade ausente, sem depender de `PW_PROFILE`.
+Essas três massas Core possuem variáveis próprias e nunca devem substituir
+`PORTAL_PROPOSAL_DEFAULT` ou as massas da timeline funcional.
 
 As cinco operações também devem constar em
 `PORTAL_MASS_OPERATION_CPFS_JSON`. O provisionador valida que DOC A/B
@@ -241,7 +276,7 @@ Execute uma única vez, somente depois de criar as cinco propostas e preencher
 no Admin os dados de origem que não são editáveis no Portal:
 
 ```bash
-PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:provision:core-masses
+PW_PROFILE=<perfil> ALLOW_TEST_MUTATION=true npm run pw:provision:core-masses
 ```
 
 O comando é propositalmente separado de `pw:test:all` e executa com um worker:
@@ -316,13 +351,17 @@ Comandos:
 ```bash
 npm run pw:test:functional:mutation
 npm run pw:test:integration:mutation
+ALLOW_TEST_MUTATION=true npm run pw:test:core
 ```
+
+`pw:test:core` executa os projetos desktop e mobile. Cada perfil roda apenas os
+grupos cujas capacidades foram qualificadas em `PORTAL_CORE_CAPABILITIES`.
 
 O batch documental Portal Core possui comando isolado e não participa de
 `pw:test:all`:
 
 ```bash
-PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:test:core:consumable-documents
+PW_PROFILE=<perfil> ALLOW_TEST_MUTATION=true npm run pw:test:core:consumable-documents
 ```
 
 Esse comando consome slots reais. Só pode ser usado com um novo par DOC A/B

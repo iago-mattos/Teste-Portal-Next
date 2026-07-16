@@ -242,6 +242,30 @@ Contém carregamento, validação e tipagem da configuração.
 
 Configuração não contém ações de teste.
 
+### Capacidades Portal Core por perfil
+
+Os testes Portal Core não podem depender do nome de um perfil, tenant ou
+cliente. A aplicabilidade é declarada por `PORTAL_CORE_CAPABILITIES` e deve
+representar capacidades comprovadas das massas disponíveis, como rascunho
+restaurável, slot documental reutilizável, par A/B do mesmo usuário ou operação
+real de outra identidade.
+
+- perfil não habilita capacidade implicitamente;
+- capacidade só é declarada após qualificação do estado e do lifecycle;
+- ausência de capacidade produz skip explícito com o requisito ausente;
+- capacidade declarada com massa inválida deve falhar no preflight funcional;
+- assertions e contratos Core permanecem idênticos entre clientes;
+- diferenças legítimas de tenant pertencem à configuração, não ao spec.
+
+Esse contrato permite executar a mesma suíte em outro cliente alterando apenas
+o perfil e suas massas, sem introduzir condicionais por `PW_PROFILE` nos testes.
+
+As massas Core de formulário, documentos e autorização horizontal usam as
+variáveis dedicadas `PORTAL_CORE_REGISTRATION_*`,
+`PORTAL_CORE_DOCUMENTS_*` e `PORTAL_CORE_FOREIGN_*`. Elas não podem
+sobrescrever `PORTAL_PROPOSAL_*`, preservando a independência entre os testes
+Core e a baseline funcional 108/108.
+
 ### `tests/test-data/`
 
 Contém massa declarativa e expectativas estáticas.

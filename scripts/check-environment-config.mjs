@@ -1,4 +1,5 @@
 import { loadEnvironmentProfile } from "./environment-profile.mjs";
+import { parseCoreCapabilities } from "./core-capabilities.mjs";
 
 const scope = process.argv[2] ?? "all";
 if (!new Set(["all", "portal"]).has(scope)) {
@@ -62,6 +63,9 @@ function validateUniqueOperations(keys, groupName) {
 }
 
 const profile = loadEnvironmentProfile().name;
+const coreCapabilities = parseCoreCapabilities(
+  process.env.PORTAL_CORE_CAPABILITIES,
+);
 if (profile === "esteira-ht") {
   const targetCount = Number(process.env.PORTAL_MASS_TARGET_COUNT?.trim());
   if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > 15) {
@@ -198,4 +202,5 @@ console.log([
   `SCCI/AEJS: ${aejsSummary}`,
   `Massas funcionais: ${functionalOperations.length}`,
   `Massas de integracao: ${integrationCount}`,
+  `Capacidades Portal Core: ${coreCapabilities.size}`,
 ].join("\n"));

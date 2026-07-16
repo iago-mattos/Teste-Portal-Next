@@ -4,6 +4,7 @@ import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
 import type { ProposalTabName } from "../../components/portal/proposal-tabs.component";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreMutation = { tag: ["@core", "@mutation"] };
 const incomeFieldName = "PESSOA.VA_RENDA_BRUTA";
@@ -135,6 +136,11 @@ async function restoreIncome(
 }
 
 test.describe("Portal Core: persistência e falsa confirmação", () => {
+  test.beforeEach(() => {
+    const capability = evaluateCoreCapabilities(["restorable-draft"]);
+    test.skip(!capability.enabled, capability.reason);
+  });
+
   test(
     "CORE-1 | salva rascunho parcial, recarrega, reabre, remove e restaura o valor",
     coreMutation,

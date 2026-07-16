@@ -4,10 +4,10 @@ import { portalSessionExpiredPattern } from "../../fixtures/auth.fixture";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import { ProposalPage } from "../../pages/portal/proposal.page";
 import { ProposalsPage } from "../../pages/portal/proposals.page";
-import { getProvisioningSlot } from "../../test-data/provisioning-data";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import type { PortalSession } from "../../fixtures/portal.fixture";
 import { createSizedPdfFile } from "../documents/document-test-files";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreReadonly = { tag: ["@core", "@readonly"] };
 const coreMutation = { tag: ["@core", "@mutation"] };
@@ -44,18 +44,17 @@ function normalizeOperation(value: string): string {
 }
 
 function getCore4Masses(portalConfig: PortalRuntimeConfig): Core4Masses {
-  const registrationSlot = getProvisioningSlot("DEFAULT");
-  const documentsSlot = getProvisioningSlot("TIMELINE_DOCUMENTS");
+  const configuredMasses = portalConfig.testData.coreMasses;
   const registrationOperation = normalizeOperation(
-    portalConfig.testData.expectedProposal.visibleNumber,
+    configuredMasses.registration.operation,
   );
   const documentsOperation = normalizeOperation(
-    portalConfig.caseProposalIds.TIMELINE_04_DOCUMENTOS ?? "",
+    configuredMasses.documents.operation,
   );
 
   if (!registrationOperation.replace(/0/g, "") || !documentsOperation.replace(/0/g, "")) {
     throw new Error(
-      "Configure PORTAL_PROPOSAL_DEFAULT e PORTAL_PROPOSAL_TIMELINE_DOCUMENTS para o CORE-4.",
+      "Configure PORTAL_CORE_REGISTRATION_OPERATION e PORTAL_CORE_DOCUMENTS_OPERATION para o CORE-4.",
     );
   }
 
@@ -71,14 +70,14 @@ function getCore4Masses(portalConfig: PortalRuntimeConfig): Core4Masses {
   return {
     registration: {
       operation: registrationOperation,
-      applicantName: registrationSlot.applicantName,
+      applicantName: configuredMasses.registration.applicantName,
       purpose: "Sessão válida, 401 de rascunho e isolamento A/B.",
       state: "Cadastro",
       lifecycle: "reutilizável",
     },
     documents: {
       operation: documentsOperation,
-      applicantName: documentsSlot.applicantName,
+      applicantName: configuredMasses.documents.applicantName,
       purpose: "401 de upload e isolamento A/B.",
       state: "Documentos",
       lifecycle: "reutilizável",
@@ -163,10 +162,10 @@ test.use({ skipPortalSessionBootstrap: true });
 
 test.describe("Portal Core: sessão e isolamento", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "CORE-4A usa exclusivamente as massas reutilizáveis registradas da EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "same-owner-registration-documents",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(

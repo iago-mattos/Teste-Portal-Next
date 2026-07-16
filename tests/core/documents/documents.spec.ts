@@ -4,6 +4,7 @@ import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import type { PortalSession } from "../../fixtures/portal.fixture";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 import {
   createCorruptedPdfFile,
   createDisallowedTextFile,
@@ -136,6 +137,11 @@ async function chooseWithControlledFailure(
 test.use({ skipPortalSessionBootstrap: true });
 
 test.describe("Portal Core: documentos", () => {
+  test.beforeEach(() => {
+    const capability = evaluateCoreCapabilities(["controlled-document-slot"]);
+    test.skip(!capability.enabled, capability.reason);
+  });
+
   test(
     "CORE-3 | aplica o limite configurado nos boundaries sem persistir arquivos",
     coreMutation,

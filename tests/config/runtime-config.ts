@@ -54,6 +54,11 @@ export interface PortalRuntimeConfig {
     corePersistenceOperation: string;
     coreDocumentOperation: string;
     coreDocumentMaxSizeBytes: number;
+    coreMasses: Readonly<{
+      registration: Readonly<{ operation: string; applicantName: string }>;
+      documents: Readonly<{ operation: string; applicantName: string }>;
+      foreign: Readonly<{ operation: string; applicantName: string }>;
+    }>;
     expectedProposal: Readonly<{
       visibleNumber: string;
       proponentName: string;
@@ -457,6 +462,38 @@ export function loadPortalRuntimeConfig(
         env,
         "PORTAL_CORE_DOCUMENT_MAX_SIZE_BYTES",
       ),
+      coreMasses: Object.freeze({
+        registration: Object.freeze({
+          operation: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_REGISTRATION_OPERATION",
+          ),
+          applicantName: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_REGISTRATION_EXPECTED_NAME",
+          ),
+        }),
+        documents: Object.freeze({
+          operation: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_DOCUMENTS_OPERATION",
+          ),
+          applicantName: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_DOCUMENTS_EXPECTED_NAME",
+          ),
+        }),
+        foreign: Object.freeze({
+          operation: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_FOREIGN_OPERATION",
+          ),
+          applicantName: resolveConfiguredProposalId(
+            env,
+            "PORTAL_CORE_FOREIGN_EXPECTED_NAME",
+          ),
+        }),
+      }),
       expectedProposal: resolveExpectedProposal(env, local),
     }),
     pageErrors: Object.freeze({

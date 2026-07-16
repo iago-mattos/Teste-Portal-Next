@@ -3,6 +3,7 @@ import { expect, test } from "../../fixtures/test";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import { ProposalPage } from "../../pages/portal/proposal.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreMutation = { tag: ["@core", "@mutation"] };
 const incomeFieldName = "PESSOA.VA_RENDA_BRUTA";
@@ -124,6 +125,11 @@ async function expectOnlyOneLogicalRequest(
 }
 
 test.describe("Portal Core: concorrência e estados intermediários", () => {
+  test.beforeEach(() => {
+    const capability = evaluateCoreCapabilities(["restorable-draft"]);
+    test.skip(!capability.enabled, capability.reason);
+  });
+
   test(
     "CORE-2 | duplo clique durante save lento produz uma única ação lógica",
     coreMutation,

@@ -8,6 +8,7 @@ import {
   createSizedPdfFile,
   type GeneratedDocumentFile,
 } from "./document-test-files";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreMutation = { tag: ["@core", "@mutation"] };
 const uploadRoutePattern = "**/api/portal/propostas/*/documentos";
@@ -31,10 +32,10 @@ function normalizeOperation(value: string): string {
 
 function documentOperation(portalConfig: PortalRuntimeConfig): string {
   const operation = normalizeOperation(
-    portalConfig.caseProposalIds.TIMELINE_04_DOCUMENTOS ?? "",
+    portalConfig.testData.coreMasses.documents.operation,
   );
   if (!operation.replace(/0/g, "")) {
-    throw new Error("Configure PORTAL_PROPOSAL_TIMELINE_DOCUMENTS.");
+    throw new Error("Configure PORTAL_CORE_DOCUMENTS_OPERATION.");
   }
   return operation;
 }
@@ -90,10 +91,10 @@ function invalidFile(name: string): GeneratedDocumentFile {
 
 test.describe("Portal Core: gaps imediatos de documentos", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "O bloco imediato usa exclusivamente EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "same-owner-registration-documents",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(
@@ -135,6 +136,8 @@ test.describe("Portal Core: gaps imediatos de documentos", () => {
       });
 
       try {
+        const documentCount = await documentsPage.getDocumentCount();
+        expect(documentCount).toBeGreaterThanOrEqual(2);
         const validSelection = documentsPage.chooseFilePayloadAt(
           0,
           createSizedPdfFile(2_048, validName),
@@ -164,10 +167,14 @@ test.describe("Portal Core: gaps imediatos de documentos", () => {
         expect(uploadRequests).toBe(requestsBeforeCancel);
         await expectEmptyRow(documentsPage.getDocumentRowAt(1));
 
-        for (const invalidCase of [
-          { row: 2, name: "arquivo-sem-extensao" },
-          { row: 3, name: "arquivo.pdf.exe" },
-        ]) {
+        for (const [index, name] of [
+          "arquivo-sem-extensao",
+          "arquivo.pdf.exe",
+        ].entries()) {
+          const invalidCase = {
+            row: Math.min(index + 2, documentCount - 1),
+            name,
+          };
           const requestsBeforeInvalid = uploadRequests;
           await documentsPage.chooseFilePayloadAt(
             invalidCase.row,

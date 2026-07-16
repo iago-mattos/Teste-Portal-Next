@@ -4,7 +4,7 @@ import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import type { PortalSession } from "../../fixtures/portal.fixture";
 import { ProposalPage } from "../../pages/portal/proposal.page";
 import { ProposalsPage } from "../../pages/portal/proposals.page";
-import { getProvisioningSlot } from "../../test-data/provisioning-data";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreReadonly = { tag: ["@core", "@readonly"] };
 
@@ -27,10 +27,10 @@ function getAuthorizationMasses(
   portalConfig: PortalRuntimeConfig,
 ): AuthorizationMasses {
   const ownedOperation = normalizeOperation(
-    portalConfig.testData.expectedProposal.visibleNumber,
+    portalConfig.testData.coreMasses.registration.operation,
   );
   const foreignOperation = normalizeOperation(
-    portalConfig.caseProposalIds.TIMELINE_04_CADASTRO ?? "",
+    portalConfig.testData.coreMasses.foreign.operation,
   );
   const ownedKey = portalConfig.testData.operationCpfs[ownedOperation];
   const foreignKey = portalConfig.testData.operationCpfs[foreignOperation];
@@ -54,12 +54,12 @@ function getAuthorizationMasses(
   return {
     owned: {
       operation: ownedOperation,
-      applicantName: getProvisioningSlot("DEFAULT").applicantName,
+      applicantName: portalConfig.testData.coreMasses.registration.applicantName,
       ownershipKey: ownedKey,
     },
     foreign: {
       operation: foreignOperation,
-      applicantName: getProvisioningSlot("TIMELINE_REGISTRATION").applicantName,
+      applicantName: portalConfig.testData.coreMasses.foreign.applicantName,
       ownershipKey: foreignKey,
     },
   };
@@ -124,10 +124,8 @@ test.use({ skipPortalSessionBootstrap: true });
 
 test.describe("Portal Core: autorização horizontal", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "CORE-4B usa massas reais de ownership conhecido da EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities(["foreign-owner-operation"]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(

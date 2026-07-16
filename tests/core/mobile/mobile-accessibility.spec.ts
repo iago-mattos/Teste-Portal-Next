@@ -5,6 +5,7 @@ import type { ProposalPage } from "../../pages/portal/proposal.page";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
 import type { Locator, Page } from "@playwright/test";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const mobileCoreReadonly = { tag: ["@core", "@mobile", "@readonly"] };
 const expectedViewport = { width: 412, height: 839 } as const;
@@ -33,7 +34,7 @@ async function openDefaultProposal(
   proposalPage: ProposalPage,
 ): Promise<string> {
   const operation = normalizeOperation(
-    portalConfig.testData.expectedProposal.visibleNumber,
+    portalConfig.testData.coreMasses.registration.operation,
   );
   await openOperation(operation, portalSession, proposalsPage, proposalPage);
   return operation;
@@ -122,10 +123,10 @@ async function focusByTab(
 
 test.describe("Portal Core: mobile e acessibilidade", () => {
   test.beforeEach(async ({ page }) => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "CORE-6 usa exclusivamente EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "same-owner-registration-documents",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
     expect(page.viewportSize()).toEqual(expectedViewport);
   });
 
@@ -284,11 +285,11 @@ test.describe("Portal Core: mobile e acessibilidade", () => {
     mobileCoreReadonly,
     async ({ page, portalConfig, portalSession, proposalsPage }) => {
       const operation = normalizeOperation(
-        portalConfig.caseProposalIds.TIMELINE_04_DOCUMENTOS ?? "",
+        portalConfig.testData.coreMasses.documents.operation,
       );
       if (!operation.replace(/0/g, "")) {
         throw new Error(
-          "Configure PORTAL_PROPOSAL_TIMELINE_DOCUMENTS para o CORE-6.",
+          "Configure PORTAL_CORE_DOCUMENTS_OPERATION para o CORE-6.",
         );
       }
 

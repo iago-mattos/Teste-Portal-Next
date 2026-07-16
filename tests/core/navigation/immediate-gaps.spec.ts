@@ -6,6 +6,7 @@ import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.pag
 import type { ProposalPage } from "../../pages/portal/proposal.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
 import { createSizedPdfFile } from "../documents/document-test-files";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 
 const coreReadonly = { tag: ["@core", "@readonly"] };
 const coreMutation = { tag: ["@core", "@mutation"] };
@@ -37,7 +38,7 @@ async function openRegistration(
   proposalPage: ProposalPage,
 ): Promise<string> {
   const operation = normalizeOperation(
-    portalConfig.testData.expectedProposal.visibleNumber,
+    portalConfig.testData.coreMasses.registration.operation,
   );
   await portalSession.useOperation(operation);
   await proposalsPage.open();
@@ -55,10 +56,10 @@ async function openDocuments(
   proposalsPage: ProposalsPage,
 ): Promise<{ documentsPage: ProposalDocumentsPage; operation: string }> {
   const operation = normalizeOperation(
-    portalConfig.caseProposalIds.TIMELINE_04_DOCUMENTOS ?? "",
+    portalConfig.testData.coreMasses.documents.operation,
   );
   if (!operation.replace(/0/g, "")) {
-    throw new Error("Configure PORTAL_PROPOSAL_TIMELINE_DOCUMENTS.");
+    throw new Error("Configure PORTAL_CORE_DOCUMENTS_OPERATION.");
   }
 
   await portalSession.useOperation(operation);
@@ -87,10 +88,10 @@ async function expectEmptyDocumentRow(row: Locator): Promise<void> {
 
 test.describe("Portal Core: gaps imediatos de navegação e autorização", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "O bloco imediato usa exclusivamente EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "same-owner-registration-documents",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(

@@ -4,6 +4,8 @@ import type { ProposalPage } from "../../pages/portal/proposal.page";
 import type { ProposalsPage } from "../../pages/portal/proposals.page";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import { generateValidCpfDigits } from "../../helpers/cpf";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
+import type { PortalSession } from "../../fixtures/portal.fixture";
 
 const coreMutation = { tag: ["@core", "@mutation"] };
 const spouseNameField = "CONJUGE.NO_PESSOA";
@@ -15,10 +17,12 @@ function draftPath(operation: string): string {
 
 async function openDefaultProposal(
   portalConfig: PortalRuntimeConfig,
+  portalSession: PortalSession,
   proposalsPage: ProposalsPage,
   proposalPage: ProposalPage,
 ): Promise<string> {
-  const operation = portalConfig.testData.expectedProposal.visibleNumber;
+  const operation = portalConfig.testData.coreMasses.registration.operation;
+  await portalSession.useOperation(operation);
   await proposalsPage.open();
   await proposalsPage.loadAll();
   await proposalsPage.openProposal(operation);
@@ -104,18 +108,17 @@ async function restoreSpouse(
 
 test.describe("Portal Core: campos essenciais", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "esteira-ht",
-      "CORE-5 usa a massa reutilizável da EsteiraHT.",
-    );
+    const capability = evaluateCoreCapabilities(["registration-form"]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(
     "CORE-5 | valida texto obrigatório, limite real, Unicode, trim e calendário",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
       const operation = await openDefaultProposal(
         portalConfig,
+        portalSession,
         proposalsPage,
         proposalPage,
       );
@@ -203,8 +206,13 @@ test.describe("Portal Core: campos essenciais", () => {
   test(
     "CORE-5 | normaliza caracteres, sinal, zero, decimal e paste no campo monetário",
     coreMutation,
-    async ({ page, portalConfig, proposalPage, proposalsPage }) => {
-      await openDefaultProposal(portalConfig, proposalsPage, proposalPage);
+    async ({ page, portalConfig, portalSession, proposalPage, proposalsPage }) => {
+      await openDefaultProposal(
+        portalConfig,
+        portalSession,
+        proposalsPage,
+        proposalPage,
+      );
       await proposalPage.tabs.select("Sobre Você");
       const income = proposalPage.getFieldByName("PESSOA.VA_RENDA_BRUTA");
       const originalValue = await income.inputValue();

@@ -5,6 +5,7 @@ import {
 } from "../../config/core-mass-config";
 import type { PortalRuntimeConfig } from "../../config/runtime-config";
 import { expect, test } from "../../fixtures/test";
+import { evaluateCoreCapabilities } from "../../config/core-capabilities";
 import type { PortalSession } from "../../fixtures/portal.fixture";
 import { ProposalPage } from "../../pages/portal/proposal.page";
 
@@ -334,10 +335,10 @@ test.use({ skipPortalSessionBootstrap: true });
 
 test.describe("Portal Core: Cadastro A/B restaurável", () => {
   test.beforeEach(() => {
-    test.skip(
-      process.env.PW_PROFILE !== "ht",
-      "O bloco restauravel usa exclusivamente as massas qualificadas de C6 HT.",
-    );
+    const capability = evaluateCoreCapabilities([
+      "restorable-registration-pair",
+    ]);
+    test.skip(!capability.enabled, capability.reason);
   });
 
   test(
