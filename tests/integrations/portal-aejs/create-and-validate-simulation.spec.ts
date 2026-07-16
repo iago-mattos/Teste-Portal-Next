@@ -123,35 +123,10 @@ test(
     await test.step("cria a proposta pelo simulador", async () => {
       if (!generatedEntry.protocol) {
         try {
-          await simulator.open();
-          await simulator.startNewSimulation();
-          await simulator.chooseJourney(scenario.journey);
-
-          await test.step("rejeita letras nos campos numéricos", async () => {
-            const numericInputs = [
-              simulator.propertyValueInput,
-              simulator.financingValueInput,
-              simulator.customTermInput,
-              simulator.birthDateInput,
-              simulator.netIncomeInput,
-            ] as const;
-
-            for (const input of numericInputs) {
-              await input.clear();
-              const valueBeforeLetters = await input.inputValue();
-              await input.pressSequentially("abc");
-              await expect(input).toHaveValue(valueBeforeLetters);
-            }
-          });
-
-          await simulator.fillSimulationData(scenario.financial);
-          await simulator.continueToInsurers();
-          await simulator.selectInsurer(scenario.insurer);
-          await simulator.continueToResult();
-          await simulator.continueToApplicantData();
-          await simulator.fillApplicantData(reservation.applicant);
-
-          const protocol = await simulator.submitProposal();
+          const protocol = await simulator.completeSimulation(
+            scenario,
+            reservation.applicant,
+          );
           generatedEntry = await markGeneratedSimulationSubmitted(
             reservation.id,
             protocol,

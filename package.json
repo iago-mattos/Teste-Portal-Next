@@ -41,6 +41,8 @@
     "pw:ui": "npm run config:check && playwright test --ui",
     "pw:report": "playwright show-report",
     "pw:install": "playwright install chromium",
+    "demo:simulador": "node scripts/require-mutation-opt-in.mjs && node scripts/run-demo-simulator.mjs",
+    "demo:simulador:mp4": "node scripts/convert-demo-video.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "check:test-contracts": "node scripts/check-test-contracts.mjs",

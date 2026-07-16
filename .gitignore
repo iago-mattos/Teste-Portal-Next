@@ -11,6 +11,7 @@ playwright/.auth/
 .playwright/
 playwright-report/
 test-results/
+demo-results/
 .env
 .env.local
 .env.*.local

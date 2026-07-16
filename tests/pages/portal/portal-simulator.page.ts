@@ -1,9 +1,38 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import type {
+  DigitalMortgageSimulationScenario,
   SimulationApplicantInput,
   SimulationFinancialInput,
   SimulationJourneyInput,
 } from "../../types/simulator";
+
+export interface SimulatorInteractions {
+  click(locator: Locator): Promise<void>;
+  type(
+    locator: Locator,
+    value: string,
+    options?: Readonly<{ clear?: boolean }>,
+  ): Promise<void>;
+  selectOption(locator: Locator, label: string): Promise<void>;
+  setChecked(locator: Locator, checked: boolean): Promise<void>;
+}
+
+const defaultInteractions: SimulatorInteractions = {
+  click: async (locator) => locator.click(),
+  type: async (locator, value, options) => {
+    if (options?.clear === false) {
+      await locator.pressSequentially(value);
+      return;
+    }
+    await locator.fill(value);
+  },
+  selectOption: async (locator, label) => {
+    await locator.selectOption({ label });
+  },
+  setChecked: async (locator, checked) => {
+    await locator.setChecked(checked);
+  },
+};
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -31,7 +60,11 @@ export class PortalSimulatorPage {
   private readonly startSimulationButton: Locator;
   private readonly insurersGroup: Locator;
 
-  constructor(private readonly page: Page) {
+  constructor(
+    private readonly page: Page,
+    private readonly interactions: SimulatorInteractions = defaultInteractions,
+    private readonly loadingTimeoutMs = 30_000,
+  ) {
     this.welcomeHeading = page.getByRole("heading", {
       name: "Seja bem-vindo!",
       level: 1,
@@ -111,7 +144,7 @@ export class PortalSimulatorPage {
 
   async startNewSimulation(): Promise<void> {
     await expect(this.startSimulationButton).toHaveCount(1);
-    await this.startSimulationButton.click();
+    await this.interactions.click(this.startSimulationButton);
     await expect(
       this.page.getByRole("heading", {
         name: "Simule o tipo de credito desejado",
@@ -122,7 +155,7 @@ export class PortalSimulatorPage {
       this.page.getByRole("status").filter({
         hasText: "Carregando modalidades...",
       }),
-    ).toBeHidden({ timeout: 30_000 });
+    ).toBeHidden({ timeout: this.loadingTimeoutMs });
   }
 
   async chooseJourney(journey: SimulationJourneyInput): Promise<void> {
@@ -139,23 +172,35 @@ export class PortalSimulatorPage {
   }
 
   async fillSimulationData(data: SimulationFinancialInput): Promise<void> {
-    await this.propertyValueInput.fill(data.propertyValueCents);
-    await this.financingValueInput.fill(data.financingValueCents);
-    await this.page
-      .getByRole("radio", {
+    await this.interactions.type(
+      this.propertyValueInput,
+      data.propertyValueCents,
+    );
+    await this.interactions.type(
+      this.financingValueInput,
+      data.financingValueCents,
+    );
+    await this.interactions.setChecked(
+      this.page.getByRole("radio", {
         name: `${data.termMonths} meses`,
         exact: true,
-      })
-      .check();
-    await this.amortizationSelect.selectOption({
-      label: data.amortizationSystem,
-    });
-    await this.gracePeriodSelect.selectOption({
-      label: String(data.gracePeriodDays),
-    });
-    await this.birthDateInput.fill(data.birthDateDigits);
-    await this.netIncomeInput.fill(data.netIncomeCents);
-    await this.composeIncomeCheckbox.setChecked(data.composeIncome);
+      }),
+      true,
+    );
+    await this.interactions.selectOption(
+      this.amortizationSelect,
+      data.amortizationSystem,
+    );
+    await this.interactions.selectOption(
+      this.gracePeriodSelect,
+      String(data.gracePeriodDays),
+    );
+    await this.interactions.type(this.birthDateInput, data.birthDateDigits);
+    await this.interactions.type(this.netIncomeInput, data.netIncomeCents);
+    await this.interactions.setChecked(
+      this.composeIncomeCheckbox,
+      data.composeIncome,
+    );
   }
 
   async continueToInsurers(): Promise<void> {
@@ -166,14 +211,14 @@ export class PortalSimulatorPage {
     await expect(advanceButton).toHaveCount(1);
     await Promise.all([
       this.page.waitForURL(/\/seguradoras$/),
-      advanceButton.click(),
+      this.interactions.click(advanceButton),
     ]);
     await expect(this.insurerHeading).toBeVisible();
     await expect(
       this.page.getByRole("status").filter({
         hasText: "Calculando seguradoras...",
       }),
-    ).toBeHidden({ timeout: 30_000 });
+    ).toBeHidden({ timeout: this.loadingTimeoutMs });
   }
 
   async selectInsurer(name: string): Promise<void> {
@@ -193,7 +238,7 @@ export class PortalSimulatorPage {
       `[id=${JSON.stringify(labelledBy)}]`,
     );
     await expect(insurerCard).toHaveCount(1);
-    await insurerCard.click();
+    await this.interactions.click(insurerCard);
     await expect(insurer).toBeChecked();
   }
 
@@ -206,7 +251,7 @@ export class PortalSimulatorPage {
     await expect(advanceButton).toBeEnabled();
     await Promise.all([
       this.page.waitForURL(/\/resultado$/),
-      advanceButton.click(),
+      this.interactions.click(advanceButton),
     ]);
     await expect(this.resultHeading).toBeVisible();
   }
@@ -219,16 +264,34 @@ export class PortalSimulatorPage {
     await expect(advanceButton).toHaveCount(1);
     await Promise.all([
       this.page.waitForURL(/\/enviar-proposta$/),
-      advanceButton.click(),
+      this.interactions.click(advanceButton),
     ]);
     await expect(this.applicantDataHeading).toBeVisible();
   }
 
   async fillApplicantData(applicant: SimulationApplicantInput): Promise<void> {
-    await this.cpfInput.fill(applicant.cpfDigits);
-    await this.nameInput.fill(applicant.name);
-    await this.emailInput.fill(applicant.email);
-    await this.mobileInput.fill(applicant.mobileDigits);
+    await this.interactions.type(this.cpfInput, applicant.cpfDigits);
+    await this.interactions.type(this.nameInput, applicant.name);
+    await this.interactions.type(this.emailInput, applicant.email);
+    await this.interactions.type(this.mobileInput, applicant.mobileDigits);
+    await expect(this.nameInput).toHaveValue(applicant.name);
+  }
+
+  async completeSimulation(
+    scenario: DigitalMortgageSimulationScenario,
+    applicant: SimulationApplicantInput,
+  ): Promise<string> {
+    await this.open();
+    await this.startNewSimulation();
+    await this.chooseJourney(scenario.journey);
+    await this.verifyNumericInputsRejectLetters();
+    await this.fillSimulationData(scenario.financial);
+    await this.continueToInsurers();
+    await this.selectInsurer(scenario.insurer);
+    await this.continueToResult();
+    await this.continueToApplicantData();
+    await this.fillApplicantData(applicant);
+    return this.submitProposal();
   }
 
   async submitProposal(): Promise<string> {
@@ -237,7 +300,7 @@ export class PortalSimulatorPage {
       exact: true,
     });
     await expect(requestSubmissionButton).toHaveCount(1);
-    await requestSubmissionButton.click();
+    await this.interactions.click(requestSubmissionButton);
 
     const confirmationDialog = this.page.getByRole("alertdialog", {
       name: "Confirmar envio",
@@ -250,7 +313,7 @@ export class PortalSimulatorPage {
       exact: true,
     });
     await expect(confirmButton).toHaveCount(1);
-    await confirmButton.click();
+    await this.interactions.click(confirmButton);
 
     const successMessage = this.page.getByText(
       "Tudo certo! Enviamos o link de acesso.",
@@ -287,6 +350,23 @@ export class PortalSimulatorPage {
   private async clickUniqueOption(name: string): Promise<void> {
     const option = this.page.getByRole("button", { name, exact: true });
     await expect(option).toHaveCount(1);
-    await option.click();
+    await this.interactions.click(option);
+  }
+
+  private async verifyNumericInputsRejectLetters(): Promise<void> {
+    const numericInputs = [
+      this.propertyValueInput,
+      this.financingValueInput,
+      this.customTermInput,
+      this.birthDateInput,
+      this.netIncomeInput,
+    ] as const;
+
+    for (const input of numericInputs) {
+      await input.clear();
+      const valueBeforeLetters = await input.inputValue();
+      await this.interactions.type(input, "abc", { clear: false });
+      await expect(input).toHaveValue(valueBeforeLetters);
+    }
   }
 }

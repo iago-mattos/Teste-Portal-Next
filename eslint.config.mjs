@@ -23,6 +23,7 @@ export default tseslint.config(
       "playwright/.auth/**",
       "playwright-report/**",
       "test-results/**",
+      "demo-results/**",
       "Portal-antigo/**",
     ],
   },

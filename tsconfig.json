@@ -13,6 +13,7 @@
     "cypress/**/*.ts",
     "tests/**/*.ts",
     "cypress.config.ts",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.demo.config.ts"
   ]
 }
