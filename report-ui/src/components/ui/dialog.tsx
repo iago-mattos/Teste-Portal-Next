@@ -13,16 +13,16 @@ export function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm" />
+      <DialogPrimitive.Overlay className="dialog-overlay fixed inset-0 z-[60] bg-black/72 backdrop-blur-md" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-[60] max-h-[94vh] w-[94vw] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-xl border bg-background p-4 shadow-2xl outline-none",
+          "dialog-panel material-strong fixed left-1/2 top-1/2 z-[60] max-h-[94vh] w-[94vw] overflow-auto rounded-2xl p-4 outline-none sm:p-5",
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-3 top-3 rounded-full border bg-background/90 p-2 text-muted-foreground shadow-sm hover:text-foreground">
+        <DialogPrimitive.Close className="pressable absolute right-3 top-3 rounded-full border bg-background/85 p-2 text-muted-foreground shadow-sm hover:text-foreground">
           <X className="size-4" />
           <span className="sr-only">Fechar</span>
         </DialogPrimitive.Close>

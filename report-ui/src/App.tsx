@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
+  Activity,
+  ArrowRight,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -12,10 +14,12 @@ import {
   Film,
   FolderOpen,
   ImageIcon,
+  LayoutDashboard,
+  Layers3,
   Moon,
   Search,
+  ShieldCheck,
   Sun,
-  TestTube2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -526,28 +530,46 @@ function TestDetails({ test }: { test: ReportTest }) {
 }
 
 function TestRow({ test, onSelect }: { test: ReportTest; onSelect: () => void }) {
+  const statusIcon = test.outcome === "expected"
+    ? <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+    : test.outcome === "unexpected"
+      ? <CircleAlert className="size-4 text-red-600 dark:text-red-400" />
+      : <Clock3 className="size-4 text-amber-600 dark:text-amber-400" />;
+
   return (
     <button
       type="button"
       onClick={onSelect}
-      className="flex w-full items-center justify-between gap-4 border-t px-4 py-3 text-left transition first:border-t-0 hover:bg-muted/70"
+      style={{
+        "--row-accent": test.outcome === "unexpected"
+          ? "var(--danger)"
+          : test.outcome === "expected"
+            ? "var(--success)"
+            : "var(--warning)",
+      } as CSSProperties}
+      className="result-rail pressable flex w-full items-center justify-between gap-4 border-t px-5 py-3.5 text-left first:border-t-0 hover:bg-muted/55"
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <Badge variant={outcomeVariant(test.outcome)}>{outcomeLabels[test.outcome]}</Badge>
-          <p className="truncate text-sm font-medium">{test.title}</p>
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="mt-0.5 shrink-0">{statusIcon}</div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="truncate text-sm font-semibold">{test.title}</p>
+          </div>
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {test.file}:{test.line}
+          </p>
         </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground">
-          {test.file}:{test.line}
-        </p>
       </div>
-      <div className="hidden shrink-0 items-center gap-3 sm:flex">
-        <span className="text-xs text-muted-foreground">
-          {formatDuration(test.duration)}
-        </span>
-        {test.attachments.length ? (
-          <Badge variant="outline">{test.attachments.length} evidências</Badge>
-        ) : null}
+      <div className="flex shrink-0 items-center gap-3">
+        <div className="hidden items-center gap-3 sm:flex">
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {formatDuration(test.duration)}
+          </span>
+          {test.attachments.length ? (
+            <Badge variant="outline">{test.attachments.length} evidências</Badge>
+          ) : null}
+        </div>
+        <ArrowRight className="size-4 text-muted-foreground" />
       </div>
     </button>
   );
@@ -559,6 +581,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const [outcome, setOutcome] = useState("all");
   const [project, setProject] = useState("all");
+  const [domain, setDomain] = useState("all");
   const [selected, setSelected] = useState<ReportTest>();
   const [dark, setDark] = useState(
     () => localStorage.getItem("portal-report-theme") === "dark",
@@ -588,6 +611,15 @@ export function App() {
     [report],
   );
 
+  const domains = useMemo(() => {
+    const tests = report?.tests.filter(
+      (test) => project === "all" || test.project === project,
+    ) ?? [];
+    return [...new Set(tests.map(domainFor))].sort((left, right) =>
+      left.localeCompare(right, "pt-BR"),
+    );
+  }, [project, report]);
+
   const filteredTests = useMemo(
     () =>
       report?.tests.filter((test) => {
@@ -595,11 +627,17 @@ export function App() {
         return (
           searchable.includes(query.toLowerCase()) &&
           (outcome === "all" || test.outcome === outcome) &&
-          (project === "all" || test.project === project)
+          (project === "all" || test.project === project) &&
+          (domain === "all" || domainFor(test) === domain)
         );
       }) ?? [],
-    [outcome, project, query, report],
+    [domain, outcome, project, query, report],
   );
+
+  const selectProject = (name: string) => {
+    setProject(name);
+    setDomain("all");
+  };
 
   const groupedTests = useMemo(() => {
     const projectGroups = new Map<string, Map<string, ReportTest[]>>();
@@ -653,26 +691,64 @@ export function App() {
     );
   }
 
-  const summaryCards = [
-    { label: "Total", value: report.run.total, icon: TestTube2, tone: "text-blue-600" },
-    { label: "Aprovados", value: report.summary.passed, icon: CheckCircle2, tone: "text-emerald-600" },
-    { label: "Falhas", value: report.summary.failed, icon: CircleAlert, tone: "text-red-600" },
-    { label: "Duração", value: formatDuration(report.run.duration), icon: Clock3, tone: "text-violet-600" },
+  const runPassed = report.run.status === "passed";
+  const passRate = report.run.total
+    ? Math.round((report.summary.passed / report.run.total) * 100)
+    : 0;
+  const summaryMetrics = [
+    {
+      label: "Execuções",
+      value: report.run.total,
+      detail: "testes coletados",
+      icon: Activity,
+      tone: "text-primary",
+    },
+    {
+      label: "Aprovados",
+      value: report.summary.passed,
+      detail: `${passRate}% do total`,
+      icon: CheckCircle2,
+      tone: "text-emerald-600 dark:text-emerald-400",
+    },
+    {
+      label: "Falhas",
+      value: report.summary.failed,
+      detail: report.summary.failed === 1 ? "requer atenção" : "requerem atenção",
+      icon: CircleAlert,
+      tone: "text-red-600 dark:text-red-400",
+    },
+    {
+      label: "Duração",
+      value: formatDuration(report.run.duration),
+      detail: "tempo total",
+      icon: Clock3,
+      tone: "text-amber-600 dark:text-amber-400",
+    },
   ];
 
   return (
-    <main className="min-h-screen">
-      <header className="border-b bg-card/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Portal Quality
-            </p>
-            <h1 className="mt-1 text-lg font-semibold">Relatório Playwright</h1>
+    <main className="min-h-screen pb-16">
+      <header className="floating-chrome sticky top-0 z-40">
+        <div className="mx-auto flex max-w-[1536px] items-center justify-between px-4 py-3.5 sm:px-5">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-[14px] bg-primary text-primary-foreground shadow-sm">
+              <Activity className="size-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                Portal Quality
+              </p>
+              <h1 className="mt-0.5 whitespace-nowrap text-sm font-bold tracking-[-0.01em] sm:text-base">
+                Relatório Playwright
+              </h1>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant={report.run.status === "passed" ? "success" : "destructive"}>
-              {report.run.status === "passed" ? "Execução aprovada" : "Execução com falhas"}
+            <Badge variant={runPassed ? "success" : "destructive"}>
+              <span className="sm:hidden">{runPassed ? "Aprovada" : "Com falhas"}</span>
+              <span className="hidden sm:inline">
+                {runPassed ? "Execução aprovada" : "Execução com falhas"}
+              </span>
             </Badge>
             <Button
               variant="ghost"
@@ -686,40 +762,211 @@ export function App() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-5 py-7">
-        <section className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Visão geral</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Perfil <strong>{report.run.profile}</strong> · {formatDate(report.generatedAt)}
+      <div className="mobile-project-strip border-b border-border/55 px-4 py-3">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto">
+          <button
+            type="button"
+            aria-pressed={project === "all"}
+            onClick={() => selectProject("all")}
+            className={`pressable shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
+              project === "all"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "border bg-background/65 text-muted-foreground"
+            }`}
+          >
+            Visão geral
+          </button>
+          {projects.map((name) => (
+            <button
+              key={name}
+              type="button"
+              aria-pressed={project === name}
+              onClick={() => selectProject(name)}
+              className={`pressable shrink-0 rounded-full px-4 py-2 text-xs font-semibold ${
+                project === name
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "border bg-background/65 text-muted-foreground"
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="report-shell mx-auto max-w-[1536px] px-4 py-6 sm:px-5 sm:py-8">
+        <aside className="report-sidebar" aria-label="Navegação do relatório">
+          <div className="sidebar-material overflow-hidden rounded-[22px] p-3">
+            <div className="px-3 pb-2 pt-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Relatório
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => selectProject("all")}
+              aria-current={project === "all" && domain === "all" ? "page" : undefined}
+              className={`sidebar-item ${project === "all" && domain === "all" ? "is-active" : ""}`}
+            >
+              <LayoutDashboard className="size-4" />
+              <span>Visão geral</span>
+              <span className="ml-auto tabular-nums text-[11px] opacity-65">
+                {report.tests.length}
+              </span>
+            </button>
+
+            <div className="mt-5 px-3 pb-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Projetos
+              </p>
+            </div>
+            <nav className="space-y-1">
+              {projects.map((name) => {
+                const count = report.tests.filter((test) => test.project === name).length;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => selectProject(name)}
+                    aria-current={project === name && domain === "all" ? "page" : undefined}
+                    className={`sidebar-item ${project === name && domain === "all" ? "is-active" : ""}`}
+                  >
+                    <Layers3 className="size-4" />
+                    <span className="truncate">{name}</span>
+                    <span className="ml-auto tabular-nums text-[11px] opacity-65">{count}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {domains.length ? (
+              <>
+                <div className="mt-5 px-3 pb-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                    Domínios
+                  </p>
+                </div>
+                <nav className="space-y-1">
+                  {domains.map((name) => {
+                    const count = report.tests.filter(
+                      (test) =>
+                        (project === "all" || test.project === project) &&
+                        domainFor(test) === name,
+                    ).length;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => setDomain(name)}
+                        aria-current={domain === name ? "page" : undefined}
+                        className={`sidebar-item sidebar-item-domain ${domain === name ? "is-active" : ""}`}
+                      >
+                        <span className="size-1.5 shrink-0 rounded-full bg-current opacity-50" />
+                        <span className="truncate">{name}</span>
+                        <span className="ml-auto tabular-nums text-[11px] opacity-65">{count}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </>
+            ) : null}
+          </div>
+          <p className="px-4 pt-4 text-[11px] leading-5 text-muted-foreground">
+            Node {report.run.node}<br />
+            {report.run.platform}
+          </p>
+        </aside>
+
+        <div className="report-main min-w-0 space-y-7">
+        <section className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-end">
+          <div className="max-w-3xl">
+            <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <span
+                className={`size-2 rounded-full ${runPassed ? "bg-emerald-500" : "bg-red-500"}`}
+              />
+              Perfil {report.run.profile} · {formatDate(report.generatedAt)}
+            </div>
+            <h2 className="display-title">
+              {runPassed ? "Qualidade comprovada, sem ruído." : "Falhas claras. Decisões rápidas."}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
+              Uma leitura direta da execução, com contexto suficiente para agir e
+              evidências acessíveis quando cada detalhe importa.
             </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Node {report.run.node} · {report.run.platform}
-          </p>
+          <div className="material-surface rounded-2xl p-5">
+            <div className="flex items-center gap-4">
+              <div
+                className={`status-orb flex size-12 shrink-0 items-center justify-center rounded-2xl ${
+                  runPassed
+                    ? "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-500/12 text-red-600 dark:text-red-400"
+                }`}
+              >
+                {runPassed ? <ShieldCheck className="size-6" /> : <CircleAlert className="size-6" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-sm font-bold">
+                    {runPassed ? "Tudo aprovado" : `${report.summary.failed} falhas encontradas`}
+                  </p>
+                  <span className="text-sm font-bold tabular-nums">{passRate}%</span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={`h-full rounded-full ${runPassed ? "bg-emerald-500" : "bg-primary"}`}
+                    style={{ width: `${passRate}%` }}
+                  />
+                </div>
+                <p className="mt-2 truncate text-xs text-muted-foreground">
+                  Node {report.run.node} · {report.run.platform}
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {summaryCards.map(({ label, value, icon: Icon, tone }) => (
-            <Card key={label}>
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{label}</p>
-                  <p className="mt-1 text-2xl font-semibold">{value}</p>
+        <section className="material-surface grid overflow-hidden rounded-2xl sm:grid-cols-2 lg:grid-cols-4">
+          {summaryMetrics.map(({ label, value, detail, icon: Icon, tone }, index) => (
+            <div
+              key={label}
+              className={`flex items-center gap-4 p-5 sm:p-6 ${
+                index === 1
+                  ? "border-t sm:border-l sm:border-t-0"
+                  : index === 2
+                    ? "border-t lg:border-l lg:border-t-0"
+                    : index === 3
+                      ? "border-t sm:border-l lg:border-t-0"
+                      : ""
+              }`}
+            >
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-muted/75">
+                <Icon className={`size-5 ${tone}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+                <div className="mt-0.5 flex items-baseline gap-2">
+                  <p className="text-2xl font-bold tracking-[-0.03em] tabular-nums">{value}</p>
+                  <span className="hidden truncate text-[11px] text-muted-foreground xl:inline">
+                    {detail}
+                  </span>
                 </div>
-                <div className="rounded-lg bg-muted p-2.5">
-                  <Icon className={`size-5 ${tone}`} />
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </section>
 
-        <Card>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-[1fr_190px_190px]">
+        <Card className="overflow-hidden">
+          <CardContent className="space-y-5">
+            <div>
+              <h3 className="section-title text-xl font-bold">Execuções</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Encontre um teste e abra seus detalhes sem perder o contexto da execução.
+              </p>
+            </div>
+            <div className="report-filters">
               <div className="relative">
-                <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                <Search className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -728,9 +975,10 @@ export function App() {
                 />
               </div>
               <select
+                aria-label="Filtrar por resultado"
                 value={outcome}
                 onChange={(event) => setOutcome(event.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="h-11 rounded-xl border bg-background/65 px-3 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="all">Todos os resultados</option>
                 <option value="expected">Aprovados</option>
@@ -739,9 +987,10 @@ export function App() {
                 <option value="skipped">Ignorados</option>
               </select>
               <select
+                aria-label="Filtrar por projeto"
                 value={project}
-                onChange={(event) => setProject(event.target.value)}
-                className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                onChange={(event) => selectProject(event.target.value)}
+                className="h-11 rounded-xl border bg-background/65 px-3 text-sm font-medium shadow-sm outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="all">Todos os projetos</option>
                 {projects.map((name) => (
@@ -758,11 +1007,11 @@ export function App() {
                   <details
                     key={projectGroup.name}
                     open
-                    className="group overflow-hidden rounded-xl border bg-card"
+                    className="group overflow-hidden rounded-2xl border bg-background/35"
                   >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 hover:bg-muted/50">
+                    <summary className="pressable flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 hover:bg-muted/45">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="rounded-lg bg-muted p-2">
+                        <div className="rounded-xl bg-muted/80 p-2.5">
                           <FolderOpen className="size-4 text-primary" />
                         </div>
                         <div className="min-w-0">
@@ -786,10 +1035,10 @@ export function App() {
                         <ChevronDown className="size-4 text-muted-foreground transition group-open:rotate-180" />
                       </div>
                     </summary>
-                    <div className="space-y-3 border-t bg-muted/20 p-3">
+                    <div className="space-y-3 border-t bg-muted/15 p-3">
                       {projectGroup.domains.map((domain) => (
-                        <section key={domain.name} className="overflow-hidden rounded-lg border bg-card">
-                          <div className="flex items-center justify-between gap-3 bg-muted/40 px-4 py-2.5">
+                        <section key={domain.name} className="overflow-hidden rounded-xl border bg-card/75">
+                          <div className="flex items-center justify-between gap-3 bg-muted/30 px-4 py-3">
                             <div>
                               <p className="text-sm font-medium capitalize">{domain.name}</p>
                               <p className="text-xs text-muted-foreground">
@@ -826,6 +1075,7 @@ export function App() {
             </p>
           </CardContent>
         </Card>
+        </div>
       </div>
 
       <Sheet
