@@ -411,6 +411,35 @@ npm run pw:report
 Em falhas, o Playwright mantém screenshot, vídeo e trace em `test-results/` e o
 relatório em `playwright-report/`.
 
+### Relatório Portal minimalista
+
+Além do HTML oficial do Playwright, a suíte gera dados para um relatório próprio
+em React, Vite e componentes shadcn. Ele oferece filtros por resultado e projeto,
+agrupamento por projeto e domínio, diagnóstico destacado de falhas, detalhes das
+etapas, lightbox de screenshots, vídeos e controles para baixar ou abrir traces.
+
+Para validar o visual com os smokes pequenos do perfil selecionado e guardar
+evidências inclusive dos testes aprovados:
+
+```bash
+PW_PROFILE=ht npm run pw:test:report:sample
+npm run pw:report:portal:open
+```
+
+Na execução cotidiana, a política continua econômica: screenshot, vídeo e trace
+são preservados em falhas. `PW_EVIDENCE=all` deve ser usado somente quando for
+útil documentar também os testes aprovados. Para montar ou abrir o relatório da
+última execução manualmente:
+
+```bash
+npm run pw:report:portal:build
+npm run pw:report:portal
+```
+
+O resultado fica em `portal-report/index.html` e não é versionado. O comando
+`pw:test:all` consolida automaticamente tanto o relatório oficial em
+`playwright-report/` quanto o relatório Portal em `portal-report/`.
+
 ## Integração Portal → SCCI/AEJS
 
 Cada cenário usa uma operação própria definida no perfil ativo:

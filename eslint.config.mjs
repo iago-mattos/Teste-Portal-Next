@@ -22,6 +22,7 @@ export default tseslint.config(
       "cypress/videos/**",
       "playwright/.auth/**",
       "playwright-report/**",
+      "portal-report/**",
       "test-results/**",
       "demo-results/**",
       "Portal-antigo/**",

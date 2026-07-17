@@ -75,10 +75,24 @@ for (const phase of phases) {
 
 const mergeResult = spawnSync(
   playwrightBin,
-  ["merge-reports", "--reporter=html", collectedBlobs],
+  [
+    "merge-reports",
+    "--reporter=html,./tests/reporting/portal-reporter.ts",
+    collectedBlobs,
+  ],
   { stdio: "inherit" },
 );
 if (mergeResult.status !== 0) failed = true;
 
+if (mergeResult.status === 0) {
+  const portalReport = spawnSync(
+    process.execPath,
+    [resolve("scripts/build-portal-report.mjs")],
+    { stdio: "inherit" },
+  );
+  if (portalReport.status !== 0) failed = true;
+}
+
 console.log("\nRelatorio consolidado: playwright-report/index.html");
+console.log("Relatorio Portal: portal-report/index.html");
 process.exitCode = failed ? 1 : 0;

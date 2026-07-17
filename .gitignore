@@ -10,6 +10,7 @@ cypress/videos/
 playwright/.auth/
 .playwright/
 playwright-report/
+portal-report/
 test-results/
 demo-results/
 .env

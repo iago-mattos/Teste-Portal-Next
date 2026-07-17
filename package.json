@@ -40,10 +40,14 @@
     "pw:check": "playwright test --list --pass-with-no-tests",
     "pw:ui": "npm run config:check && playwright test --ui",
     "pw:report": "playwright show-report",
+    "pw:report:portal": "npm run pw:report:portal:build && npm run pw:report:portal:open",
+    "pw:report:portal:build": "node scripts/build-portal-report.mjs",
+    "pw:report:portal:open": "vite preview --config report-ui/vite.config.ts --open",
+    "pw:test:report:sample": "PW_EVIDENCE=all playwright test tests/smoke --project=smoke --workers=1 && npm run pw:report:portal:build",
     "pw:install": "playwright install chromium",
     "demo:simulador": "node scripts/require-mutation-opt-in.mjs && node scripts/run-demo-simulator.mjs",
     "demo:simulador:mp4": "node scripts/convert-demo-video.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p report-ui/tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
     "check:test-contracts": "node scripts/check-test-contracts.mjs",
     "check": "npm run typecheck && npm run lint && npm run check:test-contracts && npm run pw:check",
@@ -60,13 +64,29 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@playwright/test": "1.61.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
     "cypress": "^15.17.0",
     "eslint": "^9.39.4",
     "mochawesome": "^7.1.4",
     "mochawesome-merge": "^5.1.1",
     "mochawesome-report-generator": "^6.3.2",
+    "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1"
+    "typescript-eslint": "^8.62.1",
+    "vite": "^8.1.5"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.19",
+    "@radix-ui/react-tabs": "^1.1.17",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.24.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwind-merge": "^3.6.0"
   }
 }

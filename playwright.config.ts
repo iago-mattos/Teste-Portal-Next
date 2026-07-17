@@ -7,6 +7,7 @@ loadEnvironmentProfile();
 
 const portalBaseUrl = resolvePortalBaseUrl();
 const includeConsumableTests = process.env.PW_INCLUDE_CONSUMABLE === "true";
+const captureAllEvidence = process.env.PW_EVIDENCE === "all";
 const desktopChromium = {
   ...devices["Desktop Chrome"],
   viewport: { width: 1440, height: 900 },
@@ -26,14 +27,18 @@ export default defineConfig({
   reporter: [
     [process.env.CI ? "dot" : "list"],
     ["html", { open: "never", outputFolder: "playwright-report" }],
+    [
+      "./tests/reporting/portal-reporter.ts",
+      { outputDir: ".playwright/portal-report-data" },
+    ],
   ],
   use: {
     baseURL: portalBaseUrl,
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
-    screenshot: "only-on-failure",
-    trace: "retain-on-failure",
-    video: "retain-on-failure",
+    screenshot: captureAllEvidence ? "on" : "only-on-failure",
+    trace: captureAllEvidence ? "on" : "retain-on-failure",
+    video: captureAllEvidence ? "on" : "retain-on-failure",
   },
   projects: [
     {
