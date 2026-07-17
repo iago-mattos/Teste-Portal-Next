@@ -43,6 +43,7 @@
     "pw:report:portal": "npm run pw:report:portal:build && npm run pw:report:portal:open",
     "pw:report:portal:build": "node scripts/build-portal-report.mjs",
     "pw:report:portal:open": "vite preview --config report-ui/vite.config.ts --open",
+    "pw:report:package": "node scripts/pack-playwright-report.mjs",
     "pw:test:report:sample": "PW_EVIDENCE=all playwright test tests/smoke --project=smoke --workers=1 && npm run pw:report:portal:build",
     "pw:install": "playwright install chromium",
     "demo:simulador": "node scripts/require-mutation-opt-in.mjs && node scripts/run-demo-simulator.mjs",

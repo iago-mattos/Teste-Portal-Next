@@ -8,82 +8,15 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, extname, relative, resolve } from "node:path";
-import type {
-  FullConfig,
-  FullResult,
-  Reporter,
-  Suite,
-  TestCase,
-  TestResult,
-  TestStep,
-} from "@playwright/test/reporter";
 
-interface PortalReporterOptions {
-  readonly outputDir?: string;
-}
-
-interface ReportAttachment {
-  readonly name: string;
-  readonly contentType: string;
-  readonly kind: "image" | "video" | "trace" | "other";
-  readonly path: string;
-  readonly size: number;
-}
-
-interface ReportError {
-  readonly message: string;
-  readonly stack?: string;
-  readonly snippet?: string;
-  readonly value?: string;
-  readonly location?: {
-    readonly file: string;
-    readonly line: number;
-    readonly column: number;
-  };
-}
-
-interface ReportStep {
-  readonly title: string;
-  readonly category: string;
-  readonly duration: number;
-  readonly error?: string;
-  readonly steps: readonly ReportStep[];
-}
-
-interface ReportTest {
-  readonly id: string;
-  readonly title: string;
-  readonly titlePath: readonly string[];
-  readonly project: string;
-  readonly file: string;
-  readonly line: number;
-  readonly tags: readonly string[];
-  readonly status: TestResult["status"];
-  readonly outcome: ReturnType<TestCase["outcome"]>;
-  readonly expectedStatus: TestCase["expectedStatus"];
-  readonly duration: number;
-  readonly retry: number;
-  readonly startedAt: string;
-  readonly errors: readonly ReportError[];
-  readonly annotations: readonly {
-    type: string;
-    description?: string;
-  }[];
-  readonly attachments: readonly ReportAttachment[];
-  readonly steps: readonly ReportStep[];
-}
-
-function attachmentKind(
-  name: string,
-  contentType: string,
-): ReportAttachment["kind"] {
+function attachmentKind(name, contentType) {
   if (contentType.startsWith("image/")) return "image";
   if (contentType.startsWith("video/")) return "video";
   if (name.toLowerCase().includes("trace")) return "trace";
   return "other";
 }
 
-function serializeStep(step: TestStep): ReportStep {
+function serializeStep(step) {
   return {
     title: step.title,
     category: step.category,
@@ -93,7 +26,7 @@ function serializeStep(step: TestStep): ReportStep {
   };
 }
 
-function stripAnsi(value: string | undefined): string | undefined {
+function stripAnsi(value) {
   const ansiPattern = new RegExp(
     `${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`,
     "gu",
@@ -101,27 +34,24 @@ function stripAnsi(value: string | undefined): string | undefined {
   return value?.replace(ansiPattern, "");
 }
 
-export default class PortalReporter implements Reporter {
-  private readonly outputDir: string;
-  private readonly attachmentsDir: string;
-  private readonly tests: ReportTest[] = [];
-  private rootDir = process.cwd();
-  private startedAt = new Date();
-  private total = 0;
-  private prepared = false;
-
-  constructor(options: PortalReporterOptions = {}) {
+export default class PrognumReporter {
+  constructor(options = {}) {
     this.outputDir = resolve(
-      options.outputDir ?? ".playwright/portal-report-data",
+      options.outputDir ?? ".playwright/prognum-report-data",
     );
     this.attachmentsDir = resolve(this.outputDir, "assets");
+    this.tests = [];
+    this.rootDir = process.cwd();
+    this.startedAt = new Date();
+    this.total = 0;
+    this.prepared = false;
   }
 
-  printsToStdio(): boolean {
+  printsToStdio() {
     return false;
   }
 
-  onBegin(config: FullConfig, suite: Suite): void {
+  onBegin(config, suite) {
     this.rootDir = config.rootDir;
     this.startedAt = new Date();
     this.total = suite.allTests().length;
@@ -129,7 +59,7 @@ export default class PortalReporter implements Reporter {
     this.prepared = false;
   }
 
-  onTestEnd(test: TestCase, result: TestResult): void {
+  onTestEnd(test, result) {
     if (!this.prepared) {
       rmSync(this.outputDir, { recursive: true, force: true });
       mkdirSync(this.attachmentsDir, { recursive: true });
@@ -140,37 +70,35 @@ export default class PortalReporter implements Reporter {
       .update(`${test.id}-${result.retry}`)
       .digest("hex")
       .slice(0, 12);
-    const attachments = result.attachments.flatMap(
-      (attachment, index): ReportAttachment[] => {
-        const extension = attachment.path
-          ? extname(attachment.path)
-          : this.extensionFor(attachment.contentType);
-        const sourceName = attachment.path
-          ? basename(attachment.path, extname(attachment.path))
-          : attachment.name;
-        const safeName = sourceName.replace(/[^a-z0-9_-]+/giu, "-");
-        const fileName = `${attachmentPrefix}-${index}-${safeName}${extension}`;
-        const destination = resolve(this.attachmentsDir, fileName);
+    const attachments = result.attachments.flatMap((attachment, index) => {
+      const extension = attachment.path
+        ? extname(attachment.path)
+        : this.extensionFor(attachment.contentType);
+      const sourceName = attachment.path
+        ? basename(attachment.path, extname(attachment.path))
+        : attachment.name;
+      const safeName = sourceName.replace(/[^a-z0-9_-]+/giu, "-");
+      const fileName = `${attachmentPrefix}-${index}-${safeName}${extension}`;
+      const destination = resolve(this.attachmentsDir, fileName);
 
-        if (attachment.path && existsSync(attachment.path)) {
-          copyFileSync(attachment.path, destination);
-        } else if (attachment.body) {
-          writeFileSync(destination, attachment.body);
-        } else {
-          return [];
-        }
+      if (attachment.path && existsSync(attachment.path)) {
+        copyFileSync(attachment.path, destination);
+      } else if (attachment.body) {
+        writeFileSync(destination, attachment.body);
+      } else {
+        return [];
+      }
 
-        return [
-          {
-            name: attachment.name,
-            contentType: attachment.contentType,
-            kind: attachmentKind(attachment.name, attachment.contentType),
-            path: `evidence/${fileName}`,
-            size: statSync(destination).size,
-          },
-        ];
-      },
-    );
+      return [
+        {
+          name: attachment.name,
+          contentType: attachment.contentType,
+          kind: attachmentKind(attachment.name, attachment.contentType),
+          path: `evidence/${fileName}`,
+          size: statSync(destination).size,
+        },
+      ];
+    });
 
     this.tests.push({
       id: `${test.id}-${result.retry}`,
@@ -187,8 +115,7 @@ export default class PortalReporter implements Reporter {
       retry: result.retry,
       startedAt: result.startTime.toISOString(),
       errors: result.errors.map((error) => ({
-        message:
-          stripAnsi(error.message ?? error.value) ?? "Erro desconhecido",
+        message: stripAnsi(error.message ?? error.value) ?? "Erro desconhecido",
         stack: stripAnsi(error.stack),
         snippet: stripAnsi(error.snippet),
         value: stripAnsi(error.value),
@@ -209,7 +136,7 @@ export default class PortalReporter implements Reporter {
     });
   }
 
-  onEnd(result: FullResult): void {
+  onEnd(result) {
     if (!this.prepared) return;
 
     const endedAt = new Date();
@@ -251,7 +178,7 @@ export default class PortalReporter implements Reporter {
     );
   }
 
-  private extensionFor(contentType: string): string {
+  extensionFor(contentType) {
     if (contentType === "image/png") return ".png";
     if (contentType === "image/jpeg") return ".jpg";
     if (contentType === "video/webm") return ".webm";

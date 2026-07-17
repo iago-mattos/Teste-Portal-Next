@@ -11,6 +11,9 @@ playwright/.auth/
 .playwright/
 playwright-report/
 portal-report/
+artifacts/
+.tmp-report-consumer/
+packages/prognum-playwright-report/dist/
 test-results/
 demo-results/
 .env

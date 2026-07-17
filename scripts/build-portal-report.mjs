@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
 
@@ -31,6 +32,19 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 
 mkdirSync(outputRoot, { recursive: true });
 cpSync(sourceReport, resolve(outputRoot, "report-data.json"));
+writeFileSync(
+  resolve(outputRoot, "report-config.json"),
+  `${JSON.stringify(
+    {
+      productName: "Portal Quality",
+      reportTitle: "Relatório Playwright",
+      domains: {},
+    },
+    null,
+    2,
+  )}\n`,
+  "utf8",
+);
 rmSync(outputEvidence, { recursive: true, force: true });
 if (existsSync(sourceAssets)) {
   cpSync(sourceAssets, outputEvidence, { recursive: true });

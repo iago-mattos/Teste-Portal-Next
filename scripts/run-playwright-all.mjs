@@ -77,7 +77,7 @@ const mergeResult = spawnSync(
   playwrightBin,
   [
     "merge-reports",
-    "--reporter=html,./tests/reporting/portal-reporter.ts",
+    "--reporter=html,./packages/prognum-playwright-report/runtime/reporter.mjs",
     collectedBlobs,
   ],
   { stdio: "inherit" },

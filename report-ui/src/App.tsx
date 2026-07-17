@@ -40,6 +40,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   PortalReport,
+  ReportAppearance,
   ReportAttachment,
   ReportError,
   ReportStep,
@@ -70,6 +71,12 @@ const domainLabels: Record<string, string> = {
   mobile: "Mobile e acessibilidade",
   "portal-aejs": "Portal → SCCI/AEJS",
   setup: "Preparação",
+};
+
+const defaultAppearance: ReportAppearance = {
+  productName: "Portal Quality",
+  reportTitle: "Relatório Playwright",
+  domains: {},
 };
 
 function formatDuration(duration: number): string {
@@ -105,10 +112,13 @@ function outcomeVariant(
   return "secondary";
 }
 
-function domainFor(test: ReportTest): string {
+function domainFor(
+  test: ReportTest,
+  overrides: Readonly<Record<string, string>> = {},
+): string {
   const parts = test.file.split("/");
   const rawDomain = parts.length > 2 ? parts[1] : parts[0];
-  return domainLabels[rawDomain] ?? rawDomain.replaceAll("-", " ");
+  return overrides[rawDomain] ?? domainLabels[rawDomain] ?? rawDomain.replaceAll("-", " ");
 }
 
 function summarize(tests: readonly ReportTest[]) {
@@ -268,7 +278,13 @@ function FailurePanel({
   );
 }
 
-function TestDetails({ test }: { test: ReportTest }) {
+function TestDetails({
+  test,
+  domains,
+}: {
+  test: ReportTest;
+  domains: Readonly<Record<string, string>>;
+}) {
   const [lightbox, setLightbox] = useState<ReportAttachment>();
   const [copiedTrace, setCopiedTrace] = useState<string>();
   const images = test.attachments.filter(({ kind }) => kind === "image");
@@ -290,7 +306,7 @@ function TestDetails({ test }: { test: ReportTest }) {
           {outcomeLabels[test.outcome]}
         </Badge>
         <Badge variant="outline">{test.project}</Badge>
-        <Badge variant="outline">{domainFor(test)}</Badge>
+        <Badge variant="outline">{domainFor(test, domains)}</Badge>
         {test.tags.map((tag) => (
           <Badge key={tag} variant="secondary">
             {tag}
@@ -577,6 +593,7 @@ function TestRow({ test, onSelect }: { test: ReportTest; onSelect: () => void })
 
 export function App() {
   const [report, setReport] = useState<PortalReport>();
+  const [appearance, setAppearance] = useState<ReportAppearance>(defaultAppearance);
   const [error, setError] = useState<string>();
   const [query, setQuery] = useState("");
   const [outcome, setOutcome] = useState("all");
@@ -593,18 +610,44 @@ export function App() {
   }, [dark]);
 
   useEffect(() => {
-    fetch("./report-data.json")
-      .then((response) => {
+    Promise.all([
+      fetch("./report-data.json").then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json() as Promise<PortalReport>;
+      }),
+      fetch("./report-config.json")
+        .then((response) =>
+          response.ok
+            ? (response.json() as Promise<Partial<ReportAppearance>>)
+            : defaultAppearance,
+        )
+        .catch(() => defaultAppearance),
+    ])
+      .then(([loadedReport, loadedAppearance]) => {
+        setReport(loadedReport);
+        setAppearance({
+          ...defaultAppearance,
+          ...loadedAppearance,
+          domains: loadedAppearance.domains ?? {},
+        });
       })
-      .then(setReport)
       .catch((reason: unknown) =>
         setError(
           reason instanceof Error ? reason.message : "Falha ao carregar o relatório",
         ),
       );
   }, []);
+
+  useEffect(() => {
+    document.title = `${appearance.reportTitle} · ${appearance.productName}`;
+    if (appearance.accentColor) {
+      document.documentElement.style.setProperty("--primary", appearance.accentColor);
+      document.documentElement.style.setProperty("--ring", appearance.accentColor);
+    } else {
+      document.documentElement.style.removeProperty("--primary");
+      document.documentElement.style.removeProperty("--ring");
+    }
+  }, [appearance]);
 
   const projects = useMemo(
     () => [...new Set(report?.tests.map((test) => test.project) ?? [])].sort(),
@@ -615,10 +658,10 @@ export function App() {
     const tests = report?.tests.filter(
       (test) => project === "all" || test.project === project,
     ) ?? [];
-    return [...new Set(tests.map(domainFor))].sort((left, right) =>
+    return [...new Set(tests.map((test) => domainFor(test, appearance.domains)))].sort((left, right) =>
       left.localeCompare(right, "pt-BR"),
     );
-  }, [project, report]);
+  }, [appearance.domains, project, report]);
 
   const filteredTests = useMemo(
     () =>
@@ -628,10 +671,10 @@ export function App() {
           searchable.includes(query.toLowerCase()) &&
           (outcome === "all" || test.outcome === outcome) &&
           (project === "all" || test.project === project) &&
-          (domain === "all" || domainFor(test) === domain)
+          (domain === "all" || domainFor(test, appearance.domains) === domain)
         );
       }) ?? [],
-    [domain, outcome, project, query, report],
+    [appearance.domains, domain, outcome, project, query, report],
   );
 
   const selectProject = (name: string) => {
@@ -643,7 +686,7 @@ export function App() {
     const projectGroups = new Map<string, Map<string, ReportTest[]>>();
     for (const test of filteredTests) {
       const domains = projectGroups.get(test.project) ?? new Map<string, ReportTest[]>();
-      const domain = domainFor(test);
+      const domain = domainFor(test, appearance.domains);
       domains.set(domain, [...(domains.get(domain) ?? []), test]);
       projectGroups.set(test.project, domains);
     }
@@ -665,7 +708,7 @@ export function App() {
         })),
       };
     });
-  }, [filteredTests]);
+  }, [appearance.domains, filteredTests]);
 
   if (error) {
     return (
@@ -736,10 +779,10 @@ export function App() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                Portal Quality
+                {appearance.productName}
               </p>
               <h1 className="mt-0.5 whitespace-nowrap text-sm font-bold tracking-[-0.01em] sm:text-base">
-                Relatório Playwright
+                {appearance.reportTitle}
               </h1>
             </div>
           </div>
@@ -851,7 +894,7 @@ export function App() {
                     const count = report.tests.filter(
                       (test) =>
                         (project === "all" || test.project === project) &&
-                        domainFor(test) === name,
+                        domainFor(test, appearance.domains) === name,
                     ).length;
                     return (
                       <button
@@ -1092,7 +1135,7 @@ export function App() {
                 {selected.titlePath.slice(0, -1).join(" › ")}
               </SheetDescription>
               <div className="mt-5">
-                <TestDetails test={selected} />
+                <TestDetails test={selected} domains={appearance.domains} />
               </div>
             </>
           ) : null}

@@ -23,6 +23,8 @@ export default tseslint.config(
       "playwright/.auth/**",
       "playwright-report/**",
       "portal-report/**",
+      "packages/prognum-playwright-report/dist/**",
+      ".tmp-report-consumer/**",
       "test-results/**",
       "demo-results/**",
       "Portal-antigo/**",
@@ -58,7 +60,11 @@ export default tseslint.config(
     },
   },
   {
-    files: ["scripts/**/*.mjs", "eslint.config.mjs"],
+    files: [
+      "scripts/**/*.mjs",
+      "packages/**/*.mjs",
+      "eslint.config.mjs",
+    ],
     languageOptions: {
       globals: {
         console: "readonly",

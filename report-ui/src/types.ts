@@ -70,3 +70,10 @@ export interface PortalReport {
   };
   readonly tests: readonly ReportTest[];
 }
+
+export interface ReportAppearance {
+  readonly productName: string;
+  readonly reportTitle: string;
+  readonly accentColor?: string;
+  readonly domains: Readonly<Record<string, string>>;
+}

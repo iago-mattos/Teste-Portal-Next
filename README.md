@@ -440,6 +440,32 @@ O resultado fica em `portal-report/index.html` e não é versionado. O comando
 `pw:test:all` consolida automaticamente tanto o relatório oficial em
 `playwright-report/` quanto o relatório Portal em `portal-report/`.
 
+### Reutilização do relatório em outro projeto
+
+O relatório também é distribuído como o pacote local
+`@prognum/playwright-report`. Para gerar o arquivo instalável:
+
+```bash
+npm run pw:report:package
+```
+
+O pacote será criado em
+`artifacts/prognum-playwright-report-0.1.0.tgz`. No projeto Playwright de
+destino, execute:
+
+```bash
+npm install -D /caminho/prognum-playwright-report-0.1.0.tgz
+npx prognum-playwright-report init
+npm run pw:test:report
+npm run pw:report:open
+```
+
+O `init` preserva o `playwright.config.*` original e cria uma configuração
+adicional somente para o relatório. Ele também adiciona os scripts e entradas
+de `.gitignore`. Título, produto, cor, domínios, política de evidências e pasta
+de saída ficam centralizados no arquivo `prognum-report.config.mjs` do projeto
+consumidor.
+
 ## Integração Portal → SCCI/AEJS
 
 Cada cenário usa uma operação própria definida no perfil ativo:

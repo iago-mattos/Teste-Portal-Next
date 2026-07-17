@@ -28,7 +28,7 @@ export default defineConfig({
     [process.env.CI ? "dot" : "list"],
     ["html", { open: "never", outputFolder: "playwright-report" }],
     [
-      "./tests/reporting/portal-reporter.ts",
+      "./packages/prognum-playwright-report/runtime/reporter.mjs",
       { outputDir: ".playwright/portal-report-data" },
     ],
   ],
