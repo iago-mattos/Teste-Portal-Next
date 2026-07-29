@@ -20,10 +20,16 @@ export type ProvisioningSlotId = (typeof PROVISIONING_SLOT_IDS)[number];
 
 export type ProvisioningStateOwner =
   | "provisioner"
+  | "c6-phase-preparation"
   | "existing-integration-test"
   | "external-preparation";
 
 export type ProvisioningCreationMode = "simulator" | "manual-shared";
+
+export interface ProvisioningPhaseTarget {
+  readonly code: string;
+  readonly label: string;
+}
 
 export interface ProvisioningSlotDefinition {
   readonly id: ProvisioningSlotId;
@@ -35,4 +41,5 @@ export interface ProvisioningSlotDefinition {
   readonly stateOwner: ProvisioningStateOwner;
   readonly creationMode: ProvisioningCreationMode;
   readonly sharedCpfWith?: ProvisioningSlotId;
+  readonly phaseTarget?: ProvisioningPhaseTarget;
 }

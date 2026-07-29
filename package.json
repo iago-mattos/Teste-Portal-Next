@@ -37,6 +37,8 @@
     "pw:provision:publish": "node scripts/manage-provisioning-registry.mjs publish",
     "pw:provision:c6:create": "node scripts/require-mutation-opt-in.mjs && node scripts/run-c6-provisioning-slot.mjs",
     "pw:provision:c6:create-batch": "node scripts/require-mutation-opt-in.mjs && node scripts/run-c6-provisioning-batch.mjs",
+    "pw:provision:c6:prepare-phase": "node scripts/require-mutation-opt-in.mjs && node scripts/run-c6-phase-preparation.mjs",
+    "pw:provision:c6:prepare-phases": "node scripts/require-mutation-opt-in.mjs && node scripts/run-c6-phase-preparation-batch.mjs",
     "pw:provision:c6:status": "node scripts/manage-c6-provisioning-registry.mjs status",
     "pw:provision:c6:mark-ready": "node scripts/manage-c6-provisioning-registry.mjs mark-ready",
     "pw:provision:c6:register-manual": "node scripts/manage-c6-provisioning-registry.mjs register-manual",

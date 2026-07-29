@@ -267,17 +267,38 @@ operação compartilhada, registre-a com:
 npm run pw:provision:c6:register-manual -- TIMELINE_DOCUMENTS 000000000
 ```
 
-Os papéis que exigem cancelamento, expiração, decisão de crédito ou avanço para
-Documentos ainda precisam da preparação externa correspondente. Depois de
-confirmar o estado real, marque cada papel como pronto e publique o overlay:
+As transições de crédito preparadas diretamente no SCCI são automatizadas pelos
+slots oficiais abaixo:
+
+| Slot | Fase SCCI | Reflexo exigido no Portal |
+| --- | --- | --- |
+| `CREDIT_REJECTED` | `101 — Crédito Reprovado` | Crédito Reprovado, orientação de contato e cadastro indisponível. |
+| `CREDIT_APPROVED` | `50 — Cadastro da Proposta` | Etapa Concluída, Fase Atual Cadastro e mensagem explícita de cadastro concluído. |
+
+Prepare um slot isolado ou os dois em sequência:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-phase -- CREDIT_REJECTED
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-phase -- CREDIT_APPROVED
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-phases
+```
+
+O fluxo localiza o campo pelo contrato ExtJS estável
+`OPERACAO_CREDITO$NU_FASE_ATUAL`, salva, reabre a operação e comprova tanto a
+fase persistida no SCCI quanto o reflexo funcional no Portal. A fase `700` não
+faz parte deste provisionamento.
+
+Os papéis que exigem cancelamento, expiração ou avanço para Documentos ainda
+precisam da preparação externa correspondente. Depois de confirmar o estado
+real, marque cada papel externo como pronto e publique o overlay:
 
 ```bash
 npm run pw:provision:c6:mark-ready -- CANCELED
 npm run pw:provision:c6:publish
 ```
 
-O provisionador apenas cria a base em Cadastro e preenche o CEP; ele não
-antecipa as transições funcionais específicas de cada teste.
+O provisionador-base cria a proposta em Cadastro e preenche o CEP; o comando de
+fase prepara exclusivamente os dois estados declarados acima.
 
 ### Provisionamento das massas persistentes do Portal Core
 

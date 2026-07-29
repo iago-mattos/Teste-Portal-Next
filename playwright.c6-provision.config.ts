@@ -5,7 +5,10 @@ loadEnvironmentProfile();
 
 export default defineConfig({
   testDir: "./tests/provisioning",
-  testMatch: "**/create-c6-mass.provision.ts",
+  testMatch: [
+    "**/create-c6-mass.provision.ts",
+    "**/prepare-c6-phase.provision.ts",
+  ],
   outputDir: "test-results/c6-provisioning",
   fullyParallel: false,
   workers: 1,

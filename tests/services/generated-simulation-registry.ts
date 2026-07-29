@@ -274,3 +274,27 @@ export async function listGeneratedSimulations(): Promise<
 > {
   return (await readRegistry(resolveProfileName())).entries;
 }
+
+export async function getGeneratedSimulationForSlot(
+  slotId: ProvisioningSlotId,
+): Promise<GeneratedSimulationEntry | undefined> {
+  const profile = resolveProfileName();
+  const registry = await readRegistry(profile);
+  const index = registry.entries.findIndex((entry) => entry.slotId === slotId);
+  if (index < 0) return undefined;
+
+  const current = registry.entries[index];
+  if (!current) return undefined;
+
+  const slot = getProvisioningSlot(slotId);
+  const synchronized: GeneratedSimulationEntry = {
+    ...current,
+    environmentKey: slot.environmentKey,
+    purpose: slot.purpose,
+    desiredState: slot.desiredState,
+    stateOwner: slot.stateOwner,
+  };
+  registry.entries[index] = synchronized;
+  await persistRegistry(profile, registry);
+  return synchronized;
+}

@@ -10,6 +10,7 @@ import {
 const validSlotIds = new Set<string>(PROVISIONING_SLOT_IDS);
 const validStateOwners = new Set<ProvisioningStateOwner>([
   "provisioner",
+  "c6-phase-preparation",
   "existing-integration-test",
   "external-preparation",
 ]);
@@ -20,7 +21,19 @@ const validCreationModes = new Set<ProvisioningCreationMode>([
 
 function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition {
   const creationMode = entry.creationMode as ProvisioningCreationMode;
+  const stateOwner = entry.stateOwner as ProvisioningStateOwner;
   const sharedCpfWith = (entry as { sharedCpfWith?: string }).sharedCpfWith;
+  const phaseTarget = (
+    entry as {
+      phaseTarget?: { code?: unknown; label?: unknown };
+    }
+  ).phaseTarget;
+  const validPhaseTarget =
+    phaseTarget !== undefined &&
+    typeof phaseTarget.code === "string" &&
+    /^\d+$/.test(phaseTarget.code) &&
+    typeof phaseTarget.label === "string" &&
+    Boolean(phaseTarget.label.trim());
   if (
     !validSlotIds.has(entry.id) ||
     !Number.isInteger(entry.sequence) ||
@@ -29,8 +42,10 @@ function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition
     !entry.environmentKey.startsWith("PORTAL_") ||
     !entry.purpose.trim() ||
     !entry.desiredState.trim() ||
-    !validStateOwners.has(entry.stateOwner as ProvisioningStateOwner) ||
+    !validStateOwners.has(stateOwner) ||
     !validCreationModes.has(creationMode) ||
+    (stateOwner === "c6-phase-preparation" && !validPhaseTarget) ||
+    (stateOwner !== "c6-phase-preparation" && phaseTarget !== undefined) ||
     (creationMode === "manual-shared" &&
       (!sharedCpfWith ||
         !validSlotIds.has(sharedCpfWith) ||
@@ -42,9 +57,15 @@ function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition
   return Object.freeze({
     ...entry,
     id: entry.id as ProvisioningSlotId,
-    stateOwner: entry.stateOwner as ProvisioningStateOwner,
+    stateOwner,
     creationMode,
     sharedCpfWith: sharedCpfWith as ProvisioningSlotId | undefined,
+    phaseTarget: validPhaseTarget
+      ? Object.freeze({
+          code: phaseTarget.code as string,
+          label: (phaseTarget.label as string).trim(),
+        })
+      : undefined,
   });
 }
 

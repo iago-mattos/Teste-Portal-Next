@@ -37,7 +37,11 @@
     "environmentKey": "PORTAL_PROPOSAL_CREDIT_REJECTED",
     "purpose": "Validar proposta reprovada pela mesa de crédito.",
     "desiredState": "Crédito Reprovado",
-    "stateOwner": "external-preparation"
+    "stateOwner": "c6-phase-preparation",
+    "phaseTarget": {
+      "code": "101",
+      "label": "Crédito Reprovado"
+    }
   },
   {
     "id": "CREDIT_APPROVED",
@@ -45,9 +49,13 @@
     "applicantName": "Playwright APROV",
     "creationMode": "simulator",
     "environmentKey": "PORTAL_PROPOSAL_CREDIT_APPROVED",
-    "purpose": "Validar proposta aprovada e avançada após o cadastro.",
-    "desiredState": "Crédito Aprovado",
-    "stateOwner": "external-preparation"
+    "purpose": "Validar a conclusão do cadastro refletida no Portal.",
+    "desiredState": "Cadastro concluído",
+    "stateOwner": "c6-phase-preparation",
+    "phaseTarget": {
+      "code": "50",
+      "label": "Cadastro da Proposta"
+    }
   },
   {
     "id": "EXPIRED_OVER_30_DAYS",

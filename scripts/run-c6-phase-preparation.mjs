@@ -5,14 +5,12 @@ import slots from "../tests/test-data/provisioning-slots.json" with { type: "jso
 const slotId = process.argv[2]?.trim().toUpperCase();
 const playwrightArguments = process.argv.slice(3);
 const slot = slots.find((entry) => entry.id === slotId);
-if (!slotId || !slot) {
+if (!slotId || !slot || slot.stateOwner !== "c6-phase-preparation") {
   throw new Error(
-    `Informe um slot válido: ${slots.map((entry) => entry.id).join(", ")}.`,
-  );
-}
-if (slot.creationMode === "manual-shared") {
-  throw new Error(
-    `${slot.id} não pode ser criado automaticamente porque precisa usar o CPF de ${slot.sharedCpfWith}.`,
+    `Informe um slot de fase válido: ${slots
+      .filter((entry) => entry.stateOwner === "c6-phase-preparation")
+      .map((entry) => entry.id)
+      .join(", ")}.`,
   );
 }
 
@@ -21,7 +19,7 @@ const result = spawnSync(
   [
     resolve("node_modules/@playwright/test/cli.js"),
     "test",
-    "tests/provisioning/create-c6-mass.provision.ts",
+    "tests/provisioning/prepare-c6-phase.provision.ts",
     "--config=playwright.c6-provision.config.ts",
     "--project=c6-mass-provisioning",
     ...playwrightArguments,
