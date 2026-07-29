@@ -8,8 +8,12 @@ const command = process.argv[2] ?? "status";
 const slotId = process.argv[3]?.trim().toUpperCase();
 const operationArgument = process.argv[4]?.replace(/\D/g, "");
 const profile = loadEnvironmentProfile().name;
+const provisioningProvider =
+  process.env.PORTAL_PROVISION_PROVIDER === "c6" ? "c6" : "portal";
 const registryPath = resolve(
-  `.playwright/generated-simulations/${profile}.json`,
+  provisioningProvider === "c6"
+    ? `.playwright/generated-c6-simulations/${profile}.json`
+    : `.playwright/generated-simulations/${profile}.json`,
 );
 const massesPath = resolve(`.env.${profile}.masses.local`);
 
@@ -75,7 +79,9 @@ function findEntry(registry, id) {
 async function showStatus() {
   const registry = await readRegistry();
   const targetCount = resolveTargetCount();
-  console.log(`Provisionamento: ${profile} (${targetCount} massa(s) no lote)`);
+  console.log(
+    `Provisionamento: ${profile}/${provisioningProvider} (${targetCount} massa(s) no lote)`,
+  );
   console.table(
     slots.map((slot) => {
       const entry = findEntry(registry, slot.id);

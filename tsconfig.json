@@ -14,6 +14,7 @@
     "tests/**/*.ts",
     "cypress.config.ts",
     "playwright.config.ts",
+    "playwright.c6-provision.config.ts",
     "playwright.demo.config.ts"
   ]
 }

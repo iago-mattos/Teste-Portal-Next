@@ -224,6 +224,61 @@ existe apenas para reposição e não é publicado como massa oficial.
 Um lote menor que 14 pode ser usado em validações focadas, mas não publica a
 configuração completa porque faltariam aliases obrigatórios para `pw:test:all`.
 
+### Provisionamento de massas no C6 HT
+
+O C6 possui um segundo provisionador, isolado do simulador público da
+EsteiraHT. Ele autentica diretamente no SCCI/AEJS do perfil `ht`, executa
+`Originação → Realizar nova simulação`, grava a proposta com CPF válido e nome
+do catálogo e conclui a preparação preenchendo e relendo o CEP residencial do
+pretendente. Não são usados `force`, espera fixa ou IDs dinâmicos do ExtJS.
+
+O contrato da simulação fica parametrizado no perfil:
+
+```env
+C6_PROVISION_TARGET_COUNT=15
+C6_PROVISION_TERM_MONTHS=72
+C6_PROVISION_APPLICANT_POSTAL_CODE=24120440
+```
+
+O registro retomável é exclusivo do C6 e fica em
+`.playwright/generated-c6-simulations/ht.json`. Se a proposta já tiver
+protocolo, a retomada abre a mesma operação e continua pelo preenchimento do
+CEP; ela não cria uma duplicata silenciosa.
+
+Crie primeiro um único papel e acompanhe o resultado:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:create -- DEFAULT --headed
+npm run pw:provision:c6:status
+```
+
+Depois do piloto, execute sequencialmente a quantidade configurada:
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:create-batch
+```
+
+O lote é fail-fast, usa um worker e nunca recomeça os slots já registrados.
+`TIMELINE_DOCUMENTS` continua manual porque precisa compartilhar o CPF de
+`DEFAULT`, uma restrição que o simulador interno não atende. Depois de criar a
+operação compartilhada, registre-a com:
+
+```bash
+npm run pw:provision:c6:register-manual -- TIMELINE_DOCUMENTS 000000000
+```
+
+Os papéis que exigem cancelamento, expiração, decisão de crédito ou avanço para
+Documentos ainda precisam da preparação externa correspondente. Depois de
+confirmar o estado real, marque cada papel como pronto e publique o overlay:
+
+```bash
+npm run pw:provision:c6:mark-ready -- CANCELED
+npm run pw:provision:c6:publish
+```
+
+O provisionador apenas cria a base em Cadastro e preenche o CEP; ele não
+antecipa as transições funcionais específicas de cada teste.
+
 ### Provisionamento das massas persistentes do Portal Core
 
 As massas de gaps persistentes ficam separadas do lote funcional e são

@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { getProvisioningSlot } from "../test-data/provisioning-data";
 import { generateValidCpfDigits } from "../helpers/cpf";
 import type {
-  DigitalMortgageSimulationScenario,
   SimulationApplicantInput,
 } from "../types/simulator";
+import type { ProvisioningSimulationScenario } from "../types/provisioning-simulation";
 import type { ProvisioningSlotId } from "../types/provisioning";
 import type { ProvisioningStateOwner } from "../types/provisioning";
 
@@ -28,7 +28,7 @@ export interface GeneratedSimulationEntry {
   readonly stateOwner?: ProvisioningStateOwner;
   readonly sequence: number;
   readonly applicant: SimulationApplicantInput;
-  readonly scenario: DigitalMortgageSimulationScenario;
+  readonly scenario: ProvisioningSimulationScenario;
   readonly createdAt: string;
   readonly protocol?: string;
   readonly submittedAt?: string;
@@ -45,7 +45,15 @@ interface GeneratedSimulationRegistry {
   entries: GeneratedSimulationEntry[];
 }
 
-const registryDirectory = resolve(".playwright/generated-simulations");
+function resolveProvisioningProvider(): "portal" | "c6" {
+  return process.env.PORTAL_PROVISION_PROVIDER === "c6" ? "c6" : "portal";
+}
+
+function resolveRegistryDirectory(): string {
+  return resolveProvisioningProvider() === "c6"
+    ? resolve(".playwright/generated-c6-simulations")
+    : resolve(".playwright/generated-simulations");
+}
 
 function resolveProfileName(): string {
   const profile = process.env.PW_PROFILE?.trim().toLowerCase() || "default";
@@ -53,7 +61,7 @@ function resolveProfileName(): string {
 }
 
 function registryPath(profile: string): string {
-  return resolve(registryDirectory, `${profile}.json`);
+  return resolve(resolveRegistryDirectory(), `${profile}.json`);
 }
 
 async function readRegistry(profile: string): Promise<GeneratedSimulationRegistry> {
@@ -90,7 +98,7 @@ async function persistRegistry(
   profile: string,
   registry: GeneratedSimulationRegistry,
 ): Promise<void> {
-  await mkdir(registryDirectory, { recursive: true });
+  await mkdir(resolveRegistryDirectory(), { recursive: true });
   const destination = registryPath(profile);
   const temporary = `${destination}.${randomUUID()}.tmp`;
   await writeFile(
@@ -102,7 +110,7 @@ async function persistRegistry(
 }
 
 function buildApplicant(
-  scenario: DigitalMortgageSimulationScenario,
+  scenario: ProvisioningSimulationScenario,
   applicantName: string,
   usedCpfs: ReadonlySet<string>,
 ): SimulationApplicantInput {
@@ -121,7 +129,7 @@ function buildApplicant(
 
 export async function reserveProvisioningSlot(
   slotId: ProvisioningSlotId,
-  scenario: DigitalMortgageSimulationScenario,
+  scenario: ProvisioningSimulationScenario,
 ): Promise<GeneratedSimulationEntry> {
   const profile = resolveProfileName();
   const registry = await readRegistry(profile);
