@@ -8,6 +8,7 @@ export default defineConfig({
   testMatch: [
     "**/create-c6-mass.provision.ts",
     "**/prepare-c6-phase.provision.ts",
+    "**/prepare-c6-documents.provision.ts",
   ],
   outputDir: "test-results/c6-provisioning",
   fullyParallel: false,
@@ -24,6 +25,7 @@ export default defineConfig({
   ],
   use: {
     ...devices["Desktop Chrome"],
+    baseURL: process.env.PORTAL_URL,
     viewport: { width: 1440, height: 900 },
     actionTimeout: 15_000,
     navigationTimeout: 30_000,

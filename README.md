@@ -288,17 +288,38 @@ O fluxo localiza o campo pelo contrato ExtJS estável
 fase persistida no SCCI quanto o reflexo funcional no Portal. A fase `700` não
 faz parte deste provisionamento.
 
-Os papéis que exigem cancelamento, expiração ou avanço para Documentos ainda
-precisam da preparação externa correspondente. Depois de confirmar o estado
-real, marque cada papel externo como pronto e publique o overlay:
+As massas documentais independentes também podem ser confirmadas pelo Portal:
+
+| Slot | Preparação automatizada | Pós-condição |
+| --- | --- | --- |
+| `DOCUMENT_PERSISTENCE` | Cadastro completo sem composição ou garantidor | Documentos, com todos os slots vazios. |
+| `DOCUMENT_SIZE` | Cadastro completo sem composição ou garantidor | Documentos, com todos os slots vazios. |
+
+```bash
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-documents -- DOCUMENT_PERSISTENCE
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-documents -- DOCUMENT_SIZE
+ALLOW_TEST_MUTATION=true npm run pw:provision:c6:prepare-documents-batch
+```
+
+O batch usa um worker e é retomável: se a operação já estiver em Documentos,
+ele não confirma novamente e apenas relê todos os slots. A massa só é marcada
+como pronta quando nenhum documento tiver sido enviado. Os testes de
+persistência e limite continuam responsáveis por consumir ou exercitar seus
+próprios slots posteriormente.
+
+Os papéis que exigem cancelamento, expiração e o `TIMELINE_DOCUMENTS`
+compartilhado ainda precisam da preparação externa correspondente. Depois de
+confirmar o estado real, marque cada papel externo como pronto e publique o
+overlay:
 
 ```bash
 npm run pw:provision:c6:mark-ready -- CANCELED
 npm run pw:provision:c6:publish
 ```
 
-O provisionador-base cria a proposta em Cadastro e preenche o CEP; o comando de
-fase prepara exclusivamente os dois estados declarados acima.
+O provisionador-base cria a proposta em Cadastro e preenche o CEP; os comandos
+especializados preparam exclusivamente os estados de fase e documentos
+declarados acima.
 
 ### Provisionamento das massas persistentes do Portal Core
 

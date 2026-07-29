@@ -11,6 +11,7 @@ const validSlotIds = new Set<string>(PROVISIONING_SLOT_IDS);
 const validStateOwners = new Set<ProvisioningStateOwner>([
   "provisioner",
   "c6-phase-preparation",
+  "c6-document-preparation",
   "existing-integration-test",
   "external-preparation",
 ]);

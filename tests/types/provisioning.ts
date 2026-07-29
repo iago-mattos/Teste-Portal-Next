@@ -21,6 +21,7 @@ export type ProvisioningSlotId = (typeof PROVISIONING_SLOT_IDS)[number];
 export type ProvisioningStateOwner =
   | "provisioner"
   | "c6-phase-preparation"
+  | "c6-document-preparation"
   | "existing-integration-test"
   | "external-preparation";
 

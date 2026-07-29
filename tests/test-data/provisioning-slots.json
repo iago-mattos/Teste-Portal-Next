@@ -136,7 +136,7 @@
     "environmentKey": "PORTAL_INTEGRATION_DOCUMENT_PERSISTENCE_OPERATION",
     "purpose": "Enviar todos os documentos e validar sua reflexão no SCCI.",
     "desiredState": "Documentos",
-    "stateOwner": "external-preparation"
+    "stateOwner": "c6-document-preparation"
   },
   {
     "id": "DOCUMENT_SIZE",
@@ -146,7 +146,7 @@
     "environmentKey": "PORTAL_INTEGRATION_DOCUMENT_SIZE_OPERATION",
     "purpose": "Validar rejeição de documentos acima de dez megabytes.",
     "desiredState": "Documentos",
-    "stateOwner": "external-preparation"
+    "stateOwner": "c6-document-preparation"
   },
   {
     "id": "RESERVE",
