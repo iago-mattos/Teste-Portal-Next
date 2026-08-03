@@ -1,6 +1,7 @@
 import { expect, type Page, type Response } from "@playwright/test";
 import { test } from "../../fixtures/test";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
+import { ProposalRegistrationPage } from "../../pages/portal/proposal-registration.page";
 import {
   getIntegrationPreparationScenario,
   type PfGuarantorInput,
@@ -31,6 +32,30 @@ async function fillField(
   await expect(field).toBeVisible();
   await field.fill(value);
   await field.blur();
+}
+
+async function expectRequiredResidentialAddress(
+  page: Page,
+  proposalPage: ProposalPage,
+  prefix: "CONJUGE" | "PESSOA",
+): Promise<void> {
+  for (const name of [
+    "IN_RESIDE_NO_IMOVEL",
+    "NU_CEP",
+    "NO_ENDERECO",
+    "NO_BAIRRO",
+    "CO_UF",
+    "CO_MUNICIPIO",
+  ]) {
+    const field = proposalPage.getVisibleFieldByName(`${prefix}.${name}`);
+    await expect(
+      field,
+      `O Portal deve exibir o campo residencial obrigatório ${prefix}.${name}`,
+    ).toBeVisible();
+    const id = await field.getAttribute("id");
+    expect(id, `${prefix}.${name} precisa possuir id para associação do label`).toBeTruthy();
+    await expect(page.locator(`label[for=${JSON.stringify(id)}]`)).toContainText("*");
+  }
 }
 
 async function saveAndAdvance(
@@ -100,6 +125,16 @@ async function fillThirdParty(
   await fillField(proposalPage, "PESSOA.NO_PESSOA", thirdParty.name);
   await fillField(proposalPage, "PESSOA.NU_CPFCNPJ", thirdParty.cpf);
   await fillField(proposalPage, "PESSOA.DT_NASCIMENTO", thirdParty.dateOfBirth);
+  await selectSearchableOption(
+    proposalPage,
+    "PESSOA.CO_UFNASC",
+    thirdParty.birthState,
+  );
+  await selectSearchableOption(
+    proposalPage,
+    "PESSOA.CO_UFIDENTIDADE",
+    thirdParty.identityState,
+  );
   await fillField(proposalPage, "PESSOA.VA_RENDA_BRUTA", thirdParty.grossIncome);
   await selectSearchableOption(
     proposalPage,
@@ -163,6 +198,7 @@ test(
     await portalSession.useOperation(scenario.operationNumber);
     const { applicant, thirdParty, creditPurpose, property, guarantor } =
       scenario.preparation;
+    const registrationPage = new ProposalRegistrationPage(page, proposalPage);
 
     await test.step("abre a proposta descartável", async () => {
       await proposalPage.open(scenario.operationNumber);
@@ -225,6 +261,12 @@ test(
         .getByRole("radio", { name: "Outra Pessoa", exact: true })
         .check();
       await fillThirdParty(proposalPage, thirdParty);
+      await registrationPage.fillParticipantResidentialAddress(
+        "PESSOA",
+        thirdParty.livesInProperty,
+        thirdParty.address,
+      );
+      await expectRequiredResidentialAddress(page, proposalPage, "PESSOA");
       await page
         .getByRole("checkbox", {
           name: "Autorizo a consulta de dados dos demais participantes no Sistema de Informações de Crédito (SCR) e demais instituições de proteção a fraudes, lavagem de dinheiro e risco de crédito",
@@ -277,9 +319,7 @@ test(
         "INTERVENIENTE.CODIGO",
         property.settlementIntervenor,
       );
-      await expect(
-        proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_ENDERECO"),
-      ).toHaveValue(/\d+/);
+      await registrationPage.ensurePropertyAddress(property.addressLine);
       await saveByOpeningTab(
         page,
         proposalPage,

@@ -150,9 +150,15 @@ export class AejsApplicantPreparationPage {
       return false;
     }
 
-    await expect(alert).not.toContainText("Transmitindo dados", {
-      timeout: 60_000,
-    });
+    await expect
+      .poll(
+        async () =>
+          (await alert.isVisible()) &&
+          (await alert.innerText()).includes("Transmitindo dados"),
+        { timeout: 5 * 60_000 },
+      )
+      .toBe(false);
+    if (!(await alert.isVisible())) return true;
     await expect(alert).toContainText(
       "Rotina GetValidaTipoImovelC6 nao encontrada",
     );

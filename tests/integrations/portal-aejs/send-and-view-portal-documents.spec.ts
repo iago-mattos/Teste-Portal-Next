@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { expect, test } from "../../fixtures/test";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
+import { recordGeneratedSimulationDocumentNames } from "../../services/generated-simulation-registry";
 import { getIntegrationDocumentScenario } from "../../test-data/integration-data";
 
 const integrationMutation = {
@@ -18,7 +19,7 @@ test(
   integrationMutation,
   async ({ proposalsPage, authenticatedPage, portalSession }) => {
     const scenario = getIntegrationDocumentScenario("INT-DOCUMENT-PERSISTENCE");
-    await portalSession.useOperation(scenario.operationNumber);
+    await portalSession.useOperation(scenario.operationNumber, { fresh: true });
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
     let documentCount = 0;
 
@@ -29,6 +30,14 @@ test(
       await documentsPage.waitUntilReady();
       documentCount = await documentsPage.getDocumentCount();
       expect(documentCount).toBeGreaterThan(0);
+      const documentNames = await documentsPage.getDocumentNames();
+      expect(documentNames).toHaveLength(documentCount);
+      if (scenario.provisionedMass?.runId) {
+        await recordGeneratedSimulationDocumentNames(
+          scenario.operationNumber,
+          documentNames,
+        );
+      }
     });
 
     await test.step("envia e abre cada documento solicitado", async () => {
@@ -48,7 +57,12 @@ test(
           expect(openedDocument.response.headers()["content-type"]).toContain(
             "application/pdf",
           );
-          expect((await openedDocument.response.body()).byteLength).toBeGreaterThan(0);
+          const persistedDocument = await documentsPage.readUploadedDocumentAt(index);
+          expect(persistedDocument.status()).toBe(200);
+          expect(persistedDocument.headers()["content-type"]).toContain(
+            "application/pdf",
+          );
+          expect((await persistedDocument.body()).byteLength).toBeGreaterThan(0);
           await openedDocument.popup.close();
         });
       }

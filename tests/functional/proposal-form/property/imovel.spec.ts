@@ -30,12 +30,17 @@ test.describe("Cadastro da Operação: Imóvel", () => {
   test(
     "IMOVEL-01 | Valor Estimado do Imóvel, Endereço do Imóvel de garantia devem ser preenchidos com informações do lead",
     functionalMutation,
-    async ({ proposalPage }) => {
+    async ({ proposalPage, portalConfig }) => {
       const precoInput = proposalPage.getFieldByName("OPERACAO_CREDITO.VA_PRECO_IMOVEL");
       await expect(precoInput).not.toHaveValue("");
 
       const enderecoInput = proposalPage.getFieldByName("IMOVEL_OPERACAO.NO_ENDERECO");
-      await expect(enderecoInput).not.toHaveValue("");
+      const expectedAddress = portalConfig.testData.expectedProposal.propertyAddress;
+      if (expectedAddress) {
+        await expect(enderecoInput).toHaveValue(expectedAddress);
+      } else {
+        await expect(enderecoInput).not.toHaveValue("");
+      }
     },
   );
 
@@ -88,20 +93,13 @@ test.describe("Cadastro da Operação: Imóvel", () => {
         "Flat",
         "Terreno em condominio",
       ];
-      const select = proposalPage.getFieldByName(
+      const combobox = proposalPage.getVisibleSearchableCombobox(
         "IMOVEL_OPERACAO.IN_USO_DO_IMOVEL",
       );
-      const options = select.locator("option:not([value=''])");
-      await expect(select).toBeVisible();
-
-      const count = await options.count();
-      const optionTexts: string[] = [];
-      for (let i = 0; i < count; i++) {
-        const text = await options.nth(i).textContent();
-        if (text && text.trim()) {
-          optionTexts.push(text.trim());
-        }
-      }
+      await combobox.open();
+      const optionTexts = (await combobox.options.allTextContents())
+        .map((text) => text.trim())
+        .filter(Boolean);
 
       const normalize = (value: string) =>
         value
@@ -114,6 +112,9 @@ test.describe("Cadastro da Operação: Imóvel", () => {
 
       expect(actualNormalized.length).toBe(expectedNormalized.length);
       expect(actualNormalized).toEqual(expect.arrayContaining(expectedNormalized));
+
+      await combobox.input.press("Escape");
+      await expect(combobox.listbox).toBeHidden();
     },
   );
 
@@ -221,23 +222,46 @@ test.describe("Cadastro da Operação: Imóvel", () => {
   test(
     "IMOVEL-09 | Quando o cliente selecionar “Não” deve habilitar o campo de endereço de residência para preenchimento",
     functionalMutation,
-    async ({ page, proposalPage }) => {
-      const label = page.getByText("Endereço do Imóvel");
-      await expect(label.first()).toBeVisible();
+    async ({ proposalPage }) => {
+      await proposalPage.tabs.select("Sobre Você");
+      const residesInProperty = proposalPage.getVisibleFieldByName(
+        "PESSOA.IN_RESIDE_NO_IMOVEL",
+      );
+      const originalValue = await residesInProperty.inputValue();
 
-      const municipioInput = proposalPage.getFieldByName("IMOVEL_OPERACAO.NU_MUNICIPIO");
-      await expect(municipioInput).toBeVisible();
-      await expect(municipioInput).not.toHaveValue("");
+      try {
+        await residesInProperty.selectOption("F");
+        await expect(residesInProperty).toHaveValue("F");
+
+        for (const fieldName of [
+          "PESSOA.NU_CEP",
+          "PESSOA.NO_ENDERECO",
+          "PESSOA.NO_COMPLEMENTO",
+          "PESSOA.NO_BAIRRO",
+          "PESSOA.CO_UF",
+        ]) {
+          const field = proposalPage.getVisibleFieldByName(fieldName);
+          await expect(field).toBeVisible();
+          await expect(field).toBeEnabled();
+        }
+      } finally {
+        if (originalValue) {
+          await residesInProperty.selectOption(originalValue);
+        }
+      }
     },
   );
 
   test(
     "IMOVEL-10 | Número do imóvel que vem do lead poderá vir em número, mas deverá ser concatenado para integração com a tela da prognum",
     functionalMutation,
-    async ({ proposalPage }) => {
+    async ({ proposalPage, portalConfig }) => {
       const enderecoInput = proposalPage.getFieldByName("IMOVEL_OPERACAO.NO_ENDERECO");
       await expect(enderecoInput).toBeVisible();
-      await expect(enderecoInput).toHaveValue(/\d+/);
+      const expectedAddress = portalConfig.testData.expectedProposal.propertyAddress;
+      await expect(enderecoInput).toHaveValue(
+        expectedAddress || /\d+/,
+      );
     },
   );
 

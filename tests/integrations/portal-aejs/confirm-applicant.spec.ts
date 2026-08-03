@@ -24,9 +24,14 @@ test(
     );
 
     const applicantName = await aejsOperationsPage.getOperationApplicantName();
+    const expectedApplicantName =
+      scenario.provisionedMass?.applicant.name.toLocaleUpperCase("pt-BR");
+    if (scenario.provisionedMass) {
+      expect(applicantName).toBe(expectedApplicantName);
+    }
     await aejsOperationsPage.openApplicant(applicantName);
     await expect(aejsOperationsPage.openedApplicantName).toHaveValue(
-      applicantName,
+      expectedApplicantName ?? applicantName,
     );
   },
 );

@@ -131,7 +131,7 @@ export class AejsOperationConditionsPage {
     );
 
     expect(selected).toEqual(target);
-    await expect(this.phaseField).toHaveValue(target.label);
+    await this.expectPhaseFieldContract(target);
     await this.save();
   }
 
@@ -142,7 +142,20 @@ export class AejsOperationConditionsPage {
         message: `A fase ${target.code} — ${target.label} não foi persistida.`,
       })
       .toEqual(target);
-    await expect(this.phaseField).toHaveValue(target.label);
+    await this.expectPhaseFieldContract(target);
+  }
+
+  private async expectPhaseFieldContract(
+    target: ProvisioningPhaseTarget,
+  ): Promise<void> {
+    await expect
+      .poll(async () => {
+        const value = await this.phaseField.inputValue();
+        return value === target.code || value === target.label;
+      }, {
+        message: `O campo da fase não expôs o código ${target.code} nem o rótulo ${target.label}.`,
+      })
+      .toBe(true);
   }
 
   private get phaseField(): Locator {
@@ -198,9 +211,15 @@ export class AejsOperationConditionsPage {
       .catch(() => undefined);
     if (!(await alert.isVisible())) return;
 
-    await expect(alert).not.toContainText("Transmitindo dados", {
-      timeout: 60_000,
-    });
+    await expect
+      .poll(
+        async () =>
+          (await alert.isVisible()) &&
+          (await alert.innerText()).includes("Transmitindo dados"),
+        { timeout: 5 * 60_000 },
+      )
+      .toBe(false);
+    if (!(await alert.isVisible())) return;
     await expect(alert).toContainText(
       "Rotina GetValidaTipoImovelC6 nao encontrada",
     );

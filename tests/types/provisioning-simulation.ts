@@ -13,4 +13,15 @@ export interface ProvisioningSimulationScenario {
     readonly birthDateDigits: string;
   };
   readonly applicantSeed: SimulationApplicantSeed;
+  /**
+   * Endereço que o provisionamento deve persistir no imóvel quando o provedor
+   * não o cria junto com a simulação. É opcional no contrato comum porque nem
+   * todo tenant expõe essa etapa no mesmo fluxo.
+   */
+  readonly propertyAddress?: {
+    readonly postalCode: string;
+    readonly addressLine: string;
+    readonly state: string;
+    readonly municipality: string;
+  };
 }

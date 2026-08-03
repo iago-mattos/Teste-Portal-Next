@@ -111,7 +111,7 @@ async function expectPortalPhase(
 
     if (slotId === "CREDIT_APPROVED") {
       await expect(card).toContainText(/Etapa Conclu[ií]da/i);
-      await expect(card).toContainText(/Fase Atual\s*Cadastro/i);
+      await expect(card).toContainText(/Fase Atual\s*Cr[eé]dito/i);
       await expect(
         card.getByText(
           /Cadastro conclu[ií]do! Aguarde nosso contato por e-mail ou WhatsApp\./i,
@@ -134,6 +134,7 @@ test(
     const slotId = resolvePhaseSlot();
     const slot = getProvisioningSlot(slotId);
     const target = slot.phaseTarget!;
+    const verifyOnly = process.env.C6_PHASE_VERIFY_ONLY === "true";
     let entry = await getGeneratedSimulationForSlot(slotId);
     if (!entry?.protocol) {
       throw new Error(
@@ -154,10 +155,14 @@ test(
       });
 
       await test.step(
-        `aplica a fase ${target.code} — ${target.label}`,
+        `${verifyOnly ? "comprova" : "aplica"} a fase ${target.code} — ${target.label}`,
         async () => {
           await conditions.open();
-          await conditions.changeCurrentPhase(target);
+          if (verifyOnly) {
+            await conditions.expectCurrentPhase(target);
+          } else {
+            await conditions.changeCurrentPhase(target);
+          }
         },
       );
 

@@ -204,29 +204,111 @@ async function registerManual() {
 
 async function publishMasses() {
   const registry = await readRegistry();
-  const officialSlots = slots.filter((slot) => slot.id !== "RESERVE");
-  const targetCount = resolveTargetCount();
-  if (targetCount < officialSlots.length) {
-    throw new Error(
-      `Publicação completa exige ${officialSlots.length} massas oficiais; o lote atual solicita somente ${targetCount}.`,
+  const officialSlots = slots.filter((slot) => slot.lifecycle !== "on-demand");
+  const entriesBySlot = new Map();
+
+  if (provisioningProvider === "c6" && registry.run?.id) {
+    const freshSlots = officialSlots.filter(
+      (slot) => slot.lifecycle === "fresh-per-run",
     );
-  }
-  const incomplete = officialSlots.filter((slot) => {
-    const entry = findEntry(registry, slot.id);
-    return !entry?.protocol || entry.status !== "ready";
-  });
-  if (incomplete.length > 0) {
-    throw new Error(
-      `Publicação bloqueada. Slots não prontos: ${incomplete.map((slot) => slot.id).join(", ")}.`,
-    );
+    const incomplete = freshSlots.filter((slot) => {
+      const entry = findEntry(registry, slot.id);
+      const sharedEntry = slot.sharedCpfWith
+        ? findEntry(registry, slot.sharedCpfWith)
+        : undefined;
+      return (
+        !entry?.protocol ||
+        entry.status !== "ready" ||
+        !entry.propertyPreparedAt ||
+        !entry.scenario?.propertyAddress?.postalCode ||
+        !entry.scenario?.propertyAddress?.addressLine ||
+        (slot.creationMode === "simulator-shared" &&
+          (!sharedEntry?.protocol ||
+            entry.applicant?.cpfDigits !== sharedEntry.applicant?.cpfDigits)) ||
+        entry.runId !== registry.run.id
+      );
+    });
+    if (incomplete.length > 0) {
+      throw new Error(
+        `Publicação C6 bloqueada. Massas frescas não prontas: ${incomplete.map((slot) => slot.id).join(", ")}.`,
+      );
+    }
+
+    for (const slot of freshSlots) {
+      entriesBySlot.set(slot.id, findEntry(registry, slot.id));
+    }
+
+    let configuredCpfs;
+    try {
+      configuredCpfs = JSON.parse(
+        process.env.PORTAL_MASS_OPERATION_CPFS_JSON?.trim() || "{}",
+      );
+    } catch (error) {
+      throw new Error("PORTAL_MASS_OPERATION_CPFS_JSON é inválido.", {
+        cause: error,
+      });
+    }
+
+    const missingExternal = [];
+    for (const slot of officialSlots.filter(
+      (entry) => entry.lifecycle === "external-static",
+    )) {
+      const protocol = process.env[slot.environmentKey]?.replace(/\D/g, "");
+      const cpfDigits = protocol
+        ? String(configuredCpfs[protocol] ?? "").replace(/\D/g, "")
+        : "";
+      if (!protocol || !cpfDigits) {
+        missingExternal.push(slot.id);
+        continue;
+      }
+      entriesBySlot.set(slot.id, {
+        protocol,
+        applicant: { cpfDigits },
+      });
+    }
+    if (missingExternal.length > 0) {
+      throw new Error(
+        `Publicação C6 bloqueada. Massas externas sem operação/CPF: ${missingExternal.join(", ")}.`,
+      );
+    }
+  } else {
+    const targetCount = resolveTargetCount();
+    if (targetCount < officialSlots.length) {
+      throw new Error(
+        `Publicação completa exige ${officialSlots.length} massas oficiais; o lote atual solicita somente ${targetCount}.`,
+      );
+    }
+    const incomplete = officialSlots.filter((slot) => {
+      const entry = findEntry(registry, slot.id);
+      return !entry?.protocol || entry.status !== "ready";
+    });
+    if (incomplete.length > 0) {
+      throw new Error(
+        `Publicação bloqueada. Slots não prontos: ${incomplete.map((slot) => slot.id).join(", ")}.`,
+      );
+    }
+    for (const slot of officialSlots) {
+      entriesBySlot.set(slot.id, findEntry(registry, slot.id));
+    }
   }
 
-  const defaultEntry = findEntry(registry, "DEFAULT");
+  const protocols = officialSlots.map(
+    (slot) => entriesBySlot.get(slot.id).protocol,
+  );
+  if (new Set(protocols).size !== protocols.length) {
+    throw new Error("Publicação bloqueada: existem operações duplicadas no lote.");
+  }
+
+  const defaultEntry = entriesBySlot.get("DEFAULT");
   if (!defaultEntry?.protocol || !defaultEntry.submittedAt) {
     throw new Error("A massa DEFAULT não possui protocolo e data de criação.");
   }
-  const phase = process.env.PORTAL_MASS_DEFAULT_PHASE?.trim();
-  const interestType = process.env.PORTAL_MASS_DEFAULT_INTEREST_TYPE?.trim();
+  const phase =
+    process.env.PORTAL_MASS_DEFAULT_PHASE?.trim() ||
+    process.env.PORTAL_EXPECTED_CURRENT_PHASE?.trim();
+  const interestType =
+    process.env.PORTAL_MASS_DEFAULT_INTEREST_TYPE?.trim() ||
+    process.env.PORTAL_EXPECTED_INTEREST_TYPE?.trim();
   if (!phase || !interestType) {
     throw new Error(
       "Defina PORTAL_MASS_DEFAULT_PHASE e PORTAL_MASS_DEFAULT_INTEREST_TYPE no perfil após confirmar o contrato visual da massa DEFAULT.",
@@ -237,12 +319,13 @@ async function publishMasses() {
     "# Gerado pelo provisionador. Não edite operações manualmente.",
     "# Para substituir uma massa, atualize o registro e publique novamente.",
     "PORTAL_MASS_BATCH_STATUS=ready",
-    `PORTAL_MASS_TARGET_COUNT=${targetCount}`,
+    `PORTAL_MASS_TARGET_COUNT=${officialSlots.length}`,
+    ...(registry.run?.id ? [`PORTAL_MASS_RUN_ID=${registry.run.id}`] : []),
     `PORTAL_TEST_CPF=${defaultEntry.applicant.cpfDigits}`,
     "",
   ];
   for (const slot of officialSlots) {
-    const entry = findEntry(registry, slot.id);
+    const entry = entriesBySlot.get(slot.id);
     lines.push(`# ${slot.id}: ${slot.purpose}`);
     lines.push(`# Estado necessário: ${slot.desiredState}`);
     lines.push(`${slot.environmentKey}=${entry.protocol}`);
@@ -250,12 +333,47 @@ async function publishMasses() {
 
   const operationCpfs = Object.fromEntries(
     officialSlots.map((slot) => {
-      const entry = findEntry(registry, slot.id);
+      const entry = entriesBySlot.get(slot.id);
       return [entry.protocol, entry.applicant.cpfDigits];
     }),
   );
   lines.push(
     `PORTAL_MASS_OPERATION_CPFS_JSON='${JSON.stringify(operationCpfs)}'`,
+  );
+
+  const operationMetadata = Object.fromEntries(
+    officialSlots.flatMap((slot) => {
+      const entry = entriesBySlot.get(slot.id);
+      if (
+        !entry?.applicant?.name ||
+        !entry?.applicant?.cpfDigits ||
+        !entry?.scenario?.financial?.birthDateDigits ||
+        !entry?.scenario?.financial?.propertyValueCents ||
+        !entry?.submittedAt
+      ) {
+        return [];
+      }
+
+      return [[entry.protocol, {
+        runId: entry.runId,
+        applicantName: entry.applicant.name,
+        applicantCpf: entry.applicant.cpfDigits,
+        applicantBirthDate: entry.scenario.financial.birthDateDigits,
+        expectedScrAuthorizationDate: formatDate(entry.submittedAt).replace(/\D/g, ""),
+        propertyValueCents: entry.scenario.financial.propertyValueCents,
+        financingValueCents: entry.scenario.financial.financingValueCents,
+        termMonths: entry.scenario.financial.termMonths,
+        interestType: entry.scenario.journey?.interestType,
+        registrationDate: formatDate(entry.submittedAt),
+        propertyPostalCode: entry.scenario.propertyAddress?.postalCode,
+        propertyAddressLine: entry.scenario.propertyAddress?.addressLine,
+        applicantPostalCode: entry.scenario.applicantPostalCode,
+        documentNames: entry.documentNames,
+      }]];
+    }),
+  );
+  lines.push(
+    `PORTAL_MASS_OPERATION_METADATA_JSON='${JSON.stringify(operationMetadata)}'`,
   );
 
   const financial = defaultEntry.scenario.financial;
@@ -270,6 +388,7 @@ async function publishMasses() {
     `PORTAL_EXPECTED_TERM=${quote(`${financial.termMonths} meses`)}`,
     `PORTAL_EXPECTED_CURRENT_PHASE=${quote(phase)}`,
     `PORTAL_EXPECTED_INTEREST_TYPE=${quote(interestType)}`,
+    `PORTAL_EXPECTED_PROPERTY_ADDRESS=${quote(defaultEntry.scenario.propertyAddress?.addressLine ?? "")}`,
     "",
   );
   await writeAtomic(massesPath, lines.join("\n"));

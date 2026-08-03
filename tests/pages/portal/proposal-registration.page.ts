@@ -1,6 +1,9 @@
 import { expect, type Page, type Response } from "@playwright/test";
 import type { ProposalTabName } from "../../components/portal/proposal-tabs.component";
-import type { WorkflowIntegrationPreparationScenario } from "../../test-data/integration-data";
+import type {
+  PfAddressInput,
+  WorkflowIntegrationPreparationScenario,
+} from "../../test-data/integration-data";
 import type { ProposalPage } from "./proposal.page";
 
 export interface ProposalFinalizationResponses {
@@ -105,6 +108,61 @@ export class ProposalRegistrationPage {
     await this.proposalPage
       .getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL")
       .selectOption(preparation.property.condition);
+    await this.ensurePropertyAddress(preparation.property.addressLine);
+  }
+
+  async ensurePropertyAddress(addressLine: string): Promise<void> {
+    const addressField = this.proposalPage.getVisibleFieldByName(
+      "IMOVEL_OPERACAO.NO_ENDERECO",
+    );
+    await expect(addressField).toBeVisible();
+
+    if (await addressField.isEditable()) {
+      await addressField.fill(addressLine);
+      await addressField.blur();
+      await expect(addressField).toHaveValue(addressLine);
+      return;
+    }
+
+    await expect(
+      addressField,
+      "O Portal manteve o endereço do imóvel desabilitado e não forneceu um valor vindo da simulação.",
+    ).toHaveValue(/\S/);
+  }
+
+  async fillParticipantResidentialAddress(
+    prefix: "CONJUGE" | "PESSOA",
+    livesInProperty: string,
+    address: PfAddressInput,
+  ): Promise<void> {
+    const residenceField = this.proposalPage.getVisibleFieldByName(
+      `${prefix}.IN_RESIDE_NO_IMOVEL`,
+    );
+    await expect(
+      residenceField,
+      `O Portal deve exibir o campo residencial ${prefix}.IN_RESIDE_NO_IMOVEL`,
+    ).toBeVisible();
+    await residenceField.selectOption(livesInProperty);
+    await expect(
+      this.proposalPage.getVisibleFieldByName(`${prefix}.NU_CEP`),
+      `O Portal deve exibir o endereço residencial de ${prefix} após selecionar que não reside no imóvel`,
+    ).toBeVisible();
+    await this.fillField(`${prefix}.NU_CEP`, address.postalCode);
+    await expect(
+      this.proposalPage.getVisibleFieldByName(`${prefix}.NO_ENDERECO`),
+    ).toHaveValue(/\S/, { timeout: 30_000 });
+    await this.fillField(
+      `${prefix}.NO_ENDERECO`,
+      `${address.street}, ${address.streetNumber}`,
+    );
+    await this.fillField(`${prefix}.NO_COMPLEMENTO`, address.complement);
+    await this.fillField(`${prefix}.NO_BAIRRO`, address.neighborhood);
+    await expect(
+      this.proposalPage.getVisibleFieldByName(`${prefix}.CO_UF`),
+    ).toHaveValue(/\S/, { timeout: 30_000 });
+    await expect(
+      this.proposalPage.getVisibleFieldByName(`${prefix}.CO_MUNICIPIO`),
+    ).toHaveValue(/\S/, { timeout: 30_000 });
   }
 
   async expectReadyForFinalConfirmation(): Promise<void> {
@@ -136,7 +194,7 @@ export class ProposalRegistrationPage {
 
     await this.proposalPage.tabs.select("Motivo da Contratação");
     const response = await responsePromise;
-    await this.proposalPage.tabs.select("Imóvel");
+    await this.ensureTabSelected(operationNumber, "Imóvel");
     await expect(this.proposalPage.tabs.getTabButton("Imóvel")).toHaveAttribute(
       "aria-selected",
       "true",

@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import { test } from "../../fixtures/test";
 import { ProposalDocumentsPage } from "../../pages/portal/proposal-documents.page";
 import { ProposalRegistrationPage } from "../../pages/portal/proposal-registration.page";
+import { recordGeneratedSimulationDocumentNames } from "../../services/generated-simulation-registry";
 import {
   getIntegrationDocumentScenario,
   getIntegrationPreparationScenario,
@@ -90,7 +91,7 @@ test(
   integrationMutation,
   async ({ proposalsPage, authenticatedPage, portalSession }) => {
     const scenario = getIntegrationDocumentScenario("INT-CONFIRM-WORKFLOW");
-    await portalSession.useOperation(scenario.operationNumber);
+    await portalSession.useOperation(scenario.operationNumber, { fresh: true });
     const documentsPage = new ProposalDocumentsPage(authenticatedPage);
     let documentCount = 0;
 
@@ -101,6 +102,14 @@ test(
       await documentsPage.waitUntilReady();
       documentCount = await documentsPage.getDocumentCount();
       expect(documentCount).toBeGreaterThan(0);
+      const documentNames = await documentsPage.getDocumentNames();
+      expect(documentNames).toHaveLength(documentCount);
+      if (scenario.provisionedMass?.runId) {
+        await recordGeneratedSimulationDocumentNames(
+          scenario.operationNumber,
+          documentNames,
+        );
+      }
     });
 
     await test.step("envia e abre todos os documentos solicitados", async () => {
@@ -120,7 +129,12 @@ test(
           expect(openedDocument.response.headers()["content-type"]).toContain(
             "application/pdf",
           );
-          expect((await openedDocument.response.body()).byteLength).toBeGreaterThan(0);
+          const persistedDocument = await documentsPage.readUploadedDocumentAt(index);
+          expect(persistedDocument.status()).toBe(200);
+          expect(persistedDocument.headers()["content-type"]).toContain(
+            "application/pdf",
+          );
+          expect((await persistedDocument.body()).byteLength).toBeGreaterThan(0);
           await openedDocument.popup.close();
         });
       }

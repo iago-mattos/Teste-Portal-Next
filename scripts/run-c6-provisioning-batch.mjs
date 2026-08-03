@@ -7,31 +7,21 @@ process.env.PW_PROFILE = "ht";
 loadEnvironmentProfile();
 
 const rawTargetCount = process.env.C6_PROVISION_TARGET_COUNT?.trim();
-const targetCount = Number(rawTargetCount);
-if (
-  !rawTargetCount ||
-  !Number.isInteger(targetCount) ||
-  targetCount < 1 ||
-  targetCount > slots.length
-) {
+const freshSlots = slots.filter((slot) => slot.lifecycle === "fresh-per-run");
+const targetCount = rawTargetCount ? Number(rawTargetCount) : freshSlots.length;
+if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > freshSlots.length) {
   throw new Error(
-    `C6_PROVISION_TARGET_COUNT deve ser um inteiro entre 1 e ${slots.length}.`,
+    `C6_PROVISION_TARGET_COUNT deve ser um inteiro entre 1 e ${freshSlots.length}.`,
   );
 }
 
-const selectedSlots = slots.slice(0, targetCount);
+const selectedSlots = freshSlots.slice(0, targetCount);
 console.log(
   `Provisionando ${selectedSlots.length} massa(s) no C6 HT: ${selectedSlots.map((slot) => slot.id).join(", ")}.`,
 );
 
-for (const slot of selectedSlots) {
-  console.log(`\n=== ${slot.sequence}/${targetCount}: ${slot.id} ===`);
-  if (slot.creationMode === "manual-shared") {
-    console.log(
-      `Slot manual: crie ${slot.id} com o mesmo CPF de ${slot.sharedCpfWith} e registre a operação depois.`,
-    );
-    continue;
-  }
+for (const [index, slot] of selectedSlots.entries()) {
+  console.log(`\n=== ${index + 1}/${targetCount}: ${slot.id} ===`);
 
   const result = spawnSync(
     process.execPath,

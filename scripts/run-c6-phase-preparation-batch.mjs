@@ -10,13 +10,27 @@ for (const slot of phaseSlots) {
   console.log(
     `\n=== ${slot.id}: fase ${slot.phaseTarget.code} — ${slot.phaseTarget.label} ===`,
   );
-  const result = spawnSync(
+  let result = spawnSync(
     process.execPath,
     [resolve("scripts/run-c6-phase-preparation.mjs"), slot.id],
     { env: process.env, stdio: "inherit" },
   );
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`Preparação de fases interrompida em ${slot.id}.`);
+    console.warn(
+      `A preparação de ${slot.id} não concluiu na sessão original; reabrindo somente para comprovar a persistência.`,
+    );
+    result = spawnSync(
+      process.execPath,
+      [resolve("scripts/run-c6-phase-preparation.mjs"), slot.id],
+      {
+        env: { ...process.env, C6_PHASE_VERIFY_ONLY: "true" },
+        stdio: "inherit",
+      },
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) {
+      throw new Error(`Preparação de fases interrompida em ${slot.id}.`);
+    }
   }
 }

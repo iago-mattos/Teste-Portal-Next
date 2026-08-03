@@ -70,6 +70,41 @@ export class ProposalDocumentsPage {
     return this.documentRows.count();
   }
 
+  async getDocumentNames(): Promise<readonly string[]> {
+    const count = await this.getDocumentCount();
+    const names: string[] = [];
+    const interfaceLabels = new Set([
+      "Documento enviado",
+      "Escolher arquivo",
+      "Enviar novamente",
+      "Ver arquivo",
+    ]);
+
+    for (let index = 0; index < count; index += 1) {
+      const lines = (await this.getDocumentRowAt(index).innerText())
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const name = lines
+        .find((line) => !interfaceLabels.has(line))
+        ?.replace(/\s*\*+\s*$/, "")
+        .trim();
+      if (!name) {
+        throw new Error(
+          `O Portal não expôs o nome funcional do documento na posição ${index + 1}.`,
+        );
+      }
+      names.push(name);
+    }
+
+    if (new Set(names).size !== names.length) {
+      throw new Error(
+        `O Portal expôs nomes documentais duplicados: ${names.join(", ")}.`,
+      );
+    }
+    return Object.freeze(names);
+  }
+
   async chooseFileAt(index: number, filePath: string): Promise<void> {
     await this.chooseFileInRow(this.getDocumentRowAt(index), filePath);
   }

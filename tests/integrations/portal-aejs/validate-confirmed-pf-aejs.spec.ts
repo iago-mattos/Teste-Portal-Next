@@ -1,6 +1,15 @@
 import { AejsOperationsPage } from "../../pages/aejs/aejs-operations.page";
 import { aejsTest as test, expect } from "../../fixtures/aejs/aejs.fixture";
+import {
+  attachFunctionalEvidence,
+  checkedEvidenceField,
+  inputEvidenceField,
+  type EvidenceMask,
+  type FunctionalEvidenceField,
+} from "../../fixtures/evidence";
 import { getIntegrationPreparationScenario } from "../../test-data/integration-data";
+
+const scenarioId = "INT-CONFIRM-PF";
 
 const monthNames = [
   "Jan",
@@ -70,11 +79,26 @@ async function expectFieldDigits(
   expect(actualValue.replace(/\D/g, "")).toBe(value.replace(/\D/g, ""));
 }
 
+function aejsInputEvidence(
+  operationsPage: AejsOperationsPage,
+  label: string,
+  fieldName: string,
+  expected: string | number,
+  mask: EvidenceMask = "none",
+): Promise<FunctionalEvidenceField> {
+  return inputEvidenceField(
+    label,
+    operationsPage.getVisibleField(fieldName),
+    expected,
+    mask,
+  );
+}
+
 test(
   "Portal → AEJS | valida terceiro e garantidor da operação PF",
   { tag: ["@integration", "@readonly"] },
-  async ({ aejsPage }) => {
-    const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PF");
+  async ({ aejsPage }, testInfo) => {
+    const scenario = getIntegrationPreparationScenario(scenarioId);
     const { thirdParty, guarantor } = scenario.preparation;
     const operationsPage = new AejsOperationsPage(aejsPage);
 
@@ -84,6 +108,21 @@ test(
       await expect(operationsPage.openedOperationNumber).toHaveValue(
         scenario.operationNumber,
       );
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 1,
+        slug: "pf-operacao-aberta",
+        title: "Operação PF aberta no SCCI",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: [
+          await inputEvidenceField(
+            "Operação",
+            operationsPage.openedOperationNumber,
+            scenario.operationNumber,
+            "operation",
+          ),
+        ],
+      });
     });
 
     await test.step("valida terceiro na composição de renda", async () => {
@@ -121,8 +160,99 @@ test(
       await expect(
         operationsPage.getVisibleField("PESSOA$DT_AUTORZC"),
       ).toHaveValue(/\S/);
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 2,
+        slug: "pf-terceiro-dados-pessoais",
+        title: "Terceiro — dados pessoais e autorização SCR",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: await Promise.all([
+          aejsInputEvidence(
+            operationsPage,
+            "CPF",
+            "PESSOA$NU_CPFCNPJ",
+            thirdParty.cpf,
+            "tax-id",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Nome",
+            "PESSOA$NO_PESSOA",
+            thirdParty.name,
+            "name",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Nascimento",
+            "PESSOA$DT_NASCIMENTO",
+            formatDate(thirdParty.dateOfBirth),
+            "date",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Nacionalidade",
+            "PESSOA$CO_NACIONALIDADE",
+            thirdParty.nationality,
+          ),
+          checkedEvidenceField(
+            "Composição de renda",
+            operationsPage.getVisibleInput("PESSOA$IN_EADQUIRENTE"),
+            true,
+          ),
+          checkedEvidenceField(
+            "Pretendente principal",
+            operationsPage.getVisibleInput("PESSOA$IN_E_PRINCIPAL"),
+            false,
+          ),
+          checkedEvidenceField(
+            "Autorização SCR",
+            operationsPage.getVisibleInput("PESSOA$IN_AUTORZC"),
+            true,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Data da autorização SCR",
+            "PESSOA$DT_AUTORZC",
+            await operationsPage
+              .getVisibleField("PESSOA$DT_AUTORZC")
+              .inputValue(),
+            "date",
+          ),
+        ]),
+      });
 
       await operationsPage.selectVisibleTab("Dados de Contato");
+      await expectFieldDigits(
+        operationsPage,
+        "PESSOA$NU_CEP",
+        thirdParty.address.postalCode,
+      );
+      await expect(
+        operationsPage.getVisibleField("PESSOA$NO_ENDERECO"),
+      ).toHaveValue(new RegExp(thirdParty.address.street));
+      await expect(
+        operationsPage.getVisibleField("PESSOA$NO_ENDERECO"),
+      ).toHaveValue(new RegExp(thirdParty.address.streetNumber));
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_COMPLEMENTO",
+        thirdParty.address.complement,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$NO_BAIRRO",
+        thirdParty.address.neighborhood,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_MUNICIPIO",
+        thirdParty.address.city,
+      );
+      await expectFieldValue(
+        operationsPage,
+        "PESSOA$CO_UF",
+        thirdParty.address.state,
+      );
       await expectFieldValue(
         operationsPage,
         "PESSOA$NU_DDD_CEL",
@@ -138,6 +268,74 @@ test(
         "PESSOA$NO_EMAIL",
         thirdParty.email,
       );
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 3,
+        slug: "pf-terceiro-endereco-contato",
+        title: "Terceiro — endereço e contato",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: await Promise.all([
+          aejsInputEvidence(
+            operationsPage,
+            "CEP",
+            "PESSOA$NU_CEP",
+            thirdParty.address.postalCode,
+            "postal-code",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Endereço",
+            "PESSOA$NO_ENDERECO",
+            `${thirdParty.address.street}, ${thirdParty.address.streetNumber}`,
+            "address",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Complemento",
+            "PESSOA$NO_COMPLEMENTO",
+            thirdParty.address.complement,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Bairro",
+            "PESSOA$NO_BAIRRO",
+            thirdParty.address.neighborhood,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Município",
+            "PESSOA$CO_MUNICIPIO",
+            thirdParty.address.city,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "UF",
+            "PESSOA$CO_UF",
+            thirdParty.address.state,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "DDD celular",
+            "PESSOA$NU_DDD_CEL",
+            thirdParty.mobileAreaCode,
+            "phone",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Celular",
+            "PESSOA$NU_CELULAR",
+            thirdParty.mobileNumber,
+            "phone",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "E-mail",
+            "PESSOA$NO_EMAIL",
+            thirdParty.email,
+            "email",
+          ),
+        ]),
+      });
 
       await operationsPage.selectVisibleTab("Ocupação");
       await expectFieldValue(
@@ -155,6 +353,33 @@ test(
         "PESSOA$VA_RENDA_BRUTA",
         formatCurrency(thirdParty.grossIncome),
       );
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 4,
+        slug: "pf-terceiro-ocupacao",
+        title: "Terceiro — ocupação e renda",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: await Promise.all([
+          aejsInputEvidence(
+            operationsPage,
+            "Atividade profissional",
+            "PESSOA$CO_ATIVIDADE_PROFISSIONAL",
+            thirdParty.professionalActivity,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Profissão",
+            "PESSOA$CO_PROFISSAO",
+            thirdParty.profession,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Renda bruta",
+            "PESSOA$VA_RENDA_BRUTA",
+            formatCurrency(thirdParty.grossIncome),
+          ),
+        ]),
+      });
 
       await operationsPage.closeCurrentWindow();
     });
@@ -188,6 +413,46 @@ test(
           "Estado civil",
         ),
       );
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 5,
+        slug: "pf-garantidor-dados-pessoais",
+        title: "Garantidor PF — dados pessoais",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: await Promise.all([
+          aejsInputEvidence(
+            operationsPage,
+            "CPF",
+            "PESSOA$NU_CPFCNPJ",
+            guarantor.cpf,
+            "tax-id",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Nome",
+            "PESSOA$NO_PESSOA",
+            guarantor.name,
+            "name",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Nascimento",
+            "PESSOA$DT_NASCIMENTO",
+            formatDate(guarantor.dateOfBirth),
+            "date",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Estado civil",
+            "PESSOA$CO_ESTCIV",
+            getMappedValue(
+              maritalStatusLabels,
+              guarantor.maritalStatus,
+              "Estado civil",
+            ),
+          ),
+        ]),
+      });
 
       await operationsPage.selectVisibleTab("Dados de Contato");
       await expectFieldDigits(
@@ -236,6 +501,74 @@ test(
         "PESSOA$NO_EMAIL",
         guarantor.email,
       );
+      await attachFunctionalEvidence(aejsPage, testInfo, {
+        order: 6,
+        slug: "pf-garantidor-endereco-contato",
+        title: "Garantidor PF — endereço e contato",
+        scenario: scenarioId,
+        operationNumber: scenario.operationNumber,
+        fields: await Promise.all([
+          aejsInputEvidence(
+            operationsPage,
+            "CEP",
+            "PESSOA$NU_CEP",
+            guarantor.address.postalCode,
+            "postal-code",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Endereço",
+            "PESSOA$NO_ENDERECO",
+            `${guarantor.address.street}, ${guarantor.address.streetNumber}`,
+            "address",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Complemento",
+            "PESSOA$NO_COMPLEMENTO",
+            guarantor.address.complement,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "UF",
+            "PESSOA$CO_UF",
+            guarantor.address.state,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Município",
+            "PESSOA$CO_MUNICIPIO",
+            guarantor.address.city,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Bairro",
+            "PESSOA$NO_BAIRRO",
+            guarantor.address.neighborhood,
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "DDD celular",
+            "PESSOA$NU_DDD_CEL",
+            guarantor.mobileAreaCode,
+            "phone",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "Celular",
+            "PESSOA$NU_CELULAR",
+            guarantor.mobileNumber,
+            "phone",
+          ),
+          aejsInputEvidence(
+            operationsPage,
+            "E-mail",
+            "PESSOA$NO_EMAIL",
+            guarantor.email,
+            "email",
+          ),
+        ]),
+      });
 
       await operationsPage.closeCurrentWindow();
     });

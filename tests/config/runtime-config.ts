@@ -17,6 +17,8 @@ export interface LocalPortalCompatibilityConfig {
     cpfComPropostas?: string;
     cpfInvalido?: string;
     propostaExpiradaId?: string;
+    propostaCanceladaAte30DiasId?: string;
+    propostaCanceladaMais30DiasId?: string;
     propostaExpiradaMais30DiasId?: string;
     propostaCanceladaId?: string;
     expectedProposal?: {
@@ -29,6 +31,7 @@ export interface LocalPortalCompatibilityConfig {
       term?: string;
       currentPhase?: string;
       interestType?: string;
+      propertyAddress?: string;
     };
   };
 }
@@ -47,8 +50,8 @@ export interface PortalRuntimeConfig {
     invalidCpf: string;
     operationCpfs: Readonly<Record<string, string>>;
     propostaExpiradaId: string;
-    propostaExpiradaMais30DiasId: string;
-    propostaCanceladaId: string;
+    propostaCanceladaAte30DiasId: string;
+    propostaCanceladaMais30DiasId: string;
     propostaCreditoReprovadoId: string;
     propostaCreditoAprovadoId: string;
     corePersistenceOperation: string;
@@ -69,6 +72,7 @@ export interface PortalRuntimeConfig {
       term: string;
       currentPhase: string;
       interestType: string;
+      propertyAddress: string;
     }>;
   }>;
   readonly pageErrors: Readonly<{
@@ -123,6 +127,7 @@ function resolveExpectedProposal(
   term: string;
   currentPhase: string;
   interestType: string;
+  propertyAddress: string;
 }> {
   const rawExpectedProposal = env.PORTAL_EXPECTED_PROPOSAL_JSON?.trim();
   let parsed: Record<string, unknown> = {};
@@ -195,6 +200,11 @@ function resolveExpectedProposal(
       "interestType",
       "PORTAL_EXPECTED_INTEREST_TYPE",
       localExpected.interestType,
+    ),
+    propertyAddress: getString(
+      "propertyAddress",
+      "PORTAL_EXPECTED_PROPERTY_ADDRESS",
+      localExpected.propertyAddress,
     ),
   });
 }
@@ -304,16 +314,35 @@ function resolvePropostaExpiradaId(
   }
 }
 
-function resolvePropostaExpiradaMais30DiasId(
+function resolvePropostaCanceladaAte30DiasId(
   env: NodeJS.ProcessEnv,
   local: LocalPortalCompatibilityConfig | undefined,
 ): string {
-  const explicitValue = env.PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS?.trim();
+  return resolveConfiguredProposalId(
+    env,
+    "PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS",
+    env.PORTAL_PROPOSAL_CANCELED?.trim() ||
+      local?.testData?.propostaCanceladaAte30DiasId?.trim() ||
+      local?.testData?.propostaCanceladaId,
+  );
+}
+
+function resolvePropostaCanceladaMais30DiasId(
+  env: NodeJS.ProcessEnv,
+  local: LocalPortalCompatibilityConfig | undefined,
+): string {
+  const explicitValue =
+    env.PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS?.trim() ||
+    env.PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS?.trim();
   if (explicitValue) return explicitValue;
 
   const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
   if (!rawTestData) {
-    return local?.testData?.propostaExpiradaMais30DiasId?.trim() || "";
+    return (
+      local?.testData?.propostaCanceladaMais30DiasId?.trim() ||
+      local?.testData?.propostaExpiradaMais30DiasId?.trim() ||
+      ""
+    );
   }
 
   try {
@@ -433,14 +462,13 @@ export function loadPortalRuntimeConfig(
       invalidCpf: resolveInvalidCpf(env, local),
       operationCpfs: resolveOperationCpfs(env),
       propostaExpiradaId: resolvePropostaExpiradaId(env, local),
-      propostaExpiradaMais30DiasId: resolvePropostaExpiradaMais30DiasId(
+      propostaCanceladaAte30DiasId: resolvePropostaCanceladaAte30DiasId(
         env,
         local,
       ),
-      propostaCanceladaId: resolveConfiguredProposalId(
+      propostaCanceladaMais30DiasId: resolvePropostaCanceladaMais30DiasId(
         env,
-        "PORTAL_PROPOSAL_CANCELED",
-        local?.testData?.propostaCanceladaId,
+        local,
       ),
       propostaCreditoReprovadoId: resolveConfiguredProposalId(
         env,

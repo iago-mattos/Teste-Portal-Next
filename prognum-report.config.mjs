@@ -1,0 +1,25 @@
+export default {
+  productName: "Portal Quality",
+  reportTitle: "Relatório Playwright",
+  accentColor: "oklch(0.56 0.205 257.3)",
+  domains: {},
+  evidence: "all",
+  dataDir: ".playwright/prognum-report-data",
+  outputDir: "portal-report",
+  port: 9324,
+  pdf: {
+    outputPath: "output/pdf/playwright-report.pdf",
+    includeInReport: true,
+    downloadLabel: "Baixar PDF",
+    author: "Equipe de Qualidade",
+    footerText: "Relatório Playwright — Portal",
+    metadataFields: {
+      scenario: "Cenário",
+      evidenceSection: "Etapa comprovada",
+      operation: "Operação mascarada",
+      environment: "Ambiente",
+      validatedFields: "Campos comprovados",
+      validationSummary: "Esperado × encontrado",
+    },
+  },
+};

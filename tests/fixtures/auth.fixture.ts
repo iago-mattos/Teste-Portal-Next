@@ -203,13 +203,16 @@ export async function renewPortalSession(
     }
 
     stage = "consumir magic link";
-    const tokenResponsePromise = page.waitForResponse((response) => {
-      const url = new URL(response.url());
-      return (
-        response.request().method() === "POST" &&
-        url.pathname === "/api/auth/token"
-      );
-    });
+    const tokenResponsePromise = page.waitForResponse(
+      (response) => {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === "POST" &&
+          url.pathname === "/api/auth/token"
+        );
+      },
+      { timeout: 60_000 },
+    );
     await page.goto(validateAccessUrl(accessUrl, auth.portalUrl), {
       waitUntil: "domcontentloaded",
     });

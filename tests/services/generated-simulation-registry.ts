@@ -20,6 +20,7 @@ export type GeneratedSimulationStatus =
 
 export interface GeneratedSimulationEntry {
   readonly id: string;
+  readonly runId?: string;
   readonly profile: string;
   readonly slotId?: ProvisioningSlotId;
   readonly environmentKey?: string;
@@ -34,13 +35,29 @@ export interface GeneratedSimulationEntry {
   readonly submittedAt?: string;
   readonly scciValidatedAt?: string;
   readonly statePreparedAt?: string;
+  readonly propertyPreparedAt?: string;
+  readonly documentNames?: readonly string[];
+  readonly documentNamesCapturedAt?: string;
   readonly validatedAt?: string;
   readonly rejectedAt?: string;
   readonly failure?: string;
   readonly status: GeneratedSimulationStatus;
 }
 
+export interface C6FreshRunMetadata {
+  readonly id: string;
+  readonly profile: "ht";
+  readonly provider: "c6";
+  readonly createdAt: string;
+  readonly status: "initialized" | "ready";
+  readonly publishedAt?: string;
+  readonly freshSlotIds: readonly ProvisioningSlotId[];
+  readonly externalSlotIds: readonly ProvisioningSlotId[];
+  readonly onDemandSlotIds: readonly ProvisioningSlotId[];
+}
+
 interface GeneratedSimulationRegistry {
+  run?: C6FreshRunMetadata;
   nextSequence: number;
   entries: GeneratedSimulationEntry[];
 }
@@ -79,6 +96,7 @@ async function readRegistry(profile: string): Promise<GeneratedSimulationRegistr
     }
 
     return {
+      run: parsed.run as C6FreshRunMetadata | undefined,
       nextSequence: Number(parsed.nextSequence),
       entries: parsed.entries as GeneratedSimulationEntry[],
     };
@@ -127,6 +145,39 @@ function buildApplicant(
   };
 }
 
+function buildApplicantForSlot(
+  registry: GeneratedSimulationRegistry,
+  slotId: ProvisioningSlotId,
+  scenario: ProvisioningSimulationScenario,
+  usedCpfs: ReadonlySet<string>,
+): SimulationApplicantInput {
+  const slot = getProvisioningSlot(slotId);
+  if (slot.creationMode !== "simulator-shared") {
+    return buildApplicant(scenario, slot.applicantName, usedCpfs);
+  }
+
+  const sharedEntry = registry.entries.find(
+    (entry) => entry.slotId === slot.sharedCpfWith,
+  );
+  if (!sharedEntry?.protocol || !sharedEntry.applicant.cpfDigits) {
+    throw new Error(
+      `${slot.sharedCpfWith} precisa ser criado antes de ${slot.id} compartilhar seu CPF.`,
+    );
+  }
+  if (registry.run?.id && sharedEntry.runId !== registry.run.id) {
+    throw new Error(
+      `${slot.sharedCpfWith} não pertence ao lote C6 ativo ${registry.run.id}.`,
+    );
+  }
+
+  return {
+    cpfDigits: sharedEntry.applicant.cpfDigits,
+    name: slot.applicantName,
+    email: scenario.applicantSeed.email,
+    mobileDigits: scenario.applicantSeed.mobileDigits,
+  };
+}
+
 export async function reserveProvisioningSlot(
   slotId: ProvisioningSlotId,
   scenario: ProvisioningSimulationScenario,
@@ -148,14 +199,16 @@ export async function reserveProvisioningSlot(
         .filter((_, index) => index !== existingIndex)
         .map((entry) => entry.applicant.cpfDigits),
     );
-    const applicant = buildApplicant(
+    const applicant = buildApplicantForSlot(
+      registry,
+      slotId,
       scenario,
-      slot.applicantName,
       usedCpfs,
     );
 
     const renewed: GeneratedSimulationEntry = {
       ...existing,
+      runId: registry.run?.id,
       environmentKey: slot.environmentKey,
       purpose: slot.purpose,
       desiredState: slot.desiredState,
@@ -171,14 +224,16 @@ export async function reserveProvisioningSlot(
     return renewed;
   }
 
-  const applicant = buildApplicant(
+  const applicant = buildApplicantForSlot(
+    registry,
+    slotId,
     scenario,
-    slot.applicantName,
     new Set(registry.entries.map((entry) => entry.applicant.cpfDigits)),
   );
 
   const entry: GeneratedSimulationEntry = {
     id: randomUUID(),
+    runId: registry.run?.id,
     profile,
     slotId,
     environmentKey: slot.environmentKey,
@@ -249,11 +304,58 @@ export function markGeneratedSimulationStatePrepared(
   });
 }
 
+export function markGeneratedSimulationPropertyPrepared(
+  id: string,
+): Promise<GeneratedSimulationEntry> {
+  return updateGeneratedSimulation(id, {
+    propertyPreparedAt: new Date().toISOString(),
+  });
+}
+
+export function refreshGeneratedSimulationScenario(
+  id: string,
+  scenario: ProvisioningSimulationScenario,
+): Promise<GeneratedSimulationEntry> {
+  return updateGeneratedSimulation(id, { scenario });
+}
+
+export function markGeneratedSimulationDocumentNames(
+  id: string,
+  documentNames: readonly string[],
+): Promise<GeneratedSimulationEntry> {
+  if (documentNames.length === 0) {
+    throw new Error("A massa documental precisa possuir pelo menos um slot.");
+  }
+  return updateGeneratedSimulation(id, {
+    documentNames: Object.freeze([...documentNames]),
+    documentNamesCapturedAt: new Date().toISOString(),
+  });
+}
+
+export async function recordGeneratedSimulationDocumentNames(
+  operationNumber: string,
+  documentNames: readonly string[],
+): Promise<GeneratedSimulationEntry | undefined> {
+  const profile = resolveProfileName();
+  const registry = await readRegistry(profile);
+  const normalizedOperation = operationNumber.replace(/\D/g, "");
+  const entry = registry.entries.find(
+    (candidate) =>
+      candidate.protocol?.replace(/\D/g, "") === normalizedOperation &&
+      (!registry.run?.id || candidate.runId === registry.run.id),
+  );
+  if (!entry) return undefined;
+
+  return markGeneratedSimulationDocumentNames(entry.id, documentNames);
+}
+
 export function markGeneratedSimulationReady(
   id: string,
 ): Promise<GeneratedSimulationEntry> {
   return updateGeneratedSimulation(id, {
     validatedAt: new Date().toISOString(),
+    rejectedAt: undefined,
+    failure: undefined,
     status: "ready",
   });
 }
@@ -273,6 +375,29 @@ export async function listGeneratedSimulations(): Promise<
   readonly GeneratedSimulationEntry[]
 > {
   return (await readRegistry(resolveProfileName())).entries;
+}
+
+export async function getExpectedNextOperationForActiveRun(): Promise<string> {
+  const profile = resolveProfileName();
+  const registry = await readRegistry(profile);
+  if (!registry.run?.id) {
+    throw new Error(
+      "Não existe lote C6 ativo para calcular a próxima operação esperada.",
+    );
+  }
+
+  const operations = registry.entries
+    .filter((entry) => entry.runId === registry.run?.id && entry.protocol)
+    .map((entry) => entry.protocol!)
+    .filter((operation) => /^\d{9}$/.test(operation))
+    .map(Number);
+  if (operations.length === 0) {
+    throw new Error(
+      `O lote C6 ${registry.run.id} ainda não possui uma operação anterior.`,
+    );
+  }
+
+  return String(Math.max(...operations) + 1).padStart(9, "0");
 }
 
 export async function getGeneratedSimulationForSlot(

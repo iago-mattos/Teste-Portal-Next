@@ -1,6 +1,7 @@
 import { expect, type Page, type Response } from "@playwright/test";
 import { test } from "../../fixtures/test";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
+import { ProposalRegistrationPage } from "../../pages/portal/proposal-registration.page";
 import {
   getIntegrationPreparationScenario,
   type GuarantorPartnerInput,
@@ -33,6 +34,30 @@ async function fillField(
   await expect(field).toBeVisible();
   await field.fill(value);
   await field.blur();
+}
+
+async function expectRequiredResidentialAddress(
+  page: Page,
+  proposalPage: ProposalPage,
+  prefix: "CONJUGE" | "PESSOA",
+): Promise<void> {
+  for (const name of [
+    "IN_RESIDE_NO_IMOVEL",
+    "NU_CEP",
+    "NO_ENDERECO",
+    "NO_BAIRRO",
+    "CO_UF",
+    "CO_MUNICIPIO",
+  ]) {
+    const field = proposalPage.getVisibleFieldByName(`${prefix}.${name}`);
+    await expect(
+      field,
+      `O Portal deve exibir o campo residencial obrigatório ${prefix}.${name}`,
+    ).toBeVisible();
+    const id = await field.getAttribute("id");
+    expect(id, `${prefix}.${name} precisa possuir id para associação do label`).toBeTruthy();
+    await expect(page.locator(`label[for=${JSON.stringify(id)}]`)).toContainText("*");
+  }
 }
 
 async function saveAndAdvance(
@@ -163,6 +188,7 @@ test(
     const scenario = getIntegrationPreparationScenario("INT-CONFIRM-PJ");
     await portalSession.useOperation(scenario.operationNumber);
     const { applicant, spouse, creditPurpose, property, guarantor } = scenario.preparation;
+    const registrationPage = new ProposalRegistrationPage(page, proposalPage);
 
     await test.step("abre a proposta descartável", async () => {
       await proposalPage.open(scenario.operationNumber);
@@ -186,6 +212,12 @@ test(
 
     await test.step("preenche cônjuge", async () => {
       await fillSpouse(proposalPage, spouse);
+      await registrationPage.fillParticipantResidentialAddress(
+        "CONJUGE",
+        spouse.livesInProperty,
+        spouse.address,
+      );
+      await expectRequiredResidentialAddress(page, proposalPage, "CONJUGE");
       await saveAndAdvance(page, proposalPage, scenario.operationNumber, "Composição de Renda");
     });
 
@@ -227,7 +259,7 @@ test(
       await proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL").selectOption(property.condition);
       await fillField(proposalPage, "OPERACAO_CREDITO.VA_INTERVENIENTE", property.outstandingBalance);
       await selectSearchableOption(proposalPage, "INTERVENIENTE.CODIGO", property.settlementIntervenor);
-      await expect(proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_ENDERECO")).toHaveValue(/\d+/);
+      await registrationPage.ensurePropertyAddress(property.addressLine);
       await saveByOpeningTab(page, proposalPage, scenario.operationNumber, "Garantidor");
     });
 

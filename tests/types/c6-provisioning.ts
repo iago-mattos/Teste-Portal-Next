@@ -14,4 +14,12 @@ export interface C6ProvisioningScenario
   readonly journey: C6SimulationJourney;
   readonly insurer: "ZURICH";
   readonly applicantPostalCode: string;
+  readonly propertyAddress: {
+    readonly postalCode: string;
+    readonly addressLine: string;
+    readonly streetNumber: string;
+    readonly complement: string;
+    readonly state: string;
+    readonly municipality: string;
+  };
 }

@@ -15,6 +15,10 @@ export default defineConfig({
   reporter: [
     ["list"],
     ["html", { open: "never", outputFolder: "playwright-report/provisioning" }],
+    [
+      "@prognum/playwright-report/reporter",
+      { outputDir: ".playwright/prognum-report-data" },
+    ],
   ],
   use: {
     ...devices["Desktop Chrome"],
@@ -22,7 +26,7 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
-    screenshot: "only-on-failure",
+    screenshot: { mode: "on", fullPage: true },
     trace: "retain-on-failure",
     video: "retain-on-failure",
     storageState: { cookies: [], origins: [] },

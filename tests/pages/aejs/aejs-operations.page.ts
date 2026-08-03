@@ -8,6 +8,8 @@ export class AejsOperationsPage {
   readonly openedOperationNumber: Locator;
   readonly openedApplicantName: Locator;
   readonly openedTerm: Locator;
+  readonly openedCurrentPhase: Locator;
+  readonly cancellationDate: Locator;
   readonly processProgressGrid: Locator;
   readonly incomeDocumentsGrid: Locator;
   readonly openedDocumentWindow: Locator;
@@ -19,6 +21,8 @@ export class AejsOperationsPage {
   private readonly processProgressMenuItem: Locator;
   private readonly documentsMenuItem: Locator;
   private readonly simulationMenuItem: Locator;
+  private readonly operationDataMenuItem: Locator;
+  private readonly fullSummaryTab: Locator;
   private readonly incomeDocumentsTab: Locator;
   private readonly applicantTab: Locator;
   private readonly operationSearchInput: Locator;
@@ -46,6 +50,12 @@ export class AejsOperationsPage {
       name: "Simulação",
       exact: true,
     });
+    this.operationDataMenuItem = page
+      .getByText("Dados da Operação", { exact: true })
+      .filter({ visible: true });
+    this.fullSummaryTab = page
+      .getByRole("tab", { name: "Resumo Completo", exact: true })
+      .filter({ visible: true });
     this.incomeDocumentsTab = page
       .getByRole("tab", { name: "Renda PF", exact: true })
       .filter({ visible: true });
@@ -72,6 +82,10 @@ export class AejsOperationsPage {
     this.openedTerm = page.locator(
       'input[name="OPERACAO_CREDITO$NU_PRAZO_MESES_OPERACAO"]',
     );
+    this.openedCurrentPhase = page.getByLabel("Fase Atual:", { exact: true });
+    this.cancellationDate = page
+      .getByLabel(/Data do cancelamento/i)
+      .filter({ visible: true });
     this.operationApplicantName = page.getByRole("textbox", {
       name: "Nome do cliente:",
       exact: true,
@@ -127,6 +141,47 @@ export class AejsOperationsPage {
     await this.operationsGrid.openRowByText(operationNumber);
   }
 
+  async startEditing(): Promise<void> {
+    const editButton = this.page
+      .getByRole("button", { name: "Alterar", exact: true })
+      .filter({ visible: true });
+
+    await expect(editButton).toHaveCount(1);
+    await expect(editButton).toBeVisible();
+    await expect(editButton).toBeEnabled();
+    await editButton.click();
+    await this.waitForExtJsReady();
+    await expect(
+      this.page
+        .getByRole("button", { name: "Cancelar", exact: true })
+        .filter({ visible: true }),
+    ).toBeVisible();
+  }
+
+  async cancelEditing(): Promise<void> {
+    const cancelButton = this.page
+      .getByRole("button", { name: "Cancelar", exact: true })
+      .filter({ visible: true });
+
+    await expect(cancelButton).toHaveCount(1);
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+
+    const confirmation = this.page
+      .getByRole("alertdialog", { name: "Confirmação", exact: true })
+      .filter({ hasText: "Confirma cancelar as alterações?" });
+    await expect(confirmation).toBeVisible();
+    await confirmation
+      .getByRole("button", { name: "Sim", exact: true })
+      .click();
+    await this.waitForExtJsReady();
+    await expect(
+      this.page
+        .getByRole("button", { name: "Alterar", exact: true })
+        .filter({ visible: true }),
+    ).toBeVisible();
+  }
+
   async openOperationEventually(
     operationNumber: string,
     timeout = 3 * 60_000,
@@ -178,6 +233,20 @@ export class AejsOperationsPage {
     ).toBeVisible();
   }
 
+  async openFullOperationSummary(): Promise<void> {
+    await expect(this.operationDataMenuItem).toHaveCount(1);
+    await expect(this.operationDataMenuItem).toBeVisible();
+    await this.operationDataMenuItem.click();
+
+    await expect(this.fullSummaryTab).toHaveCount(1);
+    await expect(this.fullSummaryTab).toBeVisible();
+    await this.fullSummaryTab.click();
+    await this.waitForExtJsReady();
+
+    await expect(this.cancellationDate).toHaveCount(1);
+    await expect(this.cancellationDate).toBeVisible();
+  }
+
   getIncomeDocumentRow(documentName: string): Locator {
     return this.incomeDocumentsGrid
       .getByRole("row")
@@ -186,6 +255,7 @@ export class AejsOperationsPage {
 
   async openIncomeDocument(documentName: string): Promise<void> {
     await this.selectIncomeDocumentsTab();
+    await this.waitForDocumentMaskToClear();
     const row = this.getIncomeDocumentRow(documentName);
     await expect(row).toHaveCount(1);
     await expect(row).toBeVisible();
@@ -209,7 +279,7 @@ export class AejsOperationsPage {
     await expect(closeButton).toBeVisible();
     await closeButton.click();
     await expect(this.openedDocumentWindow).toHaveCount(0);
-    await this.waitForExtJsReady();
+    await this.waitForDocumentMaskToClear();
   }
 
   private async selectIncomeDocumentsTab(): Promise<void> {
@@ -357,5 +427,11 @@ export class AejsOperationsPage {
         ".x-mask-msg:visible, .x-loading-mask:visible",
       ),
     ).toHaveCount(0);
+  }
+
+  private async waitForDocumentMaskToClear(): Promise<void> {
+    await expect(this.page.locator(".x-mask:visible")).toHaveCount(0, {
+      timeout: 60_000,
+    });
   }
 }

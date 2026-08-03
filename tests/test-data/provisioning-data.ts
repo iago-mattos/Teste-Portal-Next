@@ -2,6 +2,7 @@ import rawSlots from "./provisioning-slots.json";
 import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningCreationMode,
+  type ProvisioningLifecycle,
   type ProvisioningSlotDefinition,
   type ProvisioningSlotId,
   type ProvisioningStateOwner,
@@ -17,12 +18,19 @@ const validStateOwners = new Set<ProvisioningStateOwner>([
 ]);
 const validCreationModes = new Set<ProvisioningCreationMode>([
   "simulator",
+  "simulator-shared",
   "manual-shared",
+]);
+const validLifecycles = new Set<ProvisioningLifecycle>([
+  "fresh-per-run",
+  "external-static",
+  "on-demand",
 ]);
 
 function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition {
   const creationMode = entry.creationMode as ProvisioningCreationMode;
   const stateOwner = entry.stateOwner as ProvisioningStateOwner;
+  const lifecycle = entry.lifecycle as ProvisioningLifecycle;
   const sharedCpfWith = (entry as { sharedCpfWith?: string }).sharedCpfWith;
   const phaseTarget = (
     entry as {
@@ -45,9 +53,11 @@ function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition
     !entry.desiredState.trim() ||
     !validStateOwners.has(stateOwner) ||
     !validCreationModes.has(creationMode) ||
+    !validLifecycles.has(lifecycle) ||
     (stateOwner === "c6-phase-preparation" && !validPhaseTarget) ||
     (stateOwner !== "c6-phase-preparation" && phaseTarget !== undefined) ||
-    (creationMode === "manual-shared" &&
+    ((creationMode === "manual-shared" ||
+      creationMode === "simulator-shared") &&
       (!sharedCpfWith ||
         !validSlotIds.has(sharedCpfWith) ||
         sharedCpfWith === entry.id))
@@ -60,6 +70,7 @@ function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition
     id: entry.id as ProvisioningSlotId,
     stateOwner,
     creationMode,
+    lifecycle,
     sharedCpfWith: sharedCpfWith as ProvisioningSlotId | undefined,
     phaseTarget: validPhaseTarget
       ? Object.freeze({

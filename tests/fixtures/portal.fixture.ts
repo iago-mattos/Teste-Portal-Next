@@ -1,4 +1,8 @@
-import type { Page } from "@playwright/test";
+import type {
+  BrowserContext,
+  Page,
+  TestInfo,
+} from "@playwright/test";
 import { ProposalPage } from "../pages/portal/proposal.page";
 import { ProposalsPage } from "../pages/portal/proposals.page";
 import {
@@ -7,6 +11,7 @@ import {
   renewPortalSession,
   restorePortalOperationSession,
 } from "./auth.fixture";
+import { attachContextScreenshots } from "./evidence";
 
 export interface PortalFixtures {
   authenticatedPage: Page;
@@ -16,43 +21,99 @@ export interface PortalFixtures {
 }
 
 export interface PortalSession {
-  useOperation(operationNumber: string): Promise<void>;
+  useOperation(
+    operationNumber: string,
+    options?: Readonly<{ fresh?: boolean }>,
+  ): Promise<void>;
   renewCurrent(): Promise<void>;
+}
+
+async function stopAndAttachPortalTrace(
+  context: BrowserContext,
+  testInfo: TestInfo,
+): Promise<void> {
+  const tracePath = testInfo.outputPath("trace-portal.zip");
+  await context.tracing.stop({ path: tracePath });
+  await testInfo.attach("trace-portal", {
+    path: tracePath,
+    contentType: "application/zip",
+  });
 }
 
 export const portalTest = authTest.extend<PortalFixtures>({
   portalSession: async (
     { authenticatedContext, portalConfig },
     use,
+    testInfo,
   ) => {
     let currentCpf: string | undefined;
+    let traceStarted = false;
+    const manuallyTraceIntegration = testInfo.project.name === "integration";
+
+    const startIntegrationTrace = async (): Promise<void> => {
+      if (!manuallyTraceIntegration || traceStarted) return;
+      await authenticatedContext.tracing.start({
+        screenshots: true,
+        snapshots: true,
+        sources: true,
+      });
+      traceStarted = true;
+    };
 
     const renewCurrent = async (): Promise<void> => {
+      if (traceStarted) {
+        await authenticatedContext.tracing.stop();
+        traceStarted = false;
+      }
       await renewPortalSession(authenticatedContext, portalConfig, {
         cpf: currentCpf,
         persist: true,
       });
+      await startIntegrationTrace();
     };
 
-    await use({
-      async useOperation(operationNumber) {
-        const normalizedOperation = operationNumber.replace(/\D/g, "");
-        const cpf = portalConfig.testData.operationCpfs[normalizedOperation];
-        if (!cpf) {
-          throw new Error(
-            `CPF nao configurado para a operacao ${operationNumber}. Publique PORTAL_MASS_OPERATION_CPFS_JSON.`,
+    try {
+      await use({
+        async useOperation(operationNumber, options) {
+          const normalizedOperation = operationNumber.replace(/\D/g, "");
+          const cpf = portalConfig.testData.operationCpfs[normalizedOperation];
+          if (!cpf) {
+            throw new Error(
+              `CPF nao configurado para a operacao ${operationNumber}. Publique PORTAL_MASS_OPERATION_CPFS_JSON.`,
+            );
+          }
+          currentCpf = cpf;
+          if (options?.fresh) {
+            await renewCurrent();
+            return;
+          }
+          const restored = await restorePortalOperationSession(
+            authenticatedContext,
+            portalConfig,
+            cpf,
           );
-        }
-        currentCpf = cpf;
-        const restored = await restorePortalOperationSession(
+          if (!restored) {
+            await renewCurrent();
+          } else {
+            await startIntegrationTrace();
+          }
+        },
+        renewCurrent,
+      });
+    } finally {
+      if (traceStarted) {
+        await attachContextScreenshots(
           authenticatedContext,
-          portalConfig,
-          cpf,
+          testInfo,
+          "evidencia-final-portal",
         );
-        if (!restored) await renewCurrent();
-      },
-      renewCurrent,
-    });
+        await stopAndAttachPortalTrace(
+          authenticatedContext,
+          testInfo,
+        );
+        traceStarted = false;
+      }
+    }
   },
   authenticatedPage: async (
     { authenticatedContext, page, portalConfig, portalSession },

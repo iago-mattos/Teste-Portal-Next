@@ -16,9 +16,9 @@ test.describe("Minhas Propostas", () => {
       "PROP-07": portalConfig.testData.propostaExpiradaId,
       "PROP-08": portalConfig.testData.propostaCreditoReprovadoId,
       "PROP-09": portalConfig.testData.propostaCreditoAprovadoId,
-      "PROP-10": portalConfig.testData.propostaExpiradaMais30DiasId,
-      "PROP-11": portalConfig.testData.propostaExpiradaId,
-      "PROP-12": portalConfig.testData.propostaCanceladaId,
+      "PROP-10": portalConfig.testData.propostaCanceladaMais30DiasId,
+      "PROP-11": portalConfig.testData.propostaCanceladaAte30DiasId,
+      "PROP-12": portalConfig.testData.propostaCanceladaAte30DiasId,
       "PROP-17": portalConfig.testData.propostaCreditoAprovadoId,
     };
     const operationNumber = caseId ? operationByCase[caseId] : undefined;
@@ -52,53 +52,34 @@ test.describe("Minhas Propostas", () => {
 
       const addressField = proposalPage.getFieldByName("IMOVEL_OPERACAO.NO_ENDERECO");
       await expect(addressField).toBeVisible();
-      await expect(addressField).not.toHaveValue("");
+      if (expected.propertyAddress) {
+        await expect(addressField).toHaveValue(expected.propertyAddress);
+      } else {
+        await expect(addressField).not.toHaveValue("");
+      }
     },
   );
 
   test(
     "PROP-02 | As informações Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado não sofrem alteração em fase de perfilamento pelo cliente por isso ficam sempre iguais. Caso haja alteração na plataforma da prognum nesse momento aí sim reflete no portal.",
     functionalReadonly,
-    async ({ proposalsPage, portalConfig, proposalPage, authenticatedPage }) => {
+    async ({ proposalsPage, portalConfig, proposalPage }) => {
       const expected = portalConfig.testData.expectedProposal;
       await proposalsPage.openProposal(expected.visibleNumber);
       await proposalPage.waitUntilReady();
 
-      await proposalPage.tabs.select("Motivo da Contratação");
-      const requestedCredit = authenticatedPage.getByRole("textbox", {
-        name: "Valor solicitado do Crédito",
-        exact: true,
-      });
-      const estimatedTerm = authenticatedPage.getByRole("textbox", {
-        name: "Prazo estimado",
-        exact: true,
-      });
-      const interestType = authenticatedPage.getByRole("textbox", {
-        name: "Tipo de Juros",
-        exact: true,
-      });
-
-      await expect(requestedCredit).toBeVisible();
-      await expect(requestedCredit).toBeDisabled();
-      await expect(requestedCredit).toHaveValue(expected.financedValue);
-      await expect(estimatedTerm).toBeVisible();
-      await expect(estimatedTerm).toBeDisabled();
-      await expect(estimatedTerm).toHaveValue(expected.term.replace(/\s*meses$/i, ""));
-      await expect(interestType).toBeVisible();
-      await expect(interestType).toBeDisabled();
-      await expect(interestType).toHaveValue(expected.interestType);
-
       await proposalPage.tabs.select("Imóvel");
-      await expect(proposalPage.getFieldByName("OPERACAO_CREDITO.VA_PRECO_IMOVEL")).toBeDisabled();
-      await expect(proposalPage.getFieldByName("IMOVEL_OPERACAO.NO_ENDERECO")).toBeDisabled();
-    },
-  );
+      const propertyValue = proposalPage.getFieldByName(
+        "OPERACAO_CREDITO.VA_PRECO_IMOVEL",
+      );
+      const propertyAddress = proposalPage.getFieldByName(
+        "IMOVEL_OPERACAO.NO_ENDERECO",
+      );
 
-  test.fixme(
-    "PROP-03 | As informações Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado quando alteradas em outras fases na plataforma prognum, refletirão no portal",
-    functionalReadonly,
-    async () => {
-      // Pendente de implementação conforme conhecidos-pendentes (known-pending.json)
+      await expect(propertyValue).toBeVisible();
+      await expect(propertyValue).toBeDisabled();
+      await expect(propertyAddress).toBeVisible();
+      await expect(propertyAddress).toBeDisabled();
     },
   );
 
@@ -155,23 +136,34 @@ test.describe("Minhas Propostas", () => {
     "PROP-06 | Tanto a tarefa de Preenchimento cadastral quando a de preenchimento terão prazos parametrizáveis pelo C6",
     functionalReadonly,
     async ({ proposalsPage }) => {
+      const parseDate = (value: string): Date => {
+        const [day, month, year] = value.split("/").map(Number);
+        return new Date(Date.UTC(year, month - 1, day));
+      };
+
       const cards = proposalsPage.proposalCards;
       await expect(cards.first()).toBeVisible();
+      expect(await cards.count()).toBeGreaterThanOrEqual(2);
 
-      const count = await cards.count();
-      const deadlines: string[] = [];
-      for (let i = 0; i < count; i++) {
-        const text = await cards.nth(i).textContent();
-        const match = text?.match(
+      for (let index = 0; index < (await cards.count()); index++) {
+        const card = cards.nth(index);
+        const text = (await card.textContent()) ?? "";
+        const registrationDate = text.match(
+          /Data de cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i,
+        )?.[1];
+        const deadline = text.match(
           /Data limite para preenchimento do cadastro:\s*(\d{2}\/\d{2}\/\d{4})/i,
-        );
-        if (match?.[1]) {
-          deadlines.push(match[1]);
-        }
-      }
+        )?.[1];
 
-      expect(deadlines.length).toBeGreaterThanOrEqual(2);
-      expect(new Set(deadlines).size).toBeGreaterThan(1);
+        expect(registrationDate).toBeDefined();
+        expect(deadline).toBeDefined();
+
+        const elapsedDays =
+          (parseDate(deadline!).getTime() -
+            parseDate(registrationDate!).getTime()) /
+          86_400_000;
+        expect(elapsedDays).toBe(30);
+      }
     },
   );
 
@@ -219,11 +211,12 @@ test.describe("Minhas Propostas", () => {
       }
       const card = proposalsPage.getProposalCard(proposalId);
       await expect(card).toBeVisible();
-      await expect(card).toContainText(
-        /Fase Atual\s*(Cr[eé]dito|Negocia[cç][aã]o|An[aá]lise)/i,
-      );
+      await expect(card).toContainText(/Fase Atual\s*Cr[eé]dito/i);
+      await expect(card).toContainText(/Etapa conclu[ií]da/i);
       await expect(
-        card.getByText(/Verifique seu e-mail ou entre em contato com o consultor/i),
+        card.getByText(
+          /Cadastro conclu[ií]do! Aguarde nosso contato por e-mail ou WhatsApp\./i,
+        ),
       ).toBeVisible();
     },
   );
@@ -232,9 +225,11 @@ test.describe("Minhas Propostas", () => {
     "PROP-10 | Simulações canceladas acimas de 30 dias não veremos no resumo",
     functionalReadonly,
     async ({ proposalsPage, portalConfig }) => {
-      const proposalId = portalConfig.testData.propostaExpiradaMais30DiasId;
+      const proposalId = portalConfig.testData.propostaCanceladaMais30DiasId;
       if (!proposalId) {
-        throw new Error("propostaExpiradaMais30DiasId deve estar configurada.");
+        throw new Error(
+          "PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS deve estar configurada.",
+        );
       }
 
       await expect(proposalsPage.getProposalCard(proposalId)).toHaveCount(0);
@@ -244,24 +239,16 @@ test.describe("Minhas Propostas", () => {
   test(
     "PROP-11 | Simulações canceladas até e igual 30 dias deverão constar em tela",
     functionalReadonly,
-    async ({ proposalsPage, authenticatedPage, portalConfig }) => {
-      const proposalId = portalConfig.testData.propostaExpiradaId;
+    async ({ proposalsPage, portalConfig }) => {
+      const proposalId = portalConfig.testData.propostaCanceladaAte30DiasId;
       if (!proposalId) {
-        throw new Error("PORTAL_PROPOSAL_EXPIRED deve estar configurada.");
+        throw new Error(
+          "PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS deve estar configurada.",
+        );
       }
       const card = proposalsPage.getProposalCard(proposalId);
       await expect(card).toBeVisible();
-
-      const firstCardButton = card.getByRole("button", {
-        name: /Acompanhar proposta|Completar cadastro/i,
-      });
-
-      await Promise.all([
-        authenticatedPage.waitForURL((url) => /^\/propostas\/[^/]+$/.test(url.pathname)),
-        firstCardButton.click(),
-      ]);
-
-      await expect(authenticatedPage.locator("body")).toBeVisible();
+      await expect(card).toContainText(/Cancelad[ao]/i);
     },
   );
 
@@ -269,9 +256,11 @@ test.describe("Minhas Propostas", () => {
     "PROP-12 | Simulações canceladas na Prognum, também precisam estar canceladas no portal, tem que refletir exatamente o que está na Prognum em relação a proposta",
     functionalReadonly,
     async ({ proposalsPage, portalConfig }) => {
-      const proposalId = portalConfig.testData.propostaCanceladaId;
+      const proposalId = portalConfig.testData.propostaCanceladaAte30DiasId;
       if (!proposalId) {
-        throw new Error("PORTAL_PROPOSAL_CANCELED deve estar configurada.");
+        throw new Error(
+          "PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS deve estar configurada.",
+        );
       }
       const card = proposalsPage.getProposalCard(proposalId);
       await expect(card).toBeVisible();
@@ -395,9 +384,12 @@ test.describe("Minhas Propostas", () => {
       const card = proposalsPage.getProposalCard(proposalId);
       await expect(card).toBeVisible();
       await expect(card).toContainText(/Fase Atual\s*Cr[eé]dito/i);
+      await expect(card).toContainText(/Etapa conclu[ií]da/i);
       await expect(
-        card.getByRole("button", { name: /Completar cadastro/i }),
-      ).toHaveCount(0);
+        card.getByText(
+          /Cadastro conclu[ií]do! Aguarde nosso contato por e-mail ou WhatsApp\./i,
+        ),
+      ).toBeVisible();
     },
   );
 

@@ -1,9 +1,15 @@
 import { expect, test } from "../../../fixtures/test";
 
 const functionalMutation = { tag: ["@functional", "@mutation"] };
+const isC6Ht = process.env.PW_PROFILE?.trim().toLowerCase() === "ht";
 
 test.describe("Cadastro da Operação: Motivo da Contratação", () => {
-  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig }) => {
+  test.beforeEach(async ({ proposalsPage, proposalPage, portalConfig }, testInfo) => {
+    test.skip(
+      isC6Ht && testInfo.title.startsWith("MOTIVO-01"),
+      "C6 HT optou por não exibir os campos de crédito, prazo e juros nesta aba.",
+    );
+
     const defaultProposalId = portalConfig.testData.expectedProposal.visibleNumber;
     await proposalsPage.open();
     await proposalsPage.loadAll();

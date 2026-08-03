@@ -26,7 +26,20 @@ export class AejsC6SimulationPage {
   async createProposal(
     scenario: C6ProvisioningScenario,
     applicant: SimulationApplicantInput,
+    options: Readonly<{
+      confirmExistingCpfProposal?: boolean;
+      expectedCreatedOperation?: string;
+    }> = {},
   ): Promise<string> {
+    if (
+      options.confirmExistingCpfProposal &&
+      !/^\d{9}$/.test(options.expectedCreatedOperation ?? "")
+    ) {
+      throw new Error(
+        "A criação com CPF compartilhado exige a próxima operação esperada do lote.",
+      );
+    }
+
     await this.selectCombo(
       "CO_GRUPO_TIPO_OPERACAO_A01",
       scenario.journey.operationGroup,
@@ -95,8 +108,34 @@ export class AejsC6SimulationPage {
     await modal
       .getByRole("button", { name: "Gravar Proposta", exact: true })
       .click();
+
+    if (options.confirmExistingCpfProposal) {
+      const existingCpfDialog = this.page
+        .locator(".x-window:visible")
+        .filter({
+          hasText: /Proposta encontrada para o CPF\/CNPJ informado/i,
+        })
+        .filter({
+          has: this.page.getByRole("button", {
+            name: /^Confirma(?:r)?$/i,
+          }),
+        });
+      await expect(
+        existingCpfDialog,
+        "O SCCI deve pedir confirmação antes de criar outra proposta para o mesmo CPF",
+      ).toBeVisible({ timeout: 60_000 });
+      await existingCpfDialog
+        .getByRole("button", { name: /^Confirma(?:r)?$/i })
+        .click();
+      await expect(existingCpfDialog).toBeHidden({ timeout: 60_000 });
+    }
+
     await expect(modal).toBeHidden({ timeout: 60_000 });
     await this.waitForExtJsReady();
+
+    if (options.expectedCreatedOperation) {
+      return options.expectedCreatedOperation;
+    }
 
     let operation = "";
     await expect

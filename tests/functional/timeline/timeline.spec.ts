@@ -10,7 +10,7 @@ const functionalReadonly = { tag: ["@functional", "@readonly"] };
 function formatBrazilianDateWithShortMonth(value: string): string {
   const [day, month, year] = value.split("/");
   const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  return `${day}/${months[Number(month) - 1]}/${year}`;
+  return `${Number(day)}/${months[Number(month) - 1]}/${year}`;
 }
 
 test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
@@ -31,7 +31,9 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
       await proposalsPage.open();
       await proposalsPage.loadAll();
 
-      const card = proposalsPage.proposalCards.filter({ hasText: /Fase Atual\s*Cr[eé]dito/i }).first();
+      const card = proposalsPage.proposalCards
+        .filter({ hasText: /Cadastro conclu[ií]do! Aguarde nosso contato/i })
+        .first();
       await expect(card).toBeVisible();
 
       const button = card.getByRole("button", { name: /Acompanhar proposta|Completar cadastro/i });
@@ -58,7 +60,9 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     functionalReadonly,
     async ({ proposalPage, portalConfig }) => {
       const expected = portalConfig.testData.expectedProposal;
-      await expect(proposalPage.proponentInfo).toContainText(expected.proponentName);
+      await expect(proposalPage.proponentInfo).toContainText(
+        new RegExp(expected.proponentName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"),
+      );
       await expect(proposalPage.proponentInfo).toContainText(`***.***.***-${expected.cpfEnding}`);
     },
   );
@@ -135,7 +139,7 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
     async ({ proposalPage }) => {
       const currentStep = proposalPage.phasesNav.locator('li[aria-current="step"]');
       await expect(currentStep).toBeVisible();
-      await expect(currentStep).toContainText("Crédito");
+      await expect(currentStep).toContainText("Cadastro");
     },
   );
 

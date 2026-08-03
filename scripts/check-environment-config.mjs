@@ -62,6 +62,57 @@ function validateUniqueOperations(keys, groupName) {
   }
 }
 
+function validateFreshIntegrationMetadata(keys) {
+  const runId = process.env.PORTAL_MASS_RUN_ID?.trim();
+  if (!runId) return;
+
+  let metadata;
+  try {
+    metadata = JSON.parse(required("PORTAL_MASS_OPERATION_METADATA_JSON"));
+  } catch (error) {
+    throw new Error(
+      "PORTAL_MASS_OPERATION_METADATA_JSON precisa conter um objeto JSON válido.",
+      { cause: error },
+    );
+  }
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    throw new Error(
+      "PORTAL_MASS_OPERATION_METADATA_JSON precisa conter um objeto JSON.",
+    );
+  }
+
+  for (const key of keys) {
+    const operation = required(key);
+    const entry = metadata[operation];
+    const cpf = String(entry?.applicantCpf ?? "").replace(/\D/g, "");
+    const birthDate = String(entry?.applicantBirthDate ?? "").replace(
+      /\D/g,
+      "",
+    );
+    const scrDate = String(entry?.expectedScrAuthorizationDate ?? "").replace(
+      /\D/g,
+      "",
+    );
+    const propertyPostalCode = String(
+      entry?.propertyPostalCode ?? "",
+    ).replace(/\D/g, "");
+    if (
+      entry?.runId !== runId ||
+      !String(entry?.applicantName ?? "").trim() ||
+      cpf.length !== 11 ||
+      birthDate.length !== 8 ||
+      scrDate.length !== 8 ||
+      !/^\d+$/.test(String(entry?.propertyValueCents ?? "")) ||
+      propertyPostalCode.length !== 8 ||
+      !String(entry?.propertyAddressLine ?? "").trim()
+    ) {
+      throw new Error(
+        `${key} não possui metadados completos para o lote ${runId}.`,
+      );
+    }
+  }
+}
+
 const profile = loadEnvironmentProfile().name;
 const coreCapabilities = parseCoreCapabilities(
   process.env.PORTAL_CORE_CAPABILITIES,
@@ -79,13 +130,21 @@ if (profile === "esteira-ht") {
     );
   }
 }
+const canceledWithin30DaysKey = process.env
+  .PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS?.trim()
+  ? "PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS"
+  : "PORTAL_PROPOSAL_CANCELED";
+const canceledOver30DaysKey = process.env
+  .PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS?.trim()
+  ? "PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS"
+  : "PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS";
 const functionalOperations = [
   "PORTAL_PROPOSAL_DEFAULT",
-  "PORTAL_PROPOSAL_CANCELED",
+  canceledWithin30DaysKey,
   "PORTAL_PROPOSAL_EXPIRED",
   "PORTAL_PROPOSAL_CREDIT_REJECTED",
   "PORTAL_PROPOSAL_CREDIT_APPROVED",
-  "PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS",
+  canceledOver30DaysKey,
   "PORTAL_PROPOSAL_TIMELINE_CADASTRO",
   "PORTAL_PROPOSAL_TIMELINE_DOCUMENTS",
 ];
@@ -151,15 +210,23 @@ if (required("PORTAL_TEST_CPF").replace(/\D/g, "").length !== 11) {
 if (!/^\d{2}\/\d{2}\/\d{4}$/.test(required("PORTAL_EXPECTED_REGISTRATION_DATE"))) {
   throw new Error("PORTAL_EXPECTED_REGISTRATION_DATE precisa usar DD/MM/AAAA.");
 }
+if (
+  process.env.PORTAL_MASS_RUN_ID?.trim() &&
+  !process.env.PORTAL_EXPECTED_PROPERTY_ADDRESS?.trim()
+) {
+  throw new Error(
+    "PORTAL_EXPECTED_PROPERTY_ADDRESS deve ser publicado para lotes frescos.",
+  );
+}
 
 validateOperations(functionalOperations);
 validateUniqueOperations(
   [
-    "PORTAL_PROPOSAL_CANCELED",
+    canceledWithin30DaysKey,
     "PORTAL_PROPOSAL_EXPIRED",
     "PORTAL_PROPOSAL_CREDIT_REJECTED",
     "PORTAL_PROPOSAL_CREDIT_APPROVED",
-    "PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS",
+    canceledOver30DaysKey,
   ],
   "Massas funcionais com estados exclusivos",
 );
@@ -180,6 +247,7 @@ if (scope === "all") {
 
   validateOperations(integrationOperations);
   validateUniqueOperations(integrationOperations, "Massas de integracao");
+  validateFreshIntegrationMetadata(integrationOperations);
   const workflowTaskCodeKeys = workflowTaskKeys.filter((key) =>
     key.endsWith("_CODE"),
   );

@@ -1,6 +1,7 @@
 import { expect, type Page, type Response } from "@playwright/test";
 import { test } from "../../fixtures/test";
 import type { ProposalPage } from "../../pages/portal/proposal.page";
+import { ProposalRegistrationPage } from "../../pages/portal/proposal-registration.page";
 import { getIntegrationPreparationScenario } from "../../test-data/integration-data";
 
 const integrationMutation = { tag: ["@integration", "@mutation"] };
@@ -76,6 +77,7 @@ test(
     );
     await portalSession.useOperation(scenario.operationNumber);
     const { applicant, creditPurpose, property } = scenario.preparation;
+    const registrationPage = new ProposalRegistrationPage(page, proposalPage);
 
     await test.step("abre a proposta descartável", async () => {
       await proposalPage.open(scenario.operationNumber);
@@ -173,9 +175,7 @@ test(
       await proposalPage
         .getVisibleFieldByName("IMOVEL_OPERACAO.CO_CONDICAO_IMOVEL")
         .selectOption(property.condition);
-      await expect(
-        proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_ENDERECO"),
-      ).toHaveValue(/\d+/);
+      await registrationPage.ensurePropertyAddress(property.addressLine);
       await expect(proposalPage.tabs.getTabButton("Imóvel")).toHaveAttribute(
         "aria-selected",
         "true",

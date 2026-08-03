@@ -7,7 +7,14 @@ loadEnvironmentProfile();
 
 const portalBaseUrl = resolvePortalBaseUrl();
 const includeConsumableTests = process.env.PW_INCLUDE_CONSUMABLE === "true";
-const captureAllEvidence = process.env.PW_EVIDENCE === "all";
+const functionalReadonlyWorkers = Number.parseInt(
+  process.env.PW_FUNCTIONAL_READONLY_WORKERS ?? "3",
+  10,
+);
+const integrationWorkers = Number.parseInt(
+  process.env.PW_INTEGRATION_WORKERS ?? "1",
+  10,
+);
 const desktopChromium = {
   ...devices["Desktop Chrome"],
   viewport: { width: 1440, height: 900 },
@@ -17,7 +24,7 @@ export default defineConfig({
   testDir: "./tests",
   outputDir: "test-results",
   fullyParallel: false,
-  workers: 1,
+  workers: 3,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   timeout: 60_000,
@@ -28,17 +35,17 @@ export default defineConfig({
     [process.env.CI ? "dot" : "list"],
     ["html", { open: "never", outputFolder: "playwright-report" }],
     [
-      "./packages/prognum-playwright-report/runtime/reporter.mjs",
-      { outputDir: ".playwright/portal-report-data" },
+      "@prognum/playwright-report/reporter",
+      { outputDir: ".playwright/prognum-report-data" },
     ],
   ],
   use: {
     baseURL: portalBaseUrl,
     actionTimeout: 10_000,
     navigationTimeout: 30_000,
-    screenshot: captureAllEvidence ? "on" : "only-on-failure",
-    trace: captureAllEvidence ? "on" : "retain-on-failure",
-    video: captureAllEvidence ? "on" : "retain-on-failure",
+    screenshot: { mode: "on", fullPage: true },
+    trace: "on",
+    video: "retain-on-failure",
   },
   projects: [
     {
@@ -81,7 +88,7 @@ export default defineConfig({
       testDir: "./tests/functional",
       testMatch: "**/*.spec.ts",
       grep: /@readonly/,
-      workers: 1,
+      workers: functionalReadonlyWorkers,
       dependencies: ["setup"],
       use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
     },
@@ -128,13 +135,15 @@ export default defineConfig({
       testDir: "./tests/integrations",
       testMatch: "**/*.spec.ts",
       testIgnore: "**/create-and-validate-simulation.spec.ts",
-      workers: 1,
+      workers: integrationWorkers,
       retries: 0,
       timeout: 15 * 60_000,
       dependencies: ["aejs-setup"],
       use: {
         ...desktopChromium,
         storageState: { cookies: [], origins: [] },
+        screenshot: "off",
+        trace: "off",
       },
     },
     {
@@ -148,6 +157,8 @@ export default defineConfig({
       use: {
         ...desktopChromium,
         storageState: { cookies: [], origins: [] },
+        screenshot: "off",
+        trace: "off",
       },
     },
   ],

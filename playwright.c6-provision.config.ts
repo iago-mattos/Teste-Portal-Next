@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: "./tests/provisioning",
   testMatch: [
     "**/create-c6-mass.provision.ts",
+    "**/prepare-c6-property.provision.ts",
     "**/prepare-c6-phase.provision.ts",
     "**/prepare-c6-documents.provision.ts",
   ],
@@ -22,6 +23,10 @@ export default defineConfig({
       "html",
       { open: "never", outputFolder: "playwright-report/c6-provisioning" },
     ],
+    [
+      "@prognum/playwright-report/reporter",
+      { outputDir: ".playwright/prognum-report-data" },
+    ],
   ],
   use: {
     ...devices["Desktop Chrome"],
@@ -29,8 +34,10 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
-    screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    screenshot: { mode: "on", fullPage: true },
+    // A fixture do SCCI inicia o trace somente depois do login para não
+    // registrar credenciais. O trace automático concorreria com essa captura.
+    trace: "off",
     video: "retain-on-failure",
     storageState: { cookies: [], origins: [] },
   },

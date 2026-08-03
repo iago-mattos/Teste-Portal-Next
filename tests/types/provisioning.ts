@@ -1,10 +1,10 @@
 export const PROVISIONING_SLOT_IDS = [
-  "CANCELED",
   "DEFAULT",
   "EXPIRED",
   "CREDIT_REJECTED",
   "CREDIT_APPROVED",
-  "EXPIRED_OVER_30_DAYS",
+  "CANCELED_WITHIN_30_DAYS",
+  "CANCELED_OVER_30_DAYS",
   "TIMELINE_REGISTRATION",
   "TIMELINE_DOCUMENTS",
   "INTEGRATION_PJ",
@@ -25,7 +25,15 @@ export type ProvisioningStateOwner =
   | "existing-integration-test"
   | "external-preparation";
 
-export type ProvisioningCreationMode = "simulator" | "manual-shared";
+export type ProvisioningCreationMode =
+  | "simulator"
+  | "simulator-shared"
+  | "manual-shared";
+
+export type ProvisioningLifecycle =
+  | "fresh-per-run"
+  | "external-static"
+  | "on-demand";
 
 export interface ProvisioningPhaseTarget {
   readonly code: string;
@@ -41,6 +49,7 @@ export interface ProvisioningSlotDefinition {
   readonly desiredState: string;
   readonly stateOwner: ProvisioningStateOwner;
   readonly creationMode: ProvisioningCreationMode;
+  readonly lifecycle: ProvisioningLifecycle;
   readonly sharedCpfWith?: ProvisioningSlotId;
   readonly phaseTarget?: ProvisioningPhaseTarget;
 }

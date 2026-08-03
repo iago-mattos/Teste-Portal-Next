@@ -238,7 +238,17 @@ O contrato da simulação fica parametrizado no perfil:
 C6_PROVISION_TARGET_COUNT=15
 C6_PROVISION_TERM_MONTHS=72
 C6_PROVISION_APPLICANT_POSTAL_CODE=24120440
+C6_PROVISION_PROPERTY_POSTAL_CODE=24120440
+C6_PROVISION_PROPERTY_STREET="Rua Doutor Carlos Imbassahy"
+C6_PROVISION_PROPERTY_NUMBER=70
+C6_PROVISION_PROPERTY_COMPLEMENT="casa 3"
 ```
+
+Depois de gravar cada proposta, o mesmo fluxo abre a operação no SCCI, entra em
+`Alterar → Imóvel Operação → Dados do imóvel`, informa o CEP e o complemento,
+normaliza o logradouro para `endereço, número`, salva e reabre a operação para
+comprovar a persistência. Somente então o Portal é aberto em modo de leitura
+para validar o reflexo desses dados.
 
 O registro retomável é exclusivo do C6 e fica em
 `.playwright/generated-c6-simulations/ht.json`. Se a proposta já tiver
@@ -259,13 +269,30 @@ ALLOW_TEST_MUTATION=true npm run pw:provision:c6:create-batch
 ```
 
 O lote é fail-fast, usa um worker e nunca recomeça os slots já registrados.
-`TIMELINE_DOCUMENTS` continua manual porque precisa compartilhar o CPF de
-`DEFAULT`, uma restrição que o simulador interno não atende. Depois de criar a
-operação compartilhada, registre-a com:
+Por padrão, cada slot fresco recebe CPF próprio. A exceção intencional é
+`TIMELINE_DOCUMENTS`: o registry reutiliza automaticamente o CPF criado para
+`DEFAULT`, grava uma segunda operação com o nome `Playwright BASE 02` e depois
+a leva à etapa de Documentos. Para essa segunda operação, o provisionador
+confirma o aviso de proposta existente, renova o login do SCCI e reabre a
+operação antes de preparar o CEP. Isso mantém duas propostas reais visíveis no
+mesmo login para os contratos de múltiplas jornadas.
+
+Para criar e preparar manualmente um lote fresco completo, incluindo fases e
+massas documentais, use:
 
 ```bash
-npm run pw:provision:c6:register-manual -- TIMELINE_DOCUMENTS 000000000
+PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:provision:c6:fresh-suite
 ```
+
+Se a preparação for interrompida depois que as propostas já tiverem sido
+criadas, corrija a pré-condição do ambiente e retome exatamente o mesmo lote:
+
+```bash
+PW_PROFILE=ht ALLOW_TEST_MUTATION=true npm run pw:provision:c6:resume
+```
+
+A retomada valida que todos os slots frescos pertencem ao manifesto ativo e
+possuem operação. Ela não reinicia o simulador nem cria novas propostas.
 
 As transições de crédito preparadas diretamente no SCCI são automatizadas pelos
 slots oficiais abaixo:
@@ -307,10 +334,9 @@ como pronta quando nenhum documento tiver sido enviado. Os testes de
 persistência e limite continuam responsáveis por consumir ou exercitar seus
 próprios slots posteriormente.
 
-Os papéis que exigem cancelamento, expiração e o `TIMELINE_DOCUMENTS`
-compartilhado ainda precisam da preparação externa correspondente. Depois de
-confirmar o estado real, marque cada papel externo como pronto e publique o
-overlay:
+Somente os papéis que exigem cancelamento ou expiração continuam dependendo da
+preparação externa correspondente. Depois de confirmar o estado real, marque
+cada papel externo como pronto e publique o overlay:
 
 ```bash
 npm run pw:provision:c6:mark-ready -- CANCELED
@@ -482,11 +508,29 @@ Para executar toda a suíte com navegador visível:
 npm run pw:test:all -- --headed
 ```
 
-O comando `pw:test:all` executa os blocos na ordem funcional: Portal, simulador,
-preparações mutáveis Portal → SCCI e validações read-only no SCCI. Mesmo que um
-bloco falhe, os blocos seguintes são coletados e o relatório consolidado fica
-em `playwright-report/index.html`. Não o utilize como verificação cotidiana
-quando as massas mutáveis não puderem ser restauradas.
+No perfil `ht`, `pw:test:all` começa criando e preparando automaticamente um
+novo lote C6 para todos os slots `fresh-per-run`. As massas de expiração e
+cancelamento continuam externas porque dependem de ajuste controlado de banco;
+o lote só é publicado quando elas já estiverem configuradas e os novos slots
+estiverem prontos. Nos demais perfis, o comando preserva as massas configuradas.
+
+Depois do provisionamento, o comando valida a configuração publicada e executa
+os blocos na ordem funcional: Portal, simulador, preparações mutáveis Portal →
+SCCI e validações read-only no SCCI. Mesmo que um bloco de testes falhe, os
+blocos seguintes são coletados. O relatório oficial permanece disponível em
+`playwright-report/index.html`, e o relatório visual principal da suíte é
+gerado em `portal-report/index.html`. Para abrir diretamente o relatório
+principal:
+
+```bash
+npm run pw:report:portal:open
+```
+
+Uma falha no provisionamento ou na configuração é fail-fast para impedir testes
+sobre um lote parcial. Se o provisionamento falhar, a tentativa atual também é
+publicada imediatamente no relatório Portal e no PDF, com screenshot de página
+inteira e trace seguro capturado após a autenticação; o relatório anterior não
+é apresentado como se pertencesse à nova execução.
 
 ### Arquivo ou caso isolado
 
@@ -505,63 +549,77 @@ npm run pw:ui
 npm run pw:report
 ```
 
-Em falhas, o Playwright mantém screenshot, vídeo e trace em `test-results/` e o
-relatório em `playwright-report/`.
+Todos os testes de negócio, aprovados ou reprovados, mantêm screenshot explícito
+da página inteira e trace em `test-results/`. Em falhas, o Playwright também
+mantém vídeo. Se a página não estiver mais disponível no teardown, o relatório
+recebe uma evidência textual com o motivo da impossibilidade da captura, em vez
+de ficar silenciosamente sem diagnóstico. Os projetos de
+setup/login não capturam evidências para evitar exposição de credenciais,
+tokens ou magic links.
 
 ### Relatório Portal minimalista
 
-Além do HTML oficial do Playwright, a suíte gera dados para um relatório próprio
-em React, Vite e componentes shadcn. Ele oferece filtros por resultado e projeto,
-agrupamento por projeto e domínio, diagnóstico destacado de falhas, detalhes das
-etapas, lightbox de screenshots, vídeos e controles para baixar ou abrir traces.
+Além do HTML oficial do Playwright, a suíte usa o pacote independente
+[`@prognum/playwright-report`](https://github.com/iago-mattos/PlaywrightReport).
+Ele oferece filtros por resultado e projeto, agrupamento por projeto e domínio,
+diagnóstico destacado de falhas, detalhes das etapas, lightbox de screenshots,
+vídeos e controles para baixar ou abrir traces.
 
-Para validar o visual com os smokes pequenos do perfil selecionado e guardar
-evidências inclusive dos testes aprovados:
+Para validar o visual com os smokes pequenos do perfil selecionado:
 
 ```bash
 PW_PROFILE=ht npm run pw:test:report:sample
 npm run pw:report:portal:open
 ```
 
-Na execução cotidiana, a política continua econômica: screenshot, vídeo e trace
-são preservados em falhas. `PW_EVIDENCE=all` deve ser usado somente quando for
-útil documentar também os testes aprovados. Para montar ou abrir o relatório da
-última execução manualmente:
+Screenshot de página inteira e trace são obrigatórios inclusive nos resultados
+aprovados. O vídeo permanece restrito às falhas. Nos cenários Portal → SCCI, o
+relatório mantém evidências separadas dos dois sistemas e inicia o trace do SCCI
+somente depois do login, descartando credenciais. Para montar ou abrir o
+relatório da última execução manualmente:
 
 ```bash
 npm run pw:report:portal:build
 npm run pw:report:portal
 ```
 
-O resultado fica em `portal-report/index.html` e não é versionado. O comando
+O resultado fica em `portal-report/index.html` e não é versionado. A construção
+do relatório gera automaticamente `output/pdf/playwright-report.pdf`, copia o
+arquivo para o relatório e inclui o botão **Baixar PDF**. O comando
 `pw:test:all` consolida automaticamente tanto o relatório oficial em
-`playwright-report/` quanto o relatório Portal em `portal-report/`.
+`playwright-report/` quanto o relatório Portal e seu PDF.
 
-### Reutilização do relatório em outro projeto
-
-O relatório também é distribuído como o pacote local
-`@prognum/playwright-report`. Para gerar o arquivo instalável:
+Para reconstruir somente o PDF executivo:
 
 ```bash
-npm run pw:report:package
+npm run pw:report:portal:pdf
 ```
 
-O pacote será criado em
-`artifacts/prognum-playwright-report-0.1.0.tgz`. No projeto Playwright de
-destino, execute:
+O runner procura primeiro `PROGNUM_REPORT_PYTHON`, depois `PYTHON`, o runtime
+Python disponibilizado pelo Codex e, por fim, os comandos `python3` e `python`.
+Caso nenhum deles possua as dependências necessárias, instale-as com
+`python3 -m pip install reportlab Pillow`.
+Título, produto, cor, domínios, evidências, diretórios e opções do PDF ficam em
+`prognum-report.config.mjs`.
+
+### Atualização do pacote de relatório
+
+O código do relatório não deve mais ser alterado neste repositório. Mudanças de
+interface, reporter ou CLI devem ser implementadas e validadas no repositório
+[`iago-mattos/PlaywrightReport`](https://github.com/iago-mattos/PlaywrightReport).
+Depois da criação de uma nova release, atualize este projeto fixando o novo
+tarball:
 
 ```bash
-npm install -D /caminho/prognum-playwright-report-0.1.0.tgz
-npx prognum-playwright-report init
-npm run pw:test:report
-npm run pw:report:open
+npm install -D "https://github.com/iago-mattos/PlaywrightReport/releases/download/vX.Y.Z/prognum-playwright-report-X.Y.Z.tgz"
+npm run check
+PW_PROFILE=ht npm run pw:test:report:sample
+npm run pw:report:portal:open
 ```
 
-O `init` preserva o `playwright.config.*` original e cria uma configuração
-adicional somente para o relatório. Ele também adiciona os scripts e entradas
-de `.gitignore`. Título, produto, cor, domínios, política de evidências e pasta
-de saída ficam centralizados no arquivo `prognum-report.config.mjs` do projeto
-consumidor.
+Não use a branch `main` como dependência. A URL da release mantém a versão
+reprodutível no `package-lock.json`. Após validar visual, screenshots, vídeos e
+traces, versione juntos `package.json` e `package-lock.json`.
 
 ## Integração Portal → SCCI/AEJS
 
@@ -609,9 +667,19 @@ Projetos definidos em [`playwright.config.ts`](playwright.config.ts):
 - `functional-mutation`: casos funcionais que alteram estado;
 - `integration`: cenários Portal → SCCI/AEJS.
 
-A suíte permanece serial (`workers: 1`) porque ainda há sessão, operações e
-estados externos compartilhados. Não aumente workers sem comprovar isolamento
-das massas envolvidas.
+`pw:test:all` usa paralelismo somente onde o isolamento foi comprovado:
+
+- casos Portal read-only que reutilizam a sessão padrão: até 3 workers;
+- casos read-only que renovam ou trocam a sessão do Portal: 1 worker;
+- casos mutáveis e provisionamento: 1 worker;
+- integração Portal → SCCI/AEJS: 1 worker enquanto houver specs que
+  compartilham a mesma operação;
+- validações que entram temporariamente em modo de edição no SCCI, mas cancelam
+  sem persistir, executam separadamente com `@transient` e 1 worker.
+
+Os limites podem ser reduzidos por `PW_FUNCTIONAL_READONLY_WORKERS` e
+`PW_INTEGRATION_WORKERS`. Não aumente esses valores sem comprovar isolamento das
+massas e ausência de troca concorrente de sessão.
 
 ## CI
 

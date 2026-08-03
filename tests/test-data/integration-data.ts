@@ -5,6 +5,11 @@
  * Specs não devem declarar números de proposta; qualquer substituição de massa
  * deve ocorrer exclusivamente neste catálogo.
  */
+import {
+  generateDeterministicCnpj,
+  generateDeterministicCpf,
+} from "../helpers/deterministic-document";
+
 export type IntegrationScenarioProfile =
   | "spouse-pj"
   | "third-party-pf"
@@ -63,6 +68,8 @@ export interface SpouseInput {
   readonly grossIncome: string;
   readonly profession: string;
   readonly professionalActivity: string;
+  readonly livesInProperty: string;
+  readonly address: PfAddressInput;
 }
 
 export interface CreditPurposeInput {
@@ -74,6 +81,7 @@ export interface PropertyInput {
   readonly use: string;
   readonly type: string;
   readonly condition: string;
+  readonly addressLine: string;
   readonly outstandingBalance: string;
   readonly settlementIntervenor: string;
 }
@@ -82,6 +90,7 @@ export interface PaidOffPropertyInput {
   readonly use: string;
   readonly type: string;
   readonly condition: string;
+  readonly addressLine: string;
 }
 
 export interface AddressInput {
@@ -156,12 +165,16 @@ export interface ThirdPartyInput {
   readonly cpf: string;
   readonly dateOfBirth: string;
   readonly nationality: string;
+  readonly birthState: string;
+  readonly identityState: string;
   readonly grossIncome: string;
   readonly profession: string;
   readonly professionalActivity: string;
   readonly mobileAreaCode: string;
   readonly mobileNumber: string;
   readonly email: string;
+  readonly livesInProperty: string;
+  readonly address: PfAddressInput;
 }
 
 export interface PfGuarantorInput {
@@ -293,6 +306,16 @@ export const integrationData = {
         grossIncome: "420000",
         profession: "ADMINISTRADOR",
         professionalActivity: "ASSALARIADO",
+        livesInProperty: "F",
+        address: {
+          postalCode: "01310930",
+          street: "Avenida Paulista",
+          streetNumber: "331",
+          complement: "CONJUGE PJ",
+          neighborhood: "Bela Vista",
+          state: "SP",
+          city: "SÃO PAULO",
+        },
       },
       creditPurpose: {
         purpose: "Investir",
@@ -303,6 +326,7 @@ export const integrationData = {
         use: "Casa",
         type: "Residencial",
         condition: "6",
+        addressLine: "Avenida Paulista 1000",
         outstandingBalance: "27500000",
         settlementIntervenor: "Banco C6 S.A.",
       },
@@ -399,12 +423,24 @@ export const integrationData = {
         cpf: "73148296087",
         dateOfBirth: "17081992",
         nationality: "Brasileira",
+        birthState: "RJ",
+        identityState: "RJ",
         grossIncome: "510000",
         profession: "ADMINISTRADOR",
         professionalActivity: "ASSALARIADO",
         mobileAreaCode: "21",
         mobileNumber: "995432109",
         email: "terceiro.pw.int034@example.test",
+        livesInProperty: "F",
+        address: {
+          postalCode: "20040002",
+          street: "Avenida Rio Branco",
+          streetNumber: "341",
+          complement: "TERCEIRO PF",
+          neighborhood: "Centro",
+          state: "RJ",
+          city: "RIO DE JANEIRO",
+        },
       },
       creditPurpose: {
         purpose: "Investir",
@@ -415,6 +451,7 @@ export const integrationData = {
         use: "Casa",
         type: "Residencial",
         condition: "4",
+        addressLine: "Avenida Rio Branco 100",
         outstandingBalance: "19800000",
         settlementIntervenor: "Banco C6 S.A.",
       },
@@ -463,6 +500,7 @@ export const integrationData = {
         use: "Apartamento",
         type: "Residencial",
         condition: "1",
+        addressLine: "Avenida Afonso Pena 1000",
       },
     },
   },
@@ -495,6 +533,7 @@ export const integrationData = {
         use: "Casa",
         type: "Residencial",
         condition: "1",
+        addressLine: "Rua da Consolacao 1000",
       },
     },
   },
@@ -527,6 +566,20 @@ export interface ResolvedIntegrationScenario {
   readonly operationNumber: string;
   readonly profile: IntegrationScenarioProfile;
   readonly purpose: string;
+  readonly provisionedMass?: ProvisionedIntegrationMass;
+}
+
+export interface ProvisionedIntegrationMass {
+  readonly runId?: string;
+  readonly documentNames?: readonly string[];
+  readonly applicant: {
+    readonly name: string;
+    readonly cpf: string;
+    readonly dateOfBirth: string;
+    readonly expectedScrAuthorizationDate: string;
+    readonly postalCode?: string;
+  };
+  readonly propertyValueCents: string;
 }
 
 export interface ResolvedIntegrationPreparationScenario
@@ -562,6 +615,8 @@ export interface ResolvedWorkflowIntegrationPreparationScenario
 function resolvePreparationForEnvironment(
   preparation: IntegrationPreparationScenario,
   env: NodeJS.ProcessEnv,
+  operationNumber: string,
+  provisionedMass?: ProvisionedIntegrationMass,
 ): IntegrationPreparationScenario {
   const professionalActivity =
     env.PORTAL_INTEGRATION_PROFESSIONAL_ACTIVITY?.trim()
@@ -572,6 +627,9 @@ function resolvePreparationForEnvironment(
     ? configuredApartmentUse || preparation.property.use
     : configuredHouseUse || preparation.property.use;
   const applicant = { ...preparation.applicant, professionalActivity };
+  const identitySeed = provisionedMass?.runId
+    ? `${provisionedMass.runId}:${operationNumber}`
+    : undefined;
 
   switch (preparation.profile) {
     case "PJ":
@@ -579,14 +637,48 @@ function resolvePreparationForEnvironment(
         ...preparation,
         applicant,
         property: { ...preparation.property, use: propertyUse },
-        spouse: { ...preparation.spouse, professionalActivity },
+        spouse: {
+          ...preparation.spouse,
+          professionalActivity,
+          cpf: identitySeed
+            ? generateDeterministicCpf(`${identitySeed}:spouse`)
+            : preparation.spouse.cpf,
+        },
+        guarantor: identitySeed
+          ? {
+              ...preparation.guarantor,
+              cnpj: generateDeterministicCnpj(`${identitySeed}:guarantor`),
+              partners: [
+                {
+                  ...preparation.guarantor.partners[0],
+                  cpf: generateDeterministicCpf(`${identitySeed}:partner-1`),
+                },
+                {
+                  ...preparation.guarantor.partners[1],
+                  cpf: generateDeterministicCpf(`${identitySeed}:partner-2`),
+                },
+              ],
+            }
+          : preparation.guarantor,
       };
     case "PF":
       return {
         ...preparation,
         applicant,
         property: { ...preparation.property, use: propertyUse },
-        thirdParty: { ...preparation.thirdParty, professionalActivity },
+        thirdParty: {
+          ...preparation.thirdParty,
+          professionalActivity,
+          cpf: identitySeed
+            ? generateDeterministicCpf(`${identitySeed}:third-party`)
+            : preparation.thirdParty.cpf,
+        },
+        guarantor: identitySeed
+          ? {
+              ...preparation.guarantor,
+              cpf: generateDeterministicCpf(`${identitySeed}:guarantor`),
+            }
+          : preparation.guarantor,
       };
     case "QUITADO":
     case "WORKFLOW":
@@ -610,6 +702,70 @@ function resolveIntegrationOperation(
     );
   }
   return configured.padStart(9, "0");
+}
+
+function resolveProvisionedMass(
+  operationNumber: string,
+  env: NodeJS.ProcessEnv,
+): ProvisionedIntegrationMass | undefined {
+  const raw = env.PORTAL_MASS_OPERATION_METADATA_JSON?.trim();
+  if (!raw) return undefined;
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, Record<string, unknown>>;
+    const metadata = parsed[operationNumber.replace(/\D/g, "")];
+    if (!metadata) return undefined;
+
+    const applicantName = String(metadata.applicantName ?? "").trim();
+    const applicantCpf = String(metadata.applicantCpf ?? "").replace(/\D/g, "");
+    const applicantBirthDate = String(
+      metadata.applicantBirthDate ?? "",
+    ).replace(/\D/g, "");
+    const expectedScrAuthorizationDate = String(
+      metadata.expectedScrAuthorizationDate ?? "",
+    ).replace(/\D/g, "");
+    const propertyValueCents = String(
+      metadata.propertyValueCents ?? "",
+    ).replace(/\D/g, "");
+    const applicantPostalCode = String(
+      metadata.applicantPostalCode ?? "",
+    ).replace(/\D/g, "");
+    const documentNames = Array.isArray(metadata.documentNames)
+      ? metadata.documentNames
+          .map((value) => String(value).trim())
+          .filter(Boolean)
+      : [];
+    if (
+      !applicantName ||
+      applicantCpf.length !== 11 ||
+      applicantBirthDate.length !== 8 ||
+      expectedScrAuthorizationDate.length !== 8 ||
+      !propertyValueCents
+    ) {
+      throw new Error(`metadados incompletos para a operação ${operationNumber}`);
+    }
+
+    return Object.freeze({
+      runId: String(metadata.runId ?? "").trim() || undefined,
+      documentNames:
+        documentNames.length > 0
+          ? Object.freeze(documentNames)
+          : undefined,
+      applicant: Object.freeze({
+        name: applicantName,
+        cpf: applicantCpf,
+        dateOfBirth: applicantBirthDate,
+        expectedScrAuthorizationDate,
+        postalCode: applicantPostalCode || undefined,
+      }),
+      propertyValueCents,
+    });
+  } catch (error) {
+    throw new Error(
+      "PORTAL_MASS_OPERATION_METADATA_JSON possui JSON inválido.",
+      { cause: error },
+    );
+  }
 }
 
 export function getIntegrationScenario(
@@ -647,6 +803,7 @@ export function getIntegrationScenario(
     operationNumber: operationNumber.padStart(9, "0"),
     profile: scenario.profile,
     purpose: scenario.purpose,
+    provisionedMass: resolveProvisionedMass(operationNumber, env),
   };
 }
 
@@ -708,7 +865,12 @@ export function getIntegrationDocumentScenario(
 
   return {
     ...scenario,
-    documents: selectedScenario.documents,
+    documents: scenario.provisionedMass?.documentNames
+      ? {
+          ...selectedScenario.documents,
+          documentNames: scenario.provisionedMass.documentNames,
+        }
+      : selectedScenario.documents,
   };
 }
 
@@ -757,7 +919,12 @@ export function getIntegrationPreparationScenario(
 
   return {
     ...scenario,
-    preparation: resolvePreparationForEnvironment(preparation, env),
+    preparation: resolvePreparationForEnvironment(
+      preparation,
+      env,
+      scenario.operationNumber,
+      scenario.provisionedMass,
+    ),
   };
 }
 
@@ -767,5 +934,6 @@ export function getWorkflowPreparationTemplate(
   return resolvePreparationForEnvironment(
     integrationData["INT-CONFIRM-WORKFLOW"].preparation,
     env,
+    resolveIntegrationOperation("INT-CONFIRM-WORKFLOW", env),
   ) as WorkflowIntegrationPreparationScenario;
 }

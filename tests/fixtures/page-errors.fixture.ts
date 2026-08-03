@@ -1,5 +1,6 @@
 import type { Page, TestInfo } from "@playwright/test";
 import { scenarioTest } from "./scenario.fixture";
+import { attachContextScreenshots } from "./evidence";
 
 interface CapturedPageError {
   message: string;
@@ -9,7 +10,9 @@ interface CapturedPageError {
 }
 
 interface PageErrorFixtures {
+  captureFinalPortalEvidence: void;
   capturePageErrors: void;
+  captureSimulatorTrace: void;
 }
 
 const react418Prefix = "Minified React error #418;";
@@ -55,6 +58,60 @@ async function attachErrors(
 }
 
 export const pageErrorsTest = scenarioTest.extend<PageErrorFixtures>({
+  captureFinalPortalEvidence: [
+    async ({ context }, use, testInfo) => {
+      try {
+        await use();
+      } finally {
+        const hasDedicatedSafeEvidence = [
+          "c6-mass-provisioning",
+          "integration",
+          "simulator-integration",
+        ].includes(testInfo.project.name);
+
+        if (!hasDedicatedSafeEvidence) {
+          await attachContextScreenshots(
+            context,
+            testInfo,
+            "evidencia-final-portal",
+          );
+        }
+      }
+    },
+    { auto: true },
+  ],
+
+  captureSimulatorTrace: [
+    async ({ context }, use, testInfo) => {
+      if (testInfo.project.name !== "simulator-integration") {
+        await use();
+        return;
+      }
+
+      await context.tracing.start({
+        screenshots: true,
+        snapshots: true,
+        sources: true,
+      });
+      try {
+        await use();
+      } finally {
+        await attachContextScreenshots(
+          context,
+          testInfo,
+          "evidencia-final-portal",
+        );
+        const tracePath = testInfo.outputPath("trace-portal.zip");
+        await context.tracing.stop({ path: tracePath });
+        await testInfo.attach("trace-portal", {
+          path: tracePath,
+          contentType: "application/zip",
+        });
+      }
+    },
+    { auto: true },
+  ],
+
   capturePageErrors: [
     async ({ context, portalConfig }, use, testInfo) => {
       const capturedErrors: CapturedPageError[] = [];

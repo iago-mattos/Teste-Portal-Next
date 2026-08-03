@@ -1,10 +1,14 @@
 import type { TestInfo } from "@playwright/test";
 import { test, expect } from "../fixtures/test";
-import { renewPortalSession } from "../fixtures/auth.fixture";
+import {
+  renewPortalSession,
+  restorePortalOperationSession,
+} from "../fixtures/auth.fixture";
 import { ProposalDocumentsPage } from "../pages/portal/proposal-documents.page";
 import { ProposalRegistrationPage } from "../pages/portal/proposal-registration.page";
 import {
   getGeneratedSimulationForSlot,
+  markGeneratedSimulationDocumentNames,
   markGeneratedSimulationReady,
   markGeneratedSimulationRejected,
   type GeneratedSimulationEntry,
@@ -69,6 +73,7 @@ test(
         `${slotId} precisa ser criado pelo provisionador-base antes da preparação documental.`,
       );
     }
+    const entryId = entry.id;
 
     try {
       const operationNumber = entry.protocol;
@@ -82,10 +87,17 @@ test(
         proposalPage,
       );
 
-      await renewPortalSession(page.context(), portalConfig, {
-        cpf: entry.applicant.cpfDigits,
-        persist: false,
-      });
+      const restored = await restorePortalOperationSession(
+        page.context(),
+        portalConfig,
+        entry.applicant.cpfDigits,
+      );
+      if (!restored) {
+        await renewPortalSession(page.context(), portalConfig, {
+          cpf: entry.applicant.cpfDigits,
+          persist: true,
+        });
+      }
       await page.goto(proposalUrl);
       const alreadyInDocuments = await Promise.race([
         documentsPage.heading
@@ -151,6 +163,8 @@ test(
 
         const documentCount = await documentsPage.getDocumentCount();
         expect(documentCount).toBeGreaterThan(0);
+        const documentNames = await documentsPage.getDocumentNames();
+        expect(documentNames).toHaveLength(documentCount);
         for (let index = 0; index < documentCount; index += 1) {
           const row = documentsPage.getDocumentRowAt(index);
           await expect(
@@ -161,6 +175,10 @@ test(
           ).toHaveCount(0);
           await expect(documentsPage.getUploadButtonAt(index)).toBeVisible();
         }
+        entry = await markGeneratedSimulationDocumentNames(
+          entryId,
+          documentNames,
+        );
       });
 
       entry = await markGeneratedSimulationReady(entry.id);

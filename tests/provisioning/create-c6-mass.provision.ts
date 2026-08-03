@@ -1,14 +1,22 @@
 import type { TestInfo } from "@playwright/test";
-import { aejsTest as test, expect } from "../fixtures/aejs/aejs.fixture";
+import {
+  aejsTest as test,
+  authenticateAejsPage,
+  expect,
+} from "../fixtures/aejs/aejs.fixture";
 import { AejsApplicantPreparationPage } from "../pages/aejs/aejs-applicant-preparation.page";
 import { AejsC6SimulationPage } from "../pages/aejs/aejs-c6-simulation.page";
 import { AejsOperationsPage } from "../pages/aejs/aejs-operations.page";
+import { AejsPropertyPreparationPage } from "../pages/aejs/aejs-property-preparation.page";
 import {
+  markGeneratedSimulationPropertyPrepared,
   markGeneratedSimulationReady,
   markGeneratedSimulationRejected,
   markGeneratedSimulationStatePrepared,
   markGeneratedSimulationSubmitted,
+  getExpectedNextOperationForActiveRun,
   reserveProvisioningSlot,
+  refreshGeneratedSimulationScenario,
   type GeneratedSimulationEntry,
 } from "../services/generated-simulation-registry";
 import { getC6ProvisioningScenario } from "../test-data/c6-provisioning-data";
@@ -63,9 +71,9 @@ async function attachEntry(
 }
 
 test(
-  "C6 HT | cria a proposta e prepara o CEP do pretendente",
+  "C6 HT | cria a proposta e prepara endereços no SCCI",
   { tag: ["@provisioning", "@mutation"] },
-  async ({ aejsPage }, testInfo) => {
+  async ({ aejsPage, aejsConfig }, testInfo) => {
     assertC6HtTarget();
 
     const slotId = resolveProvisioningSlot();
@@ -77,16 +85,47 @@ test(
 
     const scenario = getC6ProvisioningScenario();
     let entry = await reserveProvisioningSlot(slotId, scenario);
+    entry = await refreshGeneratedSimulationScenario(entry.id, scenario);
 
     try {
       if (!entry.protocol) {
         await test.step("simula e grava a proposta no C6", async () => {
           const simulation = new AejsC6SimulationPage(aejsPage);
           await simulation.open();
+          const usesSharedCpf = slot.creationMode === "simulator-shared";
+          const expectedCreatedOperation = usesSharedCpf
+            ? await getExpectedNextOperationForActiveRun()
+            : undefined;
           const operation = await simulation.createProposal(
             scenario,
             entry.applicant,
+            {
+              confirmExistingCpfProposal: usesSharedCpf,
+              expectedCreatedOperation,
+            },
           );
+
+          if (usesSharedCpf) {
+            await authenticateAejsPage(aejsPage, aejsConfig);
+            const operations = new AejsOperationsPage(aejsPage);
+            await operations.navigateToOperations();
+            await operations.openOperationEventually(operation);
+            await expect(operations.openedOperationNumber).toHaveValue(operation);
+            expect(await operations.getOperationApplicantName()).toMatch(
+              new RegExp(
+                `^${entry.applicant.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+                "i",
+              ),
+            );
+            expect(
+              (
+                await operations
+                  .getVisibleControlByLabel("CPF/CNPJ do cliente:")
+                  .inputValue()
+              ).replace(/\D/g, ""),
+            ).toBe(entry.applicant.cpfDigits);
+          }
+
           entry = await markGeneratedSimulationSubmitted(entry.id, operation);
           await attachEntry(testInfo, entry);
         });
@@ -101,16 +140,39 @@ test(
         });
       }
 
-      await test.step("preenche e comprova o CEP do pretendente", async () => {
-        const applicant = new AejsApplicantPreparationPage(aejsPage);
-        await applicant.fillAndPersistPostalCode(
-          entry.applicant.name,
-          scenario.applicantPostalCode,
-        );
+      await test.step("preenche e comprova o endereço do imóvel", async () => {
+        const operations = new AejsOperationsPage(aejsPage);
+        const property = new AejsPropertyPreparationPage(aejsPage);
+        await operations.navigateToOperations();
+        await operations.openOperationEventually(entry.protocol!);
+        if (
+          !entry.propertyPreparedAt &&
+          !(await property.hasPersistedAddress(scenario.propertyAddress))
+        ) {
+          await property.fillAndPersistAddress(scenario.propertyAddress);
+
+          await operations.navigateToOperations();
+          await operations.openOperationEventually(entry.protocol!);
+        }
+        await property.expectAddress(scenario.propertyAddress);
+        entry = await markGeneratedSimulationPropertyPrepared(entry.id);
       });
 
-      entry = await markGeneratedSimulationStatePrepared(entry.id);
-      if (slot.stateOwner === "provisioner") {
+      await test.step("preenche e comprova o CEP do pretendente", async () => {
+        if (!entry.statePreparedAt) {
+          const applicant = new AejsApplicantPreparationPage(aejsPage);
+          await applicant.fillAndPersistPostalCode(
+            entry.applicant.name,
+            scenario.applicantPostalCode,
+          );
+          entry = await markGeneratedSimulationStatePrepared(entry.id);
+        }
+      });
+
+      if (
+        slot.stateOwner === "provisioner" ||
+        slot.stateOwner === "existing-integration-test"
+      ) {
         entry = await markGeneratedSimulationReady(entry.id);
       }
       await attachEntry(testInfo, entry);

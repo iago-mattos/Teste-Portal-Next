@@ -1,10 +1,16 @@
-import { expect, type Page, type BrowserContext } from "@playwright/test";
+import {
+  expect,
+  type Page,
+  type BrowserContext,
+  type TestInfo,
+} from "@playwright/test";
 import { pageErrorsTest } from "../page-errors.fixture";
 import {
   assertAejsRuntimeConfig,
   loadAejsRuntimeConfig,
   type AejsRuntimeConfig,
 } from "../../config/aejs-config";
+import { attachMaskedFullPageScreenshot } from "../evidence";
 
 export interface AejsFixtures {
   aejsContext: BrowserContext;
@@ -16,7 +22,26 @@ export interface AejsWorkerFixtures {
   aejsConfig: AejsRuntimeConfig;
 }
 
-async function authenticateAejsPage(
+async function stopAndAttachAejsTrace(
+  context: BrowserContext,
+  testInfo: TestInfo,
+  name: string,
+): Promise<void> {
+  const tracePath = testInfo.outputPath(`${name}.zip`);
+  await context.tracing.stop({ path: tracePath });
+  await testInfo.attach(name, {
+    path: tracePath,
+    contentType: "application/zip",
+  });
+}
+
+function shouldStartAejsTraceManually(testInfo: TestInfo): boolean {
+  const trace = testInfo.project.use.trace;
+  if (typeof trace === "string") return trace === "off";
+  return trace === undefined || trace.mode === "off";
+}
+
+export async function authenticateAejsPage(
   page: Page,
   config: AejsRuntimeConfig,
 ): Promise<void> {
@@ -74,30 +99,81 @@ export const aejsTest = pageErrorsTest.extend<AejsFixtures, AejsWorkerFixtures>(
     await context.close();
   },
 
-  aejsPage: async ({ aejsContext, aejsConfig }, use) => {
+  aejsPage: async ({ aejsContext, aejsConfig }, use, testInfo) => {
     const page = await aejsContext.newPage();
+    const manualTrace = shouldStartAejsTraceManually(testInfo);
     assertAejsRuntimeConfig(aejsConfig);
     await authenticateAejsPage(page, aejsConfig);
-    await use(page);
+    if (manualTrace) {
+      await aejsContext.tracing.start({
+        screenshots: true,
+        snapshots: true,
+        sources: true,
+      });
+    }
+
+    try {
+      await use(page);
+    } finally {
+      await attachMaskedFullPageScreenshot(
+        page,
+        testInfo,
+        "evidencia-final-scci.png",
+        [],
+      );
+      if (manualTrace) {
+        await stopAndAttachAejsTrace(
+          aejsContext,
+          testInfo,
+          "trace-scci",
+        );
+      }
+    }
   },
 
-  openAuthenticatedAejsPage: async ({ browser, aejsConfig }, use) => {
+  openAuthenticatedAejsPage: async (
+    { browser, aejsConfig },
+    use,
+    testInfo,
+  ) => {
     let context: BrowserContext | undefined;
     let page: Page | undefined;
+    let traceStarted = false;
 
-    await use(async () => {
-      if (page) return page;
+    try {
+      await use(async () => {
+        if (page) return page;
 
-      context = await browser.newContext({
-        viewport: { width: 1440, height: 900 },
+        context = await browser.newContext({
+          viewport: { width: 1440, height: 900 },
+        });
+        page = await context.newPage();
+        assertAejsRuntimeConfig(aejsConfig);
+        await authenticateAejsPage(page, aejsConfig);
+        if (shouldStartAejsTraceManually(testInfo)) {
+          await context.tracing.start({
+            screenshots: true,
+            snapshots: true,
+            sources: true,
+          });
+          traceStarted = true;
+        }
+        return page;
       });
-      page = await context.newPage();
-      assertAejsRuntimeConfig(aejsConfig);
-      await authenticateAejsPage(page, aejsConfig);
-      return page;
-    });
-
-    await context?.close();
+    } finally {
+      if (page) {
+        await attachMaskedFullPageScreenshot(
+          page,
+          testInfo,
+          "evidencia-final-scci.png",
+          [],
+        );
+      }
+      if (context && traceStarted) {
+        await stopAndAttachAejsTrace(context, testInfo, "trace-scci");
+      }
+      await context?.close();
+    }
   },
 });
 
