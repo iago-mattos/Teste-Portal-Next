@@ -21,7 +21,7 @@ export interface ProvisioningSimulationScenario {
   readonly propertyAddress?: {
     readonly postalCode: string;
     readonly addressLine: string;
-    readonly state: string;
-    readonly municipality: string;
+    readonly state?: string;
+    readonly municipality?: string;
   };
 }

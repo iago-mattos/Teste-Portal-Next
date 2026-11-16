@@ -1,0 +1,2549 @@
+{
+  "source": "SCCI esteira-ht (https://esteiradigital-ht.prognum.com.br): Manutenção > Tabelas > Originação (Grupos de tipos de operação, Tipo de operação > Seguradoras, Faixa LTV por tipo de operação; Tipo de operação > Carências) e Terceiros > Seguradora",
+  "readAt": "2026-11-09T19:54:54.366Z",
+  "process": {
+    "initialPhaseCode": "100",
+    "initialPhaseName": "CADASTRAMENTO DA PROPOSTA",
+    "initialTaskCode": "010"
+  },
+  "journeys": [
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "groupCode": "299",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "904",
+          "description": "279 SFHABITACAO - TR",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "905",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "509",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "904",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "905",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "201",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "515",
+          "description": "279 SFHABITACAO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 360,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "517",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 360,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "514",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "515",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "516",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "517",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+      "groupCode": "230",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "526",
+          "description": "279 SFHABITACAO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "527",
+          "description": "81 SFIMOBILIARIO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "527",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "groupCode": "212",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "019",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "3",
+              "name": "ICATU SEGUROS",
+              "policy": "3200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "730",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "731",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "019",
+          "maxLtvPercent": 60,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "731",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "213",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "213",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "735",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "736",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "213",
+          "maxLtvPercent": 60,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "736",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "groupCode": "220",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "060",
+          "description": "279 SFHABITACAO - TR",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "100",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "060",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "1",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "221",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "220",
+          "description": "279 SFHABITACAO ?IPCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000,
+          "minTermMonths": 36,
+          "maxTermMonths": 360,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "221",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+      "groupCode": "232",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "234",
+          "description": "279 SFHABITACAO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000,
+          "minTermMonths": 36,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9400"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "235",
+          "description": "81 SFIMOBILIARIO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "groupCode": "226",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "092",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 1500000000000,
+          "maxProperty": 1500000000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "227",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "227",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+      "groupCode": "206",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "900",
+          "description": "279 SFHABITACAO - TR",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "901",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "564",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "565",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "900",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "901",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "207",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "567",
+          "description": "279 SFHABITACAO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 360,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "569",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 360,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "566",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "567",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "568",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "569",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+      "groupCode": "234",
+      "suspendedGroups": [
+        "005 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "574",
+          "description": "279 SFHABITACAO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 1500000,
+          "maxProperty": 1500000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "575",
+          "description": "81 SFIMOBILIARIO - POUPANCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "575",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+      "groupCode": "216",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "188",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "712",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "713",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "188",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "713",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "groupCode": "217",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "217",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "717",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "718",
+          "description": "81 SFIMOBILIARIO - IPCA",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.02,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "217",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "718",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+      "groupCode": "094",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "739",
+          "description": "81 SFIMOBILIARIO - TR",
+          "minOperation": 20000,
+          "maxOperation": 50000000,
+          "maxProperty": 50000000.01,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4302"
+            },
+            {
+              "code": "98",
+              "name": "SEM SEGUROS",
+              "policy": "98200"
+            },
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6500"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9400"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "016",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "739",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+      "groupCode": "095",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "193",
+          "description": "81 SFIMOBILIARIO - PJ",
+          "minOperation": 20000,
+          "maxOperation": 150000000,
+          "maxProperty": 150000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "5",
+              "name": "SOMPO SEGUROS",
+              "policy": "5200"
+            },
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6500"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9400"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4302"
+            },
+            {
+              "code": "98",
+              "name": "SEM SEGUROS",
+              "policy": "98200"
+            },
+            {
+              "code": "8",
+              "name": "ZURICH SEGUROS",
+              "policy": "8100"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "groupCode": "096",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "198",
+          "description": "81 SFIMOBILIARIO - PJ",
+          "minOperation": 20000,
+          "maxOperation": 1500000000,
+          "maxProperty": 1500000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "98",
+              "name": "SEM SEGUROS",
+              "policy": "98200"
+            },
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6501"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "",
+              "name": "(código )",
+              "policy": ""
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4302"
+            },
+            {
+              "code": "98",
+              "name": "SEM SEGUROS",
+              "policy": "98200"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "groupCode": "110",
+      "suspendedGroups": [
+        "023 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "015",
+          "description": "81 SFIMOBILIARIO - PJ",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 120,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6501"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4301"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "015",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "groupCode": "111",
+      "suspendedGroups": [
+        "023 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "113",
+          "description": "81 SFIMOBILIARIO - PJ",
+          "minOperation": 20000,
+          "maxOperation": 15000000,
+          "maxProperty": 15000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6501"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4301"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 90,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+      "groupCode": "112",
+      "suspendedGroups": [
+        "023 Imóvel Residencial"
+      ],
+      "operationTypes": [
+        {
+          "code": "114",
+          "description": "81 SFIMOBILIARIO - PJ",
+          "minOperation": 20000,
+          "maxOperation": 1500000000,
+          "maxProperty": 1500000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 120,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 1,
+          "insurers": [
+            {
+              "code": "6",
+              "name": "ALLIANZ",
+              "policy": "6501"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4301"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "",
+          "maxLtvPercent": 70,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+      "groupCode": "115",
+      "suspendedGroups": [
+        "023 Imóvel Residencial",
+        "115 Holding Familiar"
+      ],
+      "operationTypes": [
+        {
+          "code": "017",
+          "description": "81 - SFHABITA  O - HOLDING FAMILIAR",
+          "minOperation": 35000,
+          "maxOperation": 150000000,
+          "maxProperty": 150000000,
+          "minTermMonths": 36,
+          "maxTermMonths": 420,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4301"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "017",
+          "maxLtvPercent": 80,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "groupCode": "402",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "400",
+          "description": "83 Credito com Garantia de Imovel - 30%",
+          "minOperation": 30000,
+          "maxOperation": 10000000,
+          "maxProperty": 18000000,
+          "minTermMonths": 24,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "401",
+          "description": "83 Credito com Garantia de Imovel - 50%",
+          "minOperation": 30000,
+          "maxOperation": 10000000,
+          "maxProperty": 18000000,
+          "minTermMonths": 1,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "402",
+          "description": "83 Credito com Garantia de Imovel - 60%",
+          "minOperation": 30000,
+          "maxOperation": 10000000,
+          "maxProperty": 18000000,
+          "minTermMonths": 1,
+          "maxTermMonths": 240,
+          "minAge": 18,
+          "maxAge": 80,
+          "agePlusTermMax": 80,
+          "maxAgeMonths": 3,
+          "agePlusTermMaxMonths": 3,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7200"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "4300"
+            },
+            {
+              "code": "9",
+              "name": "TOO SEGUROS",
+              "policy": "9500"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "400",
+          "maxLtvPercent": 30,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "400",
+          "maxLtvPercent": 40,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "401",
+          "maxLtvPercent": 50,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "402",
+          "maxLtvPercent": 60,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    },
+    {
+      "journeyId": "Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+      "groupCode": "404",
+      "suspendedGroups": [],
+      "operationTypes": [
+        {
+          "code": "406",
+          "description": "83 Credito com Garantia de Imovel - PJ - 30%",
+          "minOperation": 30000,
+          "maxOperation": 10500000,
+          "maxProperty": 15000000,
+          "minTermMonths": 1,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "0"
+            },
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "407",
+          "description": "83 Credito com Garantia de Imovel - PJ - 50%",
+          "minOperation": 30000,
+          "maxOperation": 10500000,
+          "maxProperty": 15000000,
+          "minTermMonths": 1,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "0"
+            }
+          ],
+          "graceRules": []
+        },
+        {
+          "code": "408",
+          "description": "83 Credito com Garantia de Imovel - PJ - 60%",
+          "minOperation": 30000,
+          "maxOperation": 10500000,
+          "maxProperty": 15000000,
+          "minTermMonths": 1,
+          "maxTermMonths": 180,
+          "minAge": 0,
+          "maxAge": 0,
+          "agePlusTermMax": 0,
+          "maxAgeMonths": 0,
+          "agePlusTermMaxMonths": 0,
+          "minInstallment": 0,
+          "insurers": [
+            {
+              "code": "7",
+              "name": "AMERICAN LIFE",
+              "policy": "7201"
+            },
+            {
+              "code": "4",
+              "name": "MAPFRE",
+              "policy": "0"
+            }
+          ],
+          "graceRules": []
+        }
+      ],
+      "ltvBands": [
+        {
+          "operationTypeCode": "406",
+          "maxLtvPercent": 30,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "407",
+          "maxLtvPercent": 50,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        },
+        {
+          "operationTypeCode": "408",
+          "maxLtvPercent": 60,
+          "incomeCommitmentPercent": 40,
+          "amortizationSystem": "2",
+          "inactive": false
+        }
+      ]
+    }
+  ]
+}

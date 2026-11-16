@@ -5,12 +5,17 @@ import slots from "../tests/test-data/provisioning-slots.json" with { type: "jso
 const documentSlots = slots.filter(
   (slot) => slot.stateOwner === "c6-document-preparation",
 );
+const playwrightArguments = process.argv.slice(2);
 
 for (const slot of documentSlots) {
   console.log(`\n=== ${slot.id}: preparação até Documentos ===`);
   const result = spawnSync(
     process.execPath,
-    [resolve("scripts/run-c6-document-preparation.mjs"), slot.id],
+    [
+      resolve("scripts/run-c6-document-preparation.mjs"),
+      slot.id,
+      ...playwrightArguments,
+    ],
     { env: process.env, stdio: "inherit" },
   );
   if (result.error) throw result.error;

@@ -27,7 +27,7 @@ export type ProvisioningStateOwner =
 
 export type ProvisioningCreationMode =
   | "simulator"
-  | "simulator-shared"
+  | "scci-shared"
   | "manual-shared";
 
 export type ProvisioningLifecycle =

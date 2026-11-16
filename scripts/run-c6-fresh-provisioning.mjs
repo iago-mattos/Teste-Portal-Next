@@ -3,15 +3,21 @@ import { randomUUID } from "node:crypto";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import slots from "../tests/test-data/provisioning-slots.json" with { type: "json" };
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
 
 const dryRun = process.argv.includes("--dry-run");
 const publishOnly = process.argv.includes("--publish-only");
 const resume = process.argv.includes("--resume");
+const forwardedPlaywrightArguments = process.argv
+  .slice(2)
+  .filter((argument) => ["--headed", "--debug"].includes(argument));
 const freshSlots = slots.filter((slot) => slot.lifecycle === "fresh-per-run");
+const target = loadC6ProvisioningTarget();
 const sharedEnvironment = {
   ...process.env,
-  PW_PROFILE: "ht",
+  PW_PROFILE: target.profile,
   PORTAL_PROVISION_PROVIDER: "c6",
+  PW_EXCLUDE_EXTERNAL_STATES: "true",
   C6_PROVISION_TARGET_COUNT: String(freshSlots.length),
 };
 
@@ -36,8 +42,7 @@ async function writeJsonAtomic(path, value) {
 }
 
 async function validateResumableBatch() {
-  const registryPath = resolve(".playwright/generated-c6-simulations/ht.json");
-  const registry = JSON.parse(await readFile(registryPath, "utf8"));
+  const registry = JSON.parse(await readFile(target.registryPath, "utf8"));
   const missing = freshSlots.filter((slot) => {
     const entry = registry.entries?.find((candidate) => candidate.slotId === slot.id);
     return !entry?.protocol || entry.runId !== registry.run?.id;
@@ -49,7 +54,9 @@ async function validateResumableBatch() {
         .join(", ") || "nenhum manifesto ativo"}.`,
     );
   }
-  console.log(`Retomando o lote C6 ${registry.run.id} sem criar novas propostas.`);
+  console.log(
+    `Retomando o lote C6 ${target.profile} ${registry.run.id} sem criar novas propostas.`,
+  );
 }
 
 if (resume && publishOnly) {
@@ -61,7 +68,9 @@ if (dryRun) {
     "--dry-run",
   ]);
   console.log("\nPlano do lote:");
-  console.log(`1. Criar ${freshSlots.length} propostas no simulador interno C6.`);
+  console.log(
+    `1. Criar ${freshSlots.length} propostas no simulador interno C6 (${target.profile}).`,
+  );
   console.log("2. Comprovar no Portal o endereço preparado no SCCI.");
   console.log("3. Preparar fases 101 e 50.");
   console.log("4. Preparar Timeline Documentos e duas massas documentais.");
@@ -75,28 +84,37 @@ if (!publishOnly) {
     runStep(
       "retomar preparação das propostas existentes",
       "scripts/run-c6-provisioning-batch.mjs",
+      forwardedPlaywrightArguments,
     );
   } else {
     runStep("iniciar lote fresco", "scripts/start-c6-fresh-run.mjs");
-    runStep("criar propostas frescas", "scripts/run-c6-provisioning-batch.mjs");
+    runStep(
+      "criar propostas frescas",
+      "scripts/run-c6-provisioning-batch.mjs",
+      forwardedPlaywrightArguments,
+    );
   }
   runStep(
     "comprovar no Portal os endereços preparados no SCCI",
     "scripts/run-c6-property-preparation-batch.mjs",
+    forwardedPlaywrightArguments,
   );
-  runStep("preparar fases funcionais", "scripts/run-c6-phase-preparation-batch.mjs");
+  runStep(
+    "preparar fases funcionais",
+    "scripts/run-c6-phase-preparation-batch.mjs",
+    forwardedPlaywrightArguments,
+  );
   runStep(
     "preparar propostas documentais",
     "scripts/run-c6-document-preparation-batch.mjs",
+    forwardedPlaywrightArguments,
   );
 }
 runStep("publicar overlay do lote", "scripts/manage-c6-provisioning-registry.mjs", [
   "publish",
 ]);
 
-const registryPath = resolve(".playwright/generated-c6-simulations/ht.json");
-const currentRunPath = resolve(".playwright/c6-runs/ht/current.json");
-const registry = JSON.parse(await readFile(registryPath, "utf8"));
+const registry = JSON.parse(await readFile(target.registryPath, "utf8"));
 const notReady = freshSlots.filter((slot) => {
   const entry = registry.entries?.find((candidate) => candidate.slotId === slot.id);
   const sharedEntry = slot.sharedCpfWith
@@ -108,7 +126,7 @@ const notReady = freshSlots.filter((slot) => {
     !entry?.protocol ||
     entry.status !== "ready" ||
     !entry.propertyPreparedAt ||
-    (slot.creationMode === "simulator-shared" &&
+    (slot.creationMode === "scci-shared" &&
       (!sharedEntry?.protocol ||
         entry.applicant?.cpfDigits !== sharedEntry.applicant?.cpfDigits)) ||
     entry.runId !== registry.run?.id
@@ -126,7 +144,9 @@ const completedRun = {
   publishedAt: new Date().toISOString(),
 };
 registry.run = completedRun;
-await writeJsonAtomic(registryPath, registry);
-await writeJsonAtomic(currentRunPath, completedRun);
+await writeJsonAtomic(target.registryPath, registry);
+await writeJsonAtomic(target.currentRunPath, completedRun);
 
-console.log(`\nLote C6 ${completedRun.id} pronto e publicado.`);
+console.log(
+  `\nLote C6 ${target.profile} ${completedRun.id} pronto e publicado.`,
+);

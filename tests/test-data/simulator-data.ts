@@ -1,4 +1,5 @@
 import type { DigitalMortgageSimulationScenario } from "../types/simulator";
+import { scciInitialProcess } from "./scci-reference";
 
 /**
  * Contrato oficial para gerar propostas descartáveis pelo simulador público.
@@ -58,3 +59,30 @@ export function getDigitalMortgageSimulation(
     }),
   }) satisfies DigitalMortgageSimulationScenario;
 }
+
+/**
+ * Estado inicial esperado no SCCI de uma proposta recém-criada pelo Simulador
+ * no perfil esteira-ht. A fase e o código da tarefa inicial vêm do SCCI
+ * (Manutenção > Tabelas > Originação > Configurações e Fases da operação),
+ * lidos para tests/test-data/scci-reference.esteira-ht.json; título e status da
+ * tarefa 010 e a tarefa 020 (próxima do fluxo) foram observados na operação
+ * 000000668 (Andamento do Processo: 010 finalizada, 020 disponível).
+ * Vale somente para o esteira-ht; outros ambientes precisam do próprio contrato.
+ */
+const scciProcess = scciInitialProcess();
+
+export const SIMULATOR_INITIAL_PROCESS_STATE = Object.freeze({
+  phase: scciProcess.initialPhaseName,
+  tasks: [
+    {
+      code: scciProcess.initialTaskCode,
+      title: "Registrar Proposta",
+      status: "Proposta Registrada",
+    },
+    {
+      code: "020",
+      title: "Complementar dados da proposta",
+      status: "Disponível",
+    },
+  ],
+});

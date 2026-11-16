@@ -16,6 +16,8 @@ const registryPath = resolve(
     : `.playwright/generated-simulations/${profile}.json`,
 );
 const massesPath = resolve(`.env.${profile}.masses.local`);
+const excludeExternalStates =
+  process.env.PW_EXCLUDE_EXTERNAL_STATES?.trim().toLowerCase() === "true";
 
 function resolveTargetCount() {
   const rawValue = process.env.PORTAL_MASS_TARGET_COUNT?.trim();
@@ -74,6 +76,21 @@ function quote(value) {
 
 function findEntry(registry, id) {
   return registry.entries.find((entry) => entry.slotId === id);
+}
+
+function resolveExternalOperation(slot) {
+  const canonical = process.env[slot.environmentKey]?.replace(/\D/g, "");
+  if (canonical) return canonical;
+  if (slot.id === "CANCELED_WITHIN_30_DAYS") {
+    return process.env.PORTAL_PROPOSAL_CANCELED?.replace(/\D/g, "");
+  }
+  if (slot.id === "CANCELED_OVER_30_DAYS") {
+    return process.env.PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS?.replace(
+      /\D/g,
+      "",
+    );
+  }
+  return undefined;
 }
 
 async function showStatus() {
@@ -202,9 +219,93 @@ async function registerManual() {
   );
 }
 
+async function recoverScciSubmission() {
+  const slot = slots.find((entry) => entry.id === slotId);
+  if (
+    profile !== "esteira-ht" ||
+    provisioningProvider !== "portal" ||
+    !slot ||
+    slot.creationMode !== "scci-shared"
+  ) {
+    throw new Error(
+      "A recuperação é exclusiva de um slot scci-shared do perfil esteira-ht/provider portal.",
+    );
+  }
+  if (!/^\d{9}$/.test(operationArgument ?? "")) {
+    throw new Error("A operação recuperada precisa conter exatamente 9 dígitos.");
+  }
+
+  const registry = await readRegistry();
+  if (
+    !registry.run?.id ||
+    (registry.run.profile && registry.run.profile !== profile) ||
+    (registry.run.provider && registry.run.provider !== "portal")
+  ) {
+    throw new Error(
+      "Não existe um manifesto ativo da EsteiraHT/provider portal para recuperar.",
+    );
+  }
+
+  const entry = findEntry(registry, slot.id);
+  if (!entry || entry.runId !== registry.run.id) {
+    throw new Error(
+      `${slot.id} não possui uma reserva no runId ativo ${registry.run.id}.`,
+    );
+  }
+  if (entry.protocol) {
+    if (entry.protocol === operationArgument) {
+      console.log(`${slot.id} já registra a operação ${operationArgument}.`);
+      return;
+    }
+    throw new Error(
+      `${slot.id} já possui a operação ${entry.protocol}; a recuperação não substitui protocolos.`,
+    );
+  }
+  if (!entry.submissionAttemptedAt) {
+    throw new Error(
+      `${slot.id} não possui tentativa de submissão registrada; a recuperação não pode associar uma operação arbitrária.`,
+    );
+  }
+
+  const sharedEntry = findEntry(registry, slot.sharedCpfWith);
+  if (
+    !sharedEntry?.protocol ||
+    sharedEntry.runId !== registry.run.id ||
+    sharedEntry.applicant?.cpfDigits !== entry.applicant?.cpfDigits
+  ) {
+    throw new Error(
+      `A relação de CPF entre ${slot.id} e ${slot.sharedCpfWith} não está comprovada no lote ativo.`,
+    );
+  }
+
+  const duplicate = registry.entries.find(
+    (candidate) =>
+      candidate.protocol === operationArgument && candidate.slotId !== slot.id,
+  );
+  if (duplicate) {
+    throw new Error(
+      `A operação ${operationArgument} já pertence ao slot ${duplicate.slotId}.`,
+    );
+  }
+
+  entry.protocol = operationArgument;
+  entry.submittedAt = new Date().toISOString();
+  entry.status = "submitted";
+  delete entry.failure;
+  delete entry.rejectedAt;
+  await writeAtomic(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
+  console.log(
+    `${slot.id} recuperou a operação real ${operationArgument}. A retomada ainda revalidará SCCI e Portal antes da publicação.`,
+  );
+}
+
 async function publishMasses() {
   const registry = await readRegistry();
-  const officialSlots = slots.filter((slot) => slot.lifecycle !== "on-demand");
+  const officialSlots = slots.filter(
+    (slot) =>
+      slot.lifecycle !== "on-demand" &&
+      (!excludeExternalStates || slot.lifecycle !== "external-static"),
+  );
   const entriesBySlot = new Map();
 
   if (provisioningProvider === "c6" && registry.run?.id) {
@@ -222,7 +323,7 @@ async function publishMasses() {
         !entry.propertyPreparedAt ||
         !entry.scenario?.propertyAddress?.postalCode ||
         !entry.scenario?.propertyAddress?.addressLine ||
-        (slot.creationMode === "simulator-shared" &&
+        (slot.creationMode === "scci-shared" &&
           (!sharedEntry?.protocol ||
             entry.applicant?.cpfDigits !== sharedEntry.applicant?.cpfDigits)) ||
         entry.runId !== registry.run.id
@@ -249,27 +350,29 @@ async function publishMasses() {
       });
     }
 
-    const missingExternal = [];
-    for (const slot of officialSlots.filter(
-      (entry) => entry.lifecycle === "external-static",
-    )) {
-      const protocol = process.env[slot.environmentKey]?.replace(/\D/g, "");
-      const cpfDigits = protocol
-        ? String(configuredCpfs[protocol] ?? "").replace(/\D/g, "")
-        : "";
-      if (!protocol || !cpfDigits) {
-        missingExternal.push(slot.id);
-        continue;
+    if (!excludeExternalStates) {
+      const missingExternal = [];
+      for (const slot of officialSlots.filter(
+        (entry) => entry.lifecycle === "external-static",
+      )) {
+        const protocol = resolveExternalOperation(slot);
+        const cpfDigits = protocol
+          ? String(configuredCpfs[protocol] ?? "").replace(/\D/g, "")
+          : "";
+        if (!protocol || !cpfDigits) {
+          missingExternal.push(slot.id);
+          continue;
+        }
+        entriesBySlot.set(slot.id, {
+          protocol,
+          applicant: { cpfDigits },
+        });
       }
-      entriesBySlot.set(slot.id, {
-        protocol,
-        applicant: { cpfDigits },
-      });
-    }
-    if (missingExternal.length > 0) {
-      throw new Error(
-        `Publicação C6 bloqueada. Massas externas sem operação/CPF: ${missingExternal.join(", ")}.`,
-      );
+      if (missingExternal.length > 0) {
+        throw new Error(
+          `Publicação C6 bloqueada. Massas externas sem operação/CPF: ${missingExternal.join(", ")}.`,
+        );
+      }
     }
   } else {
     const targetCount = resolveTargetCount();
@@ -278,9 +381,24 @@ async function publishMasses() {
         `Publicação completa exige ${officialSlots.length} massas oficiais; o lote atual solicita somente ${targetCount}.`,
       );
     }
+    // Um lote com manifesto ativo (fresco) exige o mesmo rigor do provedor
+    // C6: cada entrada precisa pertencer ao runId atual e o CPF compartilhado
+    // declarado no catálogo precisa realmente coincidir.
     const incomplete = officialSlots.filter((slot) => {
       const entry = findEntry(registry, slot.id);
-      return !entry?.protocol || entry.status !== "ready";
+      const sharedEntry = slot.sharedCpfWith
+        ? findEntry(registry, slot.sharedCpfWith)
+        : undefined;
+      return (
+        !entry?.protocol ||
+        entry.status !== "ready" ||
+        (registry.run?.id && entry.runId !== registry.run.id) ||
+        (slot.creationMode === "scci-shared" &&
+          (!sharedEntry?.protocol ||
+            entry.applicant?.cpfDigits !== sharedEntry.applicant?.cpfDigits)) ||
+        (slot.creationMode === "scci-shared" &&
+          (!entry?.scciValidatedAt || !entry?.portalListValidatedAt))
+      );
     });
     if (incomplete.length > 0) {
       throw new Error(
@@ -290,6 +408,19 @@ async function publishMasses() {
     for (const slot of officialSlots) {
       entriesBySlot.set(slot.id, findEntry(registry, slot.id));
     }
+
+    if (registry.run?.id) {
+      const freshDefaultEntry = entriesBySlot.get("DEFAULT");
+      if (
+        freshDefaultEntry &&
+        (!freshDefaultEntry.scenario?.propertyAddress?.postalCode ||
+          !freshDefaultEntry.scenario?.propertyAddress?.addressLine)
+      ) {
+        throw new Error(
+          "Publicação bloqueada: DEFAULT não possui CEP/endereço do imóvel comprovado pelo Portal.",
+        );
+      }
+    }
   }
 
   const protocols = officialSlots.map(
@@ -297,6 +428,31 @@ async function publishMasses() {
   );
   if (new Set(protocols).size !== protocols.length) {
     throw new Error("Publicação bloqueada: existem operações duplicadas no lote.");
+  }
+
+  // Nenhum CPF pode aparecer em mais de um slot, exceto o par explicitamente
+  // declarado no catálogo (sharedCpfWith), como DEFAULT/TIMELINE_DOCUMENTS.
+  const slotOwnersByCpf = new Map();
+  for (const slot of officialSlots) {
+    const cpfDigits = entriesBySlot.get(slot.id)?.applicant?.cpfDigits;
+    if (!cpfDigits) continue;
+    const owners = slotOwnersByCpf.get(cpfDigits) ?? [];
+    owners.push({ slotId: slot.id, sharedCpfWith: slot.sharedCpfWith });
+    slotOwnersByCpf.set(cpfDigits, owners);
+  }
+  for (const owners of slotOwnersByCpf.values()) {
+    if (owners.length <= 1) continue;
+    const isExpectedPair =
+      owners.length === 2 &&
+      (owners[0].sharedCpfWith === owners[1].slotId ||
+        owners[1].sharedCpfWith === owners[0].slotId);
+    if (!isExpectedPair) {
+      throw new Error(
+        `Publicação bloqueada: CPF compartilhado inesperadamente entre ${owners
+          .map((owner) => owner.slotId)
+          .join(", ")}.`,
+      );
+    }
   }
 
   const defaultEntry = entriesBySlot.get("DEFAULT");
@@ -398,5 +554,6 @@ async function publishMasses() {
 if (command === "status") await showStatus();
 else if (command === "mark-ready") await markReady();
 else if (command === "register-manual") await registerManual();
+else if (command === "recover-scci-submission") await recoverScciSubmission();
 else if (command === "publish") await publishMasses();
 else throw new Error(`Comando desconhecido: ${command}`);

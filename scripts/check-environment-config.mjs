@@ -114,6 +114,8 @@ function validateFreshIntegrationMetadata(keys) {
 }
 
 const profile = loadEnvironmentProfile().name;
+const excludeExternalStates =
+  process.env.PW_EXCLUDE_EXTERNAL_STATES?.trim().toLowerCase() === "true";
 const coreCapabilities = parseCoreCapabilities(
   process.env.PORTAL_CORE_CAPABILITIES,
 );
@@ -140,13 +142,17 @@ const canceledOver30DaysKey = process.env
   : "PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS";
 const functionalOperations = [
   "PORTAL_PROPOSAL_DEFAULT",
-  canceledWithin30DaysKey,
-  "PORTAL_PROPOSAL_EXPIRED",
   "PORTAL_PROPOSAL_CREDIT_REJECTED",
   "PORTAL_PROPOSAL_CREDIT_APPROVED",
-  canceledOver30DaysKey,
   "PORTAL_PROPOSAL_TIMELINE_CADASTRO",
   "PORTAL_PROPOSAL_TIMELINE_DOCUMENTS",
+  ...(!excludeExternalStates
+    ? [
+        canceledWithin30DaysKey,
+        "PORTAL_PROPOSAL_EXPIRED",
+        canceledOver30DaysKey,
+      ]
+    : []),
 ];
 const portalRequiredKeys = [
   "PORTAL_URL",
@@ -221,13 +227,15 @@ if (
 
 validateOperations(functionalOperations);
 validateUniqueOperations(
-  [
-    canceledWithin30DaysKey,
-    "PORTAL_PROPOSAL_EXPIRED",
-    "PORTAL_PROPOSAL_CREDIT_REJECTED",
-    "PORTAL_PROPOSAL_CREDIT_APPROVED",
-    canceledOver30DaysKey,
-  ],
+  functionalOperations.filter((key) =>
+    [
+      canceledWithin30DaysKey,
+      "PORTAL_PROPOSAL_EXPIRED",
+      "PORTAL_PROPOSAL_CREDIT_REJECTED",
+      "PORTAL_PROPOSAL_CREDIT_APPROVED",
+      canceledOver30DaysKey,
+    ].includes(key),
+  ),
   "Massas funcionais com estados exclusivos",
 );
 

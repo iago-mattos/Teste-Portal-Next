@@ -10,6 +10,8 @@ export default defineConfig({
     "**/prepare-c6-property.provision.ts",
     "**/prepare-c6-phase.provision.ts",
     "**/prepare-c6-documents.provision.ts",
+    "**/prepare-portal-property-address.provision.ts",
+    "**/create-esteira-ht-scci-shared.provision.ts",
   ],
   outputDir: "test-results/c6-provisioning",
   fullyParallel: false,

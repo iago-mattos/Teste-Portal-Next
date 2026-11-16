@@ -16,6 +16,7 @@ import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningSlotId,
 } from "../types/provisioning";
+import { assertProvisioningTarget } from "../config/provisioning-target";
 
 function resolvePhaseSlot(): ProvisioningSlotId {
   const value = process.env.PORTAL_PROVISION_SLOT?.trim().toUpperCase();
@@ -29,25 +30,6 @@ function resolvePhaseSlot(): ProvisioningSlotId {
     throw new Error(`${slotId} não possui preparação de fase C6 configurada.`);
   }
   return slotId;
-}
-
-function assertC6HtTarget(): void {
-  const profile = process.env.PW_PROFILE?.trim().toLowerCase();
-  const aejsHost = new URL(process.env.AEJS_URL ?? "").host;
-  const usePlatformAccess = process.env.AEJS_USE_PLATFORM_ACCESS;
-  const path = process.env.AEJS_PATH?.trim() ?? "";
-
-  if (
-    profile !== "ht" ||
-    aejsHost !== "c6ht.prognum.com.br" ||
-    usePlatformAccess !== "true" ||
-    path ||
-    process.env.PORTAL_PROVISION_PROVIDER !== "c6"
-  ) {
-    throw new Error(
-      "Preparação de fase bloqueada: use exclusivamente o perfil C6 HT.",
-    );
-  }
 }
 
 async function attachEntry(
@@ -127,10 +109,10 @@ async function expectPortalPhase(
 }
 
 test(
-  "C6 HT | altera e comprova a fase da proposta dedicada",
+  "C6 | altera e comprova a fase da proposta dedicada",
   { tag: ["@provisioning", "@mutation"] },
   async ({ aejsPage, browser }, testInfo) => {
-    assertC6HtTarget();
+    assertProvisioningTarget();
     const slotId = resolvePhaseSlot();
     const slot = getProvisioningSlot(slotId);
     const target = slot.phaseTarget!;

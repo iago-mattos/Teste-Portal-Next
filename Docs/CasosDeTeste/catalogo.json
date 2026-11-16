@@ -1,0 +1,5249 @@
+{
+  "titulo": "Casos de teste do Portal Next",
+  "versao": 1,
+  "descricao": "Fonte da verdade dos casos de teste. As regras de origem 'planilha' vieram de 'Testes Portal Next.xlsx' (abas Desenv e HT); 'planilha' guarda o status e a Obs originais de cada aba. 'vinculos' liga o caso aos testes Playwright: 'arquivo' é relativo a tests/ e 'titulo' é um trecho do título (describe › test). Testes com título 'ID | ...' são ligados ao caso de mesmo ID automaticamente.",
+  "ambientes": {
+    "desenv": "Desenv",
+    "ht": "HT",
+    "esteira-ht": "Esteira HT"
+  },
+  "ambientesExibidos": [
+    "desenv",
+    "ht"
+  ],
+  "casos": [
+    {
+      "id": "LOGIN-01",
+      "secao": "Login",
+      "regra": "O portal do cadastro tem uma URL única, onde é permitida a entrada do cliente sendo enviada por e-mail a cada simulação que ele fizer e tokenizada",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/login/login.spec.ts",
+          "titulo": "LOGIN-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está enviando um token pelo email"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "LOGIN-02",
+      "secao": "Login",
+      "regra": "O link será único para todos os clientes e será validado por token enviado por e-mail a cada login",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/login/login.spec.ts",
+          "titulo": "LOGIN-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está enviando um token pelo email"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "LOGIN-03",
+      "secao": "Login",
+      "regra": "Em caso de sucesso, direcionar para página de simulações realizadas pelo cliente. Deverá constar todas as simulações, em todos os status.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/login/login.spec.ts",
+          "titulo": "LOGIN-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Ao entrar no link mostra a lista de propostas daquele CPF"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "LOGIN-04",
+      "secao": "Login",
+      "regra": "Em caso de CPF não encontrado deverá ter uma mensagem de orientação: “Não localizamos nenhuma simulação nesse CPF. Clique aqui para realizar uma simulação https://c6imobiliario.com.br”",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/login/login.spec.ts",
+          "titulo": "LOGIN-04 |"
+        }
+      ],
+      "notaCobertura": "O teste confere a mensagem de CPF/CNPJ inválido (“CPF/CNPJ invalido.”). A mensagem de CPF sem simulação (“Não localizamos nenhuma simulação nesse CPF…”) não é verificada.",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Mensagem apresentada corretamente"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-01",
+      "secao": "Minhas propostas",
+      "regra": "Deverá vir do lead as informações: Nº da proposta, Data de cadastro, Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-02",
+      "secao": "Minhas propostas",
+      "regra": "As informações Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado não sofrem alteração em fase de perfilamento pelo cliente por isso ficam sempre iguais. Caso haja alteração na plataforma da prognum nesse momento aí sim reflete no portal.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Usada a Proposta 86"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-03",
+      "secao": "Minhas propostas",
+      "regra": "As informações Endereço do imóvel, Valor do imóvel, Valor do empréstimo, prazo solicitado quando alteradas em outras fases na plataforma prognum, refletirão no portal",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposal-property-reflection.spec.ts",
+          "titulo": "PROP-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Usada a Proposta 86"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-04",
+      "secao": "Minhas propostas",
+      "regra": "Deverá aparecer em “Etapa” o De/Para do status da fase parametrizado pelo C6 na “Nome da fase na WEB” na tabela de fases de operação",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-05",
+      "secao": "Minhas propostas",
+      "regra": "O preenchimento será dividido em duas tarefas “Preenchimento Cadastral” e “Preenchimento de Documentos”, onde a fase de preenchimento de documentos depende do término de preenchimento de cadastro",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "tarefa 997  e 998 criada"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-06",
+      "secao": "Minhas propostas",
+      "regra": "Tanto a tarefa de Preenchimento cadastral quando a de preenchimento terão prazos parametrizáveis pelo C6",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "ambas tem o seu prazo, parametrizavel pela tarefa"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-07",
+      "secao": "Minhas propostas",
+      "regra": "Deverá aparecer em “Etapa” “proposta expirada” de forma automática quando atingir parametrizado em uma das tarefas sem atuação do cliente.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está aparecendo Vencida - Verificar alteração"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-08",
+      "secao": "Minhas propostas",
+      "regra": "Deverá ser informado para o cliente a mensagem “Verifique seu e-mail ou entre em contato com o consultor”, propostas negadas pela mesa de crédito",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "proposta 89"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-09",
+      "secao": "Minhas propostas",
+      "regra": "Deverá ser informado para o cliente a mensagem “Verifique seu e-mail ou entre em contato com o consultor”, propostas com status a partir da Análise de Crédito.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "proposta 87"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-10",
+      "secao": "Minhas propostas",
+      "regra": "Simulações canceladas acimas de 30 dias não veremos no resumo",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-10 |"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-canceled-proposal-age-aejs.spec.ts",
+          "titulo": "cancelada há mais de 30 dias não aparece"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "proposta 73"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-11",
+      "secao": "Minhas propostas",
+      "regra": "Simulações canceladas até e igual 30 dias deverão constar em tela",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-11 |"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-canceled-proposal-age-aejs.spec.ts",
+          "titulo": "cancelada há até 30 dias permanece visível"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "proposta 72"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-12",
+      "secao": "Minhas propostas",
+      "regra": "Simulações canceladas na Prognum, também precisam estar canceladas no portal, tem que refletir exatamente o que está na Prognum em relação a proposta",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-12 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "proposta 90"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-13",
+      "secao": "Minhas propostas",
+      "regra": "Prazo remanescente deverá ser atualizado conforme os dias passarem até restar 0 dias",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-13 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-14",
+      "secao": "Minhas propostas",
+      "regra": "Prazo deverá correr contabilizando dias úteis.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-14 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "scci",
+          "obs": "SCCI NÃO GRAVA EM DIAS UTEIS"
+        },
+        "ht": {
+          "status": "scci",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-15",
+      "secao": "Minhas propostas",
+      "regra": "Data fim de preenchimento deverá se mater a mesma desde o início",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-15 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-16",
+      "secao": "Minhas propostas",
+      "regra": "O botão refazer simulação deverá ser chamado “Fazer simulação com outro imóvel” e direcionar para página https://c6imobiliario.com.br",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-16 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-17",
+      "secao": "Minhas propostas",
+      "regra": "Propostas que tiveram o cadastro finalizado irão para crédito e exibir um modal que ele concluiu a etapa e irá aguardar contato por e-mail ou whatsapp.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-17 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-18",
+      "secao": "Minhas propostas",
+      "regra": "Na proposta em tela, quando o cliente tiver mais eu duas propostas ao passar o mouse o cliente será direcionado para jornada solicitada no momento (ex: completar dados cadatrais, anexar documentos, pendencias...) para proposta desejada",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-18 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PROP-19",
+      "secao": "Minhas propostas",
+      "regra": "Data de vencimento, fica na proposta, sem necessidade de mensagem informativa em tela nesse momento, para não distrair o cliente.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-19 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-01",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Deverá conter cabeçalho com nome do proponente e CPF do proponente",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-02",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Retirar a indicação de CNPJ, mantendo apenas CPF",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-03",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Linha do tempo deverá ser composta por: Simulação, Cadastro, Crédito, Negociação, Análise de Documentos, Análise Técnica, Formalização e Liberação.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-04",
+      "secao": "Linha do tempo e alertas",
+      "regra": "O cliente poderá chegar nessa tela através de todas as jornadas na tela anterior",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-05",
+      "secao": "Linha do tempo e alertas",
+      "regra": "A linha do tempo do portal se comunicará com a linha do tempo existente na prognum",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-06",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Se proposta expirada tela disponível para visualização, mas edição inabilitada",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Deve permitir a visualização do cadastro e dos documentos"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-07",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Trazer mensagem informativa da data fim para preenchimento do cadastro",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-08",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Exibir mensagem indicando obrigatoriedade de preenchimento",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-09",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Caso o cliente feche a mensagem de cadastro obrigatório não precisa apresentar novamente.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-10",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Quando mais de uma proposta em andamento, a data limite de cada proposta deverá ser mostrada ao cliente",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-10 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-11",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Manter habilitado botão “Ver detalhes da operação” e mostrar evolução do preenchimento",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-11 |"
+        }
+      ],
+      "notaCobertura": "A regra foi alterada (a planilha registra que foi solicitada a retirada do botão). O teste confere que o botão “Ver detalhes da operação” NÃO aparece, embora o título ainda diga “manter habilitado”.",
+      "planilha": {
+        "desenv": {
+          "status": "alterado",
+          "obs": "Foi solicitada a retirada"
+        },
+        "ht": {
+          "status": "alterado",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "TIMELINE-12",
+      "secao": "Linha do tempo e alertas",
+      "regra": "Retirar botão “Ver documentos”, pois só teremos no final após liberação cadastral.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-12 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-01",
+      "secao": "Cadastro · Participantes",
+      "regra": "A aba Participantes deve ser a primeira aba habilitada, junto com Composição de Renda, Motivo da Contratação e Imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-02",
+      "secao": "Cadastro · Participantes",
+      "regra": "É de preenchimento obrigatório os campos: Renda, Estado Civil, Nacionalidade, Profissão e Tipo de profissão E por isso são sinalizados com (*)",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-03",
+      "secao": "Cadastro · Participantes",
+      "regra": "O campo renda deve aceitar apenas valores numéricos. Valores diferentes de numérico não deverão ser aceitos, mostrando em tela um erro",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-04",
+      "secao": "Cadastro · Participantes",
+      "regra": "Quando leads enviados pela WEB, a renda é coletada na simulação e deve refletir no portal cadastro para o cliente validar e alterar.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-05",
+      "secao": "Cadastro · Participantes",
+      "regra": "Quando lead de APP, não tem informação de renda e o cliente deve permitir alterar.Quando lead de API, não tem informação de renda e o cliente deve editar",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-06",
+      "secao": "Cadastro · Participantes",
+      "regra": "No campo Estado Civil, deve permitir a lista: Solteiro, Casado, Divorciado, Desquitado, Viúvo, Separação Judicial, Separação Consensual, Divorciado Consensualmente, Convivente",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-07",
+      "secao": "Cadastro · Participantes",
+      "regra": "A informação de nacionalidade deve ser default brasileira, permitindo o cliente alterar",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-08",
+      "secao": "Cadastro · Participantes",
+      "regra": "O campo profissão deve conter as mesmas profissões da lista existente na prognum em originação, no campo profissão, não considerando: Outros; Outros Declarantes não especificados; Outros servidores civis e militares; outros trabal de nivel superior, ligados ao ensino; Outros trabalhadores administrativos e assemelhado; Outros trabalhadores de serviços assemelhados; Outros Trabalhadores do comercio e assemelhados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-09",
+      "secao": "Cadastro · Participantes",
+      "regra": "O campo profissão deve permitir o cliente digitar para filtrar as opções sem necessidade ficar rolando a barra",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-10",
+      "secao": "Cadastro · Participantes",
+      "regra": "O campo tipo de profissão deve ter os mesmos campos do campo tipo de funcionário, sendo: Autônomo, Empresário, Pensionista, Profissional Liberal, Aposentado, Renda de Aluguel, Produtor Rural, Assalariado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-10 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-11",
+      "secao": "Cadastro · Participantes",
+      "regra": "O botão voltar não existirá, o cliente irá trafegar entre as abas de preenchimento e caso queira voltar, será via “voltar do browser”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-11 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-12",
+      "secao": "Cadastro · Participantes",
+      "regra": "A opção de salvar acontecerá de duas formas:\n• Clicando entre as abas de preenchimento\n• Clicando em salvar e continuar",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-12 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "PART-13",
+      "secao": "Cadastro · Participantes",
+      "regra": "Toda vez que salvar e tiver dado obrigatório não preenchido ele criticará, mas ainda assim salvará as informações",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-13 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-01",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "Se o estado civil diferente de casado ou convivente não habilita aba cônjuge, demais opções deverá habilitar o preenchimento",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-02",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "É de preenchimento obrigatório os campos: Nome do Cônjuge, CPF, Data de Nascimento e Regime de Comunhão. E por isso são sinalizados com (*)",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-03",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "É de preenchimento opcional Data de Comunhão, E-mail e Telefone. Sendo sinalizados como “(opcional)”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Não está sinalizando como opcional"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-04",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "O campo telefone deve possuir o DDD",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-05",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "O campo CPF seve ser um campo válido",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-06",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "Data de nascimento deverá permitir apenas números",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-07",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "Data de comunhão deverá permitir apenas números",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-08",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "Telefone deverá permitir apenas números",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-09",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "Não será permitido finalizar o nome e e-mail com espaço",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está finalizando com espaço no final"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CONJ-10",
+      "secao": "Cadastro · Dados do cônjuge",
+      "regra": "O regime de comunhão deverá ser uma lista: Comunhão Universal de Bens, Separação Total de Bens, Comunhão Parcial de Bens, Participação Final nos Aquestos, União Estável, Separação Obrigatória de Bens",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-10 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-01",
+      "secao": "Cadastro · Composição de renda",
+      "regra": "Deve ter informativo que é permitido compor renda com terceiros",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/income-composition/composicao-renda.spec.ts",
+          "titulo": "RENDA-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-02",
+      "secao": "Cadastro · Composição de renda",
+      "regra": "Se cliente selecionar a opção não, então não habilita outras informações",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/income-composition/composicao-renda.spec.ts",
+          "titulo": "RENDA-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-03",
+      "secao": "Cadastro · Composição de renda",
+      "regra": "Se cliente selecionar a opção sim, habilitar opção “cônjuge” ou “outra pessoa”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/income-composition/composicao-renda.spec.ts",
+          "titulo": "RENDA-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-01",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "Se cônjuge habilitar campos: Renda do cônjuge, Profissão do Conjuge e Tipo de Profissão do Cônjuge para preenchimento obrigatório E por isso são sinalizados com (*)",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-02",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "O campo renda deve aceitar apenas valores numéricos. Valores diferentes de numérico não deverão ser aceitos, mostrando em tela um erro",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-03",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "O campo profissão do cônjuge deve conter as mesmas profissões da lista existente na prognum em originação, no campo profissão, não considerando: Outros; Outros Declarantes não especificados; Outros servidores civis e militares; outros trabal de nivel superior, ligados ao ensino; Outros trabalhadores administrativos e assemelhado; Outros trabalhadores de serviços assemelhados; Outros Trabalhadores do comercio e assemelhados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-04",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "O campo profissão do cônjuge deve permitir o cliente digitar para filtrar as opções sem necessidade ficar rolando a barra",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-05",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "O campo tipo de profissão do cônjuge deve ter os mesmos campos do campo tipo de funcionário, sendo: Autônomo, Empresário, Pensionista, Profissional Liberal, Aposentado, Renda de Aluguel, Produtor Rural, Assalariado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-CONJ-06",
+      "secao": "Cadastro · Renda com cônjuge",
+      "regra": "Deve ser obrigatório o preenchimento de “Autorizo a consulta de dados dos demais participantes no Sistema de informações de crédito (SCR) e demais instituições de proteções e fraudes, lavagem de dinheiro e risco de crédito",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/spouse-income/renda-conjuge.spec.ts",
+          "titulo": "RENDA-CONJ-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-01",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Se terceiro, habilitar campos: Nome Completo, CPF, Data de Nascimento Renda, Profissão e Tipo de Profissão, Telefone de Contato e E-mail para preenchimento.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-02",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Para preenchimento obrigatório temos: Nome Completo, CPF, Data de Nascimento, Renda, Profissão e Tipo de Profissão, Telefone de Contato e E-mail E por isso são sinalizados com (*)",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-03",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "O campo CPF seve ser um campo válido",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-04",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Data de nascimento deverá permitir apenas números",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-05",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Telefone deverá permitir apenas números",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-06",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Não será permitido finalizar o nome e e-mail com espaço",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-07",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "O campo renda deve aceitar apenas valores numéricos. Valores diferentes de numérico não deverão ser aceitos, mostrando em tela um erro",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-08",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "O campo profissão do cônjuge deve conter as mesmas profissões da lista existente na prognum em originação, no campo profissão, não considerando: Outros; Outros Declarantes não especificados; Outros servidores civis e militares; outros trabal de nivel superior, ligados ao ensino; Outros trabalhadores administrativos e assemelhado; Outros trabalhadores de serviços assemelhados; Outros Trabalhadores do comercio e assemelhados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-09",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "O campo profissão do cônjuge deve permitir o cliente digitar para filtrar as opções sem necessidade ficar rolando a barra",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-10",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "O campo tipo de profissão do cônjuge deve ter os mesmos campos do campo tipo de funcionário, sendo: Autônomo, Empresário, Pensionista, Profissional Liberal, Aposentado, Renda de Aluguel, Produtor Rural, Assalariado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-10 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "RENDA-TERC-11",
+      "secao": "Cadastro · Renda com terceiros",
+      "regra": "Deve ser obrigatório o preenchimento de “Autorizo a consulta de dados dos demais participantes no Sistema de informações de crédito (SCR) e demais instituições de proteções e fraudes, lavagem de dinheiro e risco de crédito",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-11 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MOTIVO-01",
+      "secao": "Cadastro · Motivo da contratação",
+      "regra": "Valor solicitado do Crédito, Prazo estimado, Tipo de juros devem ser preenchidos com dados do lead",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/loan-reason/motivo-contratacao.spec.ts",
+          "titulo": "MOTIVO-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Não existe no Portal react, porém nesse novo existe"
+        },
+        "ht": {
+          "status": "alterado",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MOTIVO-02",
+      "secao": "Cadastro · Motivo da contratação",
+      "regra": "Finalidade do crédito será preenchida com a lista da prognum, permitindo os campos: “Outros”; Construções e/ou reformas; Quitar dívidas bancárias; Quitar dívidas não bancárias; Adquirir bens; Investir; Saúde",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/loan-reason/motivo-contratacao.spec.ts",
+          "titulo": "MOTIVO-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MOTIVO-03",
+      "secao": "Cadastro · Motivo da contratação",
+      "regra": "Descrição profissional / Defesa para o crédito deverá ser “Utilize esse espaço para nos contar mais sobre você e seus objetivos financeiros no momento” e esse campo deverá validar texto para não permitir palavras soltas ou menor que 10 palavras",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/loan-reason/motivo-contratacao.spec.ts",
+          "titulo": "MOTIVO-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-01",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Valor Estimado do Imóvel, Endereço do Imóvel de garantia devem ser preenchidos com informações do lead",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-02",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Terá uma mensagem informativa para o cliente: “Alteração das informações da simulação poderá ser feita no momento de negociação Comercial\"",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-03",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Tipo de Imóvel deve permitir: “Residencial”; “Comercial”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-04",
+      "secao": "Cadastro · Imóvel",
+      "regra": "O campo uso do imóvel deve ser uma lista composta por: Casa, Apartamento, Casa em condomínio, Loja, Sala Comercial, Misto, Prédio Comercial, Prédio Comercial misto, Laje corporativa, Sobrado, Flat,Terreno em condominio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Versão, (Galpão e Terreno - remover), verificar antes no scci - a opção seria remover somente no react - removemos no Portal next via configuração"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-05",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Se marcado Casa em condomínio o campo tipo do imóvel deverá ser residencial por default e não habilita para alteração",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-06",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Se marcado Loja, Sala Comercial, Misto, Prédio Comercial, Prédio Comercial misto, Laje corporativa, o campo tipo do imóvel deverá ser comercial por default e não habilita para alteração",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-07",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Se marcado Casa, Apartamento, Sobrado, Flat e Terreno em condomínio o cliente deve escolher o tipo sendo campo obrigatório",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-08",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Após o endereço do imóvel deve vir a pergunta “Você reside neste imóvel?”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está na sobre você"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-09",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Quando o cliente selecionar “Não” deve habilitar o campo de endereço de residência para preenchimento",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-09 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-10",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Número do imóvel que vem do lead poderá vir em número, mas deverá ser concatenado para integração com a tela da prognum",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-10 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-11",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Condição do imóvel deverá ter a lista: Próprio, quitado; Próprio, alienado/ financiado, De terceiro, quitado; De terceiro, alienado/financiado; Em nome de empresa (CNPJ), quitado; Em nome de empresa (CNPJ), alienado/financiado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-11 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "IMOVEL-12",
+      "secao": "Cadastro · Imóvel",
+      "regra": "Caso preenchido alienado habilita campos Valor estimado saldo devedor e instituição para preenchimento obrigatório e portando deve ter “(*)”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-12 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-01",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Caso preenchido de terceiro quitado ou alienado, habilita garantidor PF",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-02",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Quando Garantidor PF habilitado, os campos “Nome do proprietário”, “CPF do proprietário”, “Estado Civil”, “CEP”, “Endereço”, “Número”, “Bairro”, “Município”, “UF”, Telefone de contato”, “E-mail” e “Data de Nascimento são de preenchimento obrigatório e por isso devem ter “(*)”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-02 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-03",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Telefone deve permitir apenas celular",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-04",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Quando Garantidor PF, o campo “Complemento” é opcional",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-05",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Ao digitar o CEP, os campos Endereço, Bairro, Município e UF devem ser preenchidos automaticamente",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PF-06",
+      "secao": "Cadastro · Garantidor PF",
+      "regra": "Deve existir em tela uma indicação que o endereço é do proprietário do imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-06 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-01",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Caso preenchido em nome de empresa quitado ou alienado, habilita garantidor PJ",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-02",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Quando Garantidor PJ habilitado, os campos “Razão Social da Empresa”, “CNPJ”, “Estado Civil”, “CEP”, “Endereço”, “Número”, “Bairro”, “Município”, “UF” são de preenchimento obrigatório e por isso devem ter “(*)”",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-02 |"
+        }
+      ],
+      "notaCobertura": "O teste confere todos os campos obrigatórios exceto Estado Civil (a planilha questiona “Estado civil na empresa?”).",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Estado civil na empresa?"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-03",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Quando Garantidor PJ, os campos “Telefone de contato”, “E-mail” e “Complemento” são opcionais",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-03 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-04",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Ao digitar o CEP, os campos Endereço, Bairro, Município e UF devem ser preenchidos automaticamente",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-04 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-05",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Deve existir em tela uma indicação que o endereço é da empresa do imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-05 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-06",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Indicar que este preenchimento de sócios deve ser feito quando aplicável, e que em casos de não existir sócios (apenas 1 dono), preencher com a informação da pessoa que é dona",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-06 |"
+        }
+      ],
+      "notaCobertura": "O teste confere que a lista de sócios permite adicionar um sócio. A orientação para preencher com o dono quando não há sócios não é verificada.",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-07",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Campo “Nome Completo”, “CPF”, “Telefone”, “Data de nascimento” e “E-mail” são obrigatórias para todos os sócios e por isso devem ter “(*)”",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-07 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "GAR-PJ-08",
+      "secao": "Cadastro · Garantidor PJ",
+      "regra": "Telefone deve permitir apenas celular",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-08 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DETALHE-01",
+      "secao": "Detalhamento",
+      "regra": "O botão não estará em tela, será via jornada a partir da proposta e será habilitado apenas quando cadastro completo",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/details/detalhamento.spec.ts",
+          "titulo": "DETALHE-01 |"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Ele está na aba de documentos - verificar melhor"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-01",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Após salvar as informações no portal perfilamento e concluir essa etapa deverá ser aberta outra tarefa na prognum que permita distinguir ação do time que irá enviar para integração com a prognum, onde terá uma ação intermediária entre o cadastro de proposta e análise de crédito.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-workflow-progress-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida a transição do workflow após os documentos"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação de workflow"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não há asserção de que a tarefa intermediária fica antes da análise de crédito (nenhuma linha/fase de crédito é conferida) nem de que ela identifica o time responsável pelo envio à integração",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Ta permitindo colocar documento após a 998"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-02",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "A fase de cadastro será composta por tarefas de: Inclusão de dados, Inclusão de documentos e validação de informações, como exemplo abaixo:",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-workflow-progress-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida a transição do workflow após os documentos"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-03",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Conforme preenchimento dados, deverá constar nas bases e na tela prognum para avaliar empurra carrinho",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: 'nas bases' não é verificado (nenhum teste consulta o banco para esses dados); dados do titular e do imóvel do cenário PF não são conferidos; 'avaliar empurra carrinho' não tem asserção própria",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-04",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Ao marcar a opção a autorização da consulta de dados dos demais participantes no Sistema de informações de crédito (SCR) e demais instituições de proteções e fraudes, lavagem de dinheiro e risco de crédito deve ser gravado em base data e hora",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: a hora da autorização não é conferida (só data dd/Mmm/aaaa; no PF só 'não vazio'); a gravação em base não é consultada",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-05",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Documentos devem refletir na aba de documento conforme regra para todos que comporem renda",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-portal-documents-aejs.spec.ts",
+          "titulo": "valida todos os documentos de renda enviados"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/send-and-view-portal-documents.spec.ts",
+          "titulo": "Portal | envia e visualiza todos os documentos da operação dedicada"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não distingue documentos por participante que compõe renda (cenários documentais só com titular); com massa provisionada a lista esperada é a que o próprio Portal exibiu (recordGeneratedSimulationDocumentNames), sem confronto com a regra de documentos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Ela pediu somente os documentos obrigatórios, verificar a posibilidade"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-06",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Renda, em Originação> Pretendente> Ocupação> Renda Bruta = Renda Participante",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-07",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Estado Civil, em Originação> Pretendente> Dados Pessoais> Estado Civil = Estado Civil Participante",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-08",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Nacionalidade, em Originação> Pretendente> Dados Pessoais>Nacionalidade = Nacionalidade Participante",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-09",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Profissão Originação> Pretendente> Ocupação> Profissão = Profissão",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-10",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Tipo de profissão Originação> Pretendente> Ocupação> Tipo de funcionário = Tipo de profissão",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-11",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo UF Naturalidade, em Originação> Pretendente> Dados Pessoais> UF Em análise",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-12",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo UF identidade, em Originação> Pretendente> Dados Pessoais> Identificação > UF Em análise",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-13",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo UF Endereço Residencial, em Originação> Pretendente> Dados de Contrato> UF = Usar a UF do Imóvel quando residir no imóvel ou UF de endereço de residência quando diferente",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: o ramo 'reside no imóvel' do titular fica dentro de if (!provisionedApplicant) e é pulado em execução com massa provisionada, comparando com valor fixo e não com a UF do imóvel lida; o ramo 'endereço diferente' não é testado para o titular (só cônjuge/terceiro)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-14",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Endereço Residencial Municipio, em Originação> Pretendente> Dados de Contrato> Municipio = Usar a municipio do Imóvel quando residir no imóvel ou municipio de endereço de residência quando diferente",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: o ramo 'reside no imóvel' do titular fica dentro de if (!provisionedApplicant) e é pulado em execução com massa provisionada, comparando com valor fixo; o ramo 'endereço diferente' não é testado para o titular",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-15",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente campo Nome do Cônjuge, em Originação> Pretendente>Conjuge> Dados Pessoais> Identificação>Nome = Nome do conjuge",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-16",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente campo CPF do Cônjuge, em Originação> Pretendente>Conjuge> Dados Pessoais> Identificação>CPF =CPF",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-17",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente campo Data de Nascimento do Cônjuge, em Originação> Pretendente>Conjuge>Dados Pessoais> Identificação> Data de Nascimento = Data de Nascimento",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-18",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente campo Regime de Comunhão do Cônjuge, em Originação> Pretendente>Conjuge> Dados Pessoais> Identificação> Regime de Comunhão = Regime de Comunhão",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-19",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente quando preenchido campo Data de Comunhão, em Originação> Pretendente>Conjuge>Dados Pessoais> Identificação> Data Casamento/União = Data de Comunhão",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-20",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente quando preenchido campo E-mail do Cônjuge, em Originação> Pretendente>Conjuge> Dados de Contato > Telefones >E-mail = E-mail",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-21",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente quando preenchido campo Telefone do Cônjuge, em Originação> Pretendente>Conjuge> Dados de Contato > Telefones > DDD Cel = DDD do campo",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-22",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando casado ou convivente quando preenchido campo Telefone do Cônjuge, em Originação> Pretendente>Conjuge> Dados de Contato > Telefones > Telefone Cel = Celular do campo",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: estado civil convivente não é exercitado (a única massa com cônjuge, INT-CONFIRM-PJ, é Casado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-23",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando não compor renda o pretendende sem marcação de composição de renda com outros e ser o principal. A flag de composição não estará marcada",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Atenção: o único teste do cenário (integrations/portal-aejs/validate-confirmed-quitado-aejs.spec.ts, “valida titular sem composição de renda”) exige a flag de composição de renda MARCADA no SCCI, com o comentário de que esse é o comportamento confirmado — o contrário desta regra. Confirmar qual comportamento vale antes de automatizar.",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-24",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando compor renda com o cônjuge, ter flag de Composição de Renda marcada e o pretendente terá informações do cônjuge",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-25",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando compor renda com o cônjuge Renda do cônjuge, em Originação> Pretendente>Conjuge>Ocupação> Renda Bruta = Renda",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-26",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando compor renda com o cônjuge Profissão do Conjuge , em Originação> Pretendente>Conjuge>Ocupação> Profissão = Profissão",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-27",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando compor renda com o cônjuge Tipo de Profissão do Cônjuge, em Originação> Pretendente>Conjuge>Ocupação> Tipo de funcionário = Tipo de profissão",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-28",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela quando compor renda com terceiros, ter flag de Composição de Renda marcada e o terceiro que compor renda será incluído em Pretendente >Componente de Renda",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: a flag de composição do titular PF não é conferida e a grade não é identificada como 'Componente de Renda' (o teste abre a linha visível pelo nome)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-29",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Todos os campos de terceiros que compõe renda e são obrigatórios constarão na prognum e estarão em tela integrados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-30",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Finalidade do Crédito, Originação> Finalidade do Crédito> Finalidade = Finalidade do Crédito",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-31",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Descrição profissional/ Defesa para o crédito, Originação> Finalidade do Crédito> Defesa para o crédito= Descrição profissional/ Defesa para o crédito",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-32",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "O campo endereço do imóvel deve vir preenchido sem permissão de alteração e deve refletir o mesmo na tela da prognum Originação>Imóvel Operação> Dados do Imóvel",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        },
+        {
+          "arquivo": "functional/proposal-form/property/imovel.spec.ts",
+          "titulo": "IMOVEL-01 | Valor Estimado do Imóvel, Endereço do Imóvel de garantia devem ser preenchidos com informações do lead"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: nenhuma asserção de que o campo é não editável no Portal (ensurePropertyAddress aceita editável e não editável); não compara o valor exibido no Portal com o da Prognum; asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-33",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Valor Estimado do Imóvel, em Originação > Simulação> Valor Estimado/Avaliação do Imóvel = Valor Estimado do Imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/create-and-validate-simulation.spec.ts",
+          "titulo": "Simulador → SCCI | cria uma proposta e valida os dados integrados"
+        },
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Vamos bloquear por questões da simulação"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-34",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Tipo de Imóvel, em Originação>Imóvel Operação> Dados do Imóvel> Tipo do Imóvel = Tipo de Imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-35",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Uso do imóvel, em Originação>Imóvel Operação> Dados do Imóvel> Uso do Imóvel = Uso do Imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-36",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo CEP, em Originação>Imóvel Operação> Dados do Imóvel> CEP = CEP",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-37",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Endereço, em Originação>Imóvel Operação> Dados do Imóvel> Endereço=Endereço",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-38",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Número, em Originação>Imóvel Operação> Dados do Imóvel> Endereço o número incluído no lead e concatenado no campo Endereço",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-39",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Complemento, em Originação>Imóvel Operação> Dados do Imóvel> Complemento = Complemento quando tiver sido incluído",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-40",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Bairro, em Originação>Imóvel Operação> Dados do Imóvel> Bairro = Bairro",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-41",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Município, em Originação>Imóvel Operação> Dados do Imóvel> Cidade = Município",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-42",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Estado, em Originação>Imóvel Operação> Dados do Imóvel> Estado = UF",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-43",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo CNPJ garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Dados do Proprietário>CNPJ = CNPJ",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-44",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Razão Social da Empresa garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Dados do Proprietário> Firma ou Razão Social = Razão Social da Empresa",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-45",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Data de Fundação da Empresa garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Dados do Proprietário>Data de Fundação da Empresa = Data de Fundação da Empresa",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-46",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo CPF do Sócio garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Sócio/Representantes>Dados Pessoais>CPF = CPF do Sócio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-47",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Nome Completo do Socio garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Sócio/Representantes>Dados Pessoais> Nome = Nome Completo do Socio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-48",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela DDD do telefone do sócio campo garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Sócio/Representantes>Dados de Contato> Tel. Celular> DDD = DDD do telefone do sócio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-49",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela Telefone do sócio garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Sócio/Representantes>Dados de Contato> Tel. Celular> Telefone = Telefone do sócio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-50",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela e-mail do sócio garantidor PJ em Originação>Pretendente> Imóvel Operação> Garantidor> Sócio/Representantes>Dados de Contato> E-mail = e-mail do sócio",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-51",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar os campos dos sócios de garantidor PJ quando mais de um sócio cadastrado",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-52",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo CPF do proprietário de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados Pessoais> Identificação> CPF = CPF do proprietário",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-53",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Nome Completo do proprietário de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular>Dados Pessoais> Identificação> Nome = Nome Completo do proprietário",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-54",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Estado Civil de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados Pessoais> Identificação> Estado Civil = Estado Civil",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-55",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo Data de Nascimento de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados Pessoais> Identificação> Data de Nascimento = Data de Nascimento",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-56",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo DDD do telefone de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados de Contato> > Tel. Celular> DDD = DDD do telefone",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-57",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo telefone de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados de Contato> > Tel. Celular> Telefone = telefone",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-58",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrar na prognum em tela campo e-mail de garantidor PF em Originação>Pretendente> Imóvel Operação> Garantidor> Titular> Dados de Contato> > e-mail = e-mail",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-59",
+      "secao": "Integrações Portal → SCCI",
+      "regra": "Encontrara na prognum o campo saldo devedor em Originação>pretendente > interveniente quitante > dados do contrato com interveniente quitante > campo Valor interveniente = Saldo Devedor",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-pj-settlement-intervenor-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida o interveniente quitante sem persistir alterações"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-01",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração Endereço = imóvel de garantia",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: a conferência do endereço fica dentro de if (!provisionedApplicant) e é pulada em execução com massa provisionada; valores esperados fixos (aejsReflection); nos cenários PF/quitado o titular também reside no imóvel, mas o endereço não é conferido",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-02",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração Endereço diferente imóvel de garantia",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pf.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PF descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: titular com endereço diferente do imóvel de garantia não é exercitado",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-03",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Proponente sem composição de dívida",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-quitado.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação com imóvel quitado"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-quitado-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida titular sem composição de renda"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação de workflow"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: dados do titular não são conferidos no AEJS e a flag de composição é exigida MARCADA (contrário de INTEG-23)",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-04",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Proponente com composição de dívida com conjuge",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-05",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Proponente sem composição de dívida com conjuge",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar e validar a integração com cônjuge sem composição de renda",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-06",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Proponente com composição de dívida com terceiro + conjuge compondo renda",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar e validar a integração com terceiro + cônjuge compondo renda",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-07",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Proponente com composição de dívida com terceiro + conjuge não compondo renda",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar e validar a integração com terceiro + cônjuge não compondo renda",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-08",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Garantidor PJ com um sócios e validar campos integrados",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: integração com garantidor PJ de exatamente um sócio não é executada",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-09",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Garantidor PJ com dois sócios e validar campos integrados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-10",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Garantidor PF e validar campos integrados",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pf.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PF descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pf-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida terceiro e garantidor da operação PF"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-11",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Garantia Quitada",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-quitado.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação com imóvel quitado"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-quitado-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida titular sem composição de renda"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação de workflow"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: nenhum dado do imóvel/garantia quitada (condição, endereço, ausência de interveniente) é conferido no AEJS",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-12",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com Garantia Não Quitada",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-confirmed-pj-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida os dados confirmados da operação PJ"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-pj-settlement-intervenor-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida o interveniente quitante sem persistir alterações"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-13",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com proponente Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado Até 350 mil",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-14",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com proponente Renda de Aluguel > 500 mil e < 1MM,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-15",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com proponente Assalariado > 350 mil e < 500 mil,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-16",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com conjuge compondo renda como Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado > 350 mil e < 500 mil,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-17",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com conjuge compondo renda como Renda de Aluguel > 350 mil e < 500 mil,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-18",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com conjuge compondo renda como Assalariado Até 350 mil",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-19",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda com terceiro como Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado > 500 mil e < 1MM,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-20",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda com terceiro como Renda de Aluguel Até 350 mil",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-21",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda com terceiro como Assalariado > 500 mil e < 1MM,",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-22",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda conjuge de terceiro como Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado> 1MM",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-23",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda conjuge de terceiro como Renda de Aluguel > 1MM",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-CEN-24",
+      "secao": "Integrações · cenários ponta a ponta",
+      "regra": "Realizar integração com composição de renda conjuge de terceiro como Assalariado > 1MM",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: executar a integração com o tipo de profissão e a faixa de valor indicados e validar dados/documentos no SCCI",
+      "planilha": {
+        "desenv": {
+          "status": "duvida",
+          "obs": null
+        },
+        "ht": {
+          "status": "duvida",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "INTEG-SUP-01",
+      "secao": "Integrações · conferências de apoio",
+      "regra": "A operação existente no Portal é encontrada e abre no SCCI/AEJS.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/confirm-operation.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "INTEG-SUP-02",
+      "secao": "Integrações · conferências de apoio",
+      "regra": "A ficha do pretendente da operação abre no SCCI/AEJS.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/confirm-applicant.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "DOC-01",
+      "secao": "Documentos",
+      "regra": "Permitir definir tamanho e manter os formatos que sobem na prognum",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-document-size-limits.spec.ts",
+          "titulo": "Portal | bloqueia arquivos maiores que 10 MB em todos os documentos"
+        },
+        {
+          "arquivo": "core/documents/documents.spec.ts",
+          "titulo": "CORE-3 | aplica o limite configurado nos boundaries sem persistir arquivos"
+        },
+        {
+          "arquivo": "core/documents/documents.spec.ts",
+          "titulo": "CORE-3 | rejeita arquivo vazio e extensão não permitida sem request"
+        },
+        {
+          "arquivo": "core/consumable/document-batch.spec.ts",
+          "titulo": "CORE consumível | preflight read-only de DOC A/B @consumable"
+        },
+        {
+          "arquivo": "core/consumable/document-batch.spec.ts",
+          "titulo": "CORE consumível | executa D1-D5 com ledger de consumo @consumable"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/validate-portal-documents-aejs.spec.ts",
+          "titulo": "valida todos os documentos de renda enviados"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não verifica na Prognum que JPG/PNG sobem mantendo o formato (só PDF é aberto no AEJS); 'permitir definir tamanho' não é exercitado (limite fixo de 10 MB ou lido de PORTAL_CORE_DOCUMENT_MAX_SIZE_BYTES); os testes core só rodam com PORTAL_CORE_CAPABILITIES configurado (vazio no .env.example)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-02",
+      "secao": "Documentos",
+      "regra": "Ter módulo de parametrização de regras de documentos obrigatórios versus valor solicitado e profissão em parametrização tabela>Originação>Documento",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: verificar a existência/uso do módulo de parametrização documento × valor × profissão",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-03",
+      "secao": "Documentos",
+      "regra": "O botão não estará em tela, será via jornada a partir da proposta.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-12 | Retirar botão “Ver documentos”, pois só teremos no final após liberação cadastral."
+        },
+        {
+          "arquivo": "functional/proposals/proposals.spec.ts",
+          "titulo": "PROP-05 | O preenchimento será dividido em duas tarefas “Preenchimento Cadastral” e “Preenchimento de Documentos”, onde a fase de preenchimento de documentos depende do término de preenchimento de cadastro"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: a ausência do botão só é verificada na proposta padrão (fase de cadastro); a regra não nomeia o botão (assumido 'Ver documentos')",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-04",
+      "secao": "Documentos",
+      "regra": "As regras são aplicáveis por primeiro proponente e também para quem compõe renda",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: verificar que as regras documentais se aplicam ao primeiro proponente e a cada participante que compõe renda",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-05",
+      "secao": "Documentos",
+      "regra": "Quando cônjuge sem compor renda tanto nos proponentes quanto garantidores, não exige documento",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: verificar que cônjuge sem compor renda não gera documento exigido",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-06",
+      "secao": "Documentos",
+      "regra": "Trazer em tela apenas os documentos obrigatórios, os opcionais não aparecerão em momento de perfilamento para não ser extenso ao cliente",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: comparar a lista exibida com os documentos obrigatórios e confirmar que opcionais não aparecem",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-07",
+      "secao": "Documentos",
+      "regra": "Se o cliente escolhe profissão “Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado”, nos DOCUMENTOS, avaliar o campo de valor solicitado para determinar o que enviar de forma obrigatória: Se até R$ 350 mil, ser enviar Imposto de renda do último exercício, recibo de entrega do último exercício;\nSe o valor solicitado for > 350 mil e < 500 mil, IR, recibo de entrega e extrato bancário do último mês\nSe o valor solicitado for > 500 mil e < 1MM, IR, recibo de entrega e 3 últimos extratos bancários (3 últimos meses)\nSe o valor solicitado for > 1MM, IR, recibo de entrega e 6 últimos extratos bancários (6 últimos meses)",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: conferir os documentos obrigatórios em cada faixa (até 350k, 350-500k, 500k-1MM, >1MM)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Autono e empresário 350k - 400k - >500k - 1M - ok  - operação: 000436014 / Produtor Rural e Profissional Liberal 350k - 400k - >500k - 1M - ok  - operação: 000436015 / Pensionista e Aposentado 350k - 400k - >500k - 1M - ok  - operação: 000436016  //// Foi testado alterando a simulação"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-08",
+      "secao": "Documentos",
+      "regra": "Se o cliente escolhe profissão Renda de aluguel nos DOCUMENTOS, avaliar o campo de valor solicitado para determinar o que enviar de forma obrigatória:\nSe até R$ 350 mil, enviar Imposto de renda do último exercício, recibo de entrega do último exercício, contrato do aluguel\nSe o valor solicitado for > 350 mil e < 500 mil, IR, recibo de entrega e extrato bancário do último mês, contrato do aluguel\nSe o valor solicitado for > 500 mil e < 1MM, IR, recibo de entrega e 3 últimos extratos bancários (3 últimos meses), contrato do aluguel\nSe o valor solicitado for > 1MM, IR, recibo de entrega e 6 últimos extratos bancários (6 últimos meses), contrato do aluguel",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: conferir os documentos obrigatórios (incl. contrato de aluguel) em cada faixa de valor",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "<350k - 450k - 750k - 1M - ok  operação: 000436017"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-09",
+      "secao": "Documentos",
+      "regra": "Se o cliente escolhe profissão “Assalariado”, nos DOCUMENTOS, avaliar o campo de valor solicitado para determinar o que enviar de forma obrigatória:\nAté R$ 350 mil, enviar Imposto de renda do último exercício, recibo de entrega do último exercício;\nse o valor solicitado for > 350 mil e < 500 mil, IR, recibo de entrega e holerite do último mês\nse o valor solicitado for > 500 mil e < 1MM, IR, recibo de entrega e 3 últimos holerites (3 últimos meses)\nse o valor solicitado for > 1MM, IR, recibo de entrega e 3 últimos holerites (3 últimos meses)",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: conferir os documentos obrigatórios de Assalariado em cada faixa de valor",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "<350k - 450k - 750k - 1M - ok  operação: 000436017"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "DOC-10",
+      "secao": "Documentos",
+      "regra": "As regras acima também são validas para cônjuge e terceiros que compões renda, podendo ter tipos de documentos diferentes de acordo com a profissão",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: aplicar as regras de DOC-07/08/09 a cônjuge e terceiros que compõem renda",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "USUARIO-01",
+      "secao": "Usabilidade",
+      "regra": "Na etapa de documento ao clicar no botão de ver cadastro o botão de voltar para documentação não existe prejudicando a usabilidade",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: na etapa de documentos, abrir 'ver cadastro' e confirmar que existe botão para voltar à documentação",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-01",
+      "secao": "Apontamentos da Mita",
+      "regra": "Críticas de campos obrigatórios com mensagem não amigável e travando o cliente dar sequência.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/participants/participantes.spec.ts",
+          "titulo": "PART-13 | Toda vez que salvar e tiver dado obrigatório não preenchido ele criticará, mas ainda assim salvará as informações"
+        },
+        {
+          "arquivo": "core/fields/essential-fields.spec.ts",
+          "titulo": "CORE-5 | valida texto obrigatório, limite real, Unicode, trim e calendário"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não verifica de forma geral que as críticas não exibem texto técnico nas demais abas, nem que 'Confirmar e avançar' prossegue após a crítica; o teste core só roda com PORTAL_CORE_CAPABILITIES",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "No portal novo ele n trava mais"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-02",
+      "secao": "Apontamentos da Mita",
+      "regra": "O endereço do imóvel está se perdendo mesmo ao salvar.",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "provisioning/prepare-portal-property-address.provision.ts",
+          "titulo": "EsteiraHT | preenche e persiste pelo Portal o CEP do imóvel"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Está funcionando e concatenando o Número do garantidor PF"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-03",
+      "secao": "Apontamentos da Mita",
+      "regra": "Não está habilitando salvar a incluir informações do imóvel",
+      "origem": "planilha",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-quitado.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação com imóvel quitado"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação de workflow"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pf.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PF descartável"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        }
+      ],
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Erro ao salvar o Garantidor PJ com mudança de opinião"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-04",
+      "secao": "Apontamentos da Mita",
+      "regra": "Não estou conseguindo seguir com garantidor PF. A tela tira o número do endereço e não segue. Nesse formato, além de ser um problema não seguir com o garantidor PF, também não está aparecendo as críticas de campos obrigatórios.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "core/fields/cep-api-contract.spec.ts",
+          "titulo": "CORE imediato | persiste endereço válido com complemento opcional vazio"
+        },
+        {
+          "arquivo": "core/fields/cep-api-contract.spec.ts",
+          "titulo": "CORE-5 | troca CEP durante consulta lenta sem aplicar resposta antiga"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pf.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PF descartável"
+        },
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-02 | Quando Garantidor PF habilitado, os campos “Nome do proprietário”, “CPF do proprietário”, “Estado Civil”, “CEP”, “Endereço”, “Número”, “Bairro”, “Município”, “UF”, Telefone de contato”, “E-mail” e “Data de Nascimento são de preenchimento obrigatório e por isso devem ter “(*)”"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: nenhuma asserção de que as críticas de campos obrigatórios do garantidor PF aparecem ao salvar/confirmar com campos vazios; testes core só rodam com PORTAL_CORE_CAPABILITIES",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-05",
+      "secao": "Apontamentos da Mita",
+      "regra": "Imóvel próprio com todos os itens preenchidos também não está seguindo para documentos.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação de workflow"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-workflow.spec.ts",
+          "titulo": "Portal | envia documentos e avança o workflow para validação cadastral"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: 'Próprio alienado/financiado' (condição 2) não é exercitado",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-06",
+      "secao": "Apontamentos da Mita",
+      "regra": "Após incluir o imóvel financiado está se perdendo o IQ Erro mostrado na gravação",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/validate-pj-settlement-intervenor-aejs.spec.ts",
+          "titulo": "Portal → AEJS | valida o interveniente quitante sem persistir alterações"
+        },
+        {
+          "arquivo": "integrations/portal-aejs/prepare-pj.spec.ts",
+          "titulo": "Portal → AEJS | prepara e confirma a operação PJ descartável"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não recarrega o Portal para provar que o IQ não se perde após incluir o imóvel; cenários próprio/terceiro alienado não são conferidos (PF prepara condição 4 com IQ, mas não valida)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Precisaria necessita de cadastro do CNPJ, colocar campo ao lado"
+        },
+        "ht": {
+          "status": "scci",
+          "obs": "Ainda mostra erro pois a tabela n foi populada"
+        }
+      }
+    },
+    {
+      "id": "MITA-07",
+      "secao": "Apontamentos da Mita",
+      "regra": "Trazer em tela apenas os documentos obrigatórios, os opcionais não aparecerão em momento de perfilamento para não ser extenso ao cliente Está trazendo todos os documentos.Erro mostrado na gravação.",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: comparar a lista exibida com os obrigatórios e confirmar ausência de opcionais",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-08",
+      "secao": "Apontamentos da Mita",
+      "regra": "Se o cliente escolhe profissão “Autônomo, Empresário, Profissional Liberal, Produtor rural, Pensionista, Aposentado”, nos DOCUMENTOS, avaliar o campo de valor solicitado para determinar o que enviar de forma obrigatória: Se até R$ 350 mil, ser enviar Imposto de renda do último exercício, recibo de entrega do último exercício; Não está respeitando essa regra.",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: confirmar que até 350 mil só IRPF e recibo são exigidos",
+      "planilha": {
+        "desenv": {
+          "status": "scci",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-09",
+      "secao": "Apontamentos da Mita",
+      "regra": "Ao finalizar a etapa de cadastro está dizendo que vai para o crédito, porém ainda é preciso completar a etapa de documentos.",
+      "origem": "planilha",
+      "automacao": "manual",
+      "notaCobertura": "Sem teste automatizado. Falta: verificar que a mensagem de conclusão do cadastro direciona para documentos e não para crédito",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-10",
+      "secao": "Apontamentos da Mita",
+      "regra": "Agora se coloca qualquer item e depois apaga aparece a crítica e não permite seguir Erro mostrado na gravação",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "core/fields/cep-api-contract.spec.ts",
+          "titulo": "CORE-5 | envia false e não reutiliza valor removido no payload real"
+        },
+        {
+          "arquivo": "core/fields/cep-api-contract.spec.ts",
+          "titulo": "CORE imediato | persiste endereço válido com complemento opcional vazio"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não verifica ausência de crítica nem que 'Confirmar e avançar' prossegue após apagar um campo; testes core só rodam com PORTAL_CORE_CAPABILITIES",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": "Mita - Erro 3"
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-11",
+      "secao": "Apontamentos da Mita",
+      "regra": "Detalhes operação: Já foi solicitado retirar por impeditivos jurídicos.",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/details/detalhamento.spec.ts",
+          "titulo": "DETALHE-01 | O botão não estará em tela, será via jornada a partir da proposta e será habilitado apenas quando cadastro completo"
+        },
+        {
+          "arquivo": "functional/timeline/timeline.spec.ts",
+          "titulo": "TIMELINE-11 | Manter habilitado botão “Ver detalhes da operação” e mostrar evolução do preenchimento"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: ausência não verificada em proposta com cadastro completo (onde DETALHE-01 diz que o botão seria habilitado)",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-12",
+      "secao": "Apontamentos da Mita",
+      "regra": "Validar o preenchimento dos campos de celulares",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pf.spec.ts",
+          "titulo": "GAR-PF-03 | Telefone deve permitir apenas celular"
+        },
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-08 | Telefone deve permitir apenas celular"
+        },
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-08 | Telefone deverá permitir apenas números"
+        },
+        {
+          "arquivo": "functional/proposal-form/third-party-income/renda-terceiros.spec.ts",
+          "titulo": "RENDA-TERC-05 | Telefone deverá permitir apenas números"
+        },
+        {
+          "arquivo": "functional/proposal-form/spouse/conjuge.spec.ts",
+          "titulo": "CONJ-04 | O campo telefone deve possuir o DDD"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: regra 'apenas celular' (rejeitar fixo) não testada para cônjuge e terceiro; não há asserção de que um celular válido é aceito (aria-invalid falso)",
+      "nota": "Apontamento sem número na planilha original (s/n).",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "MITA-13",
+      "secao": "Apontamentos da Mita",
+      "regra": "Ajustar a aba Garantidor PJ para exibir o primeiro formulário de sócio",
+      "origem": "planilha",
+      "automacao": "parcial",
+      "vinculos": [
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-07 | Campo “Nome Completo”, “CPF”, “Telefone”, “Data de nascimento” e “E-mail” são obrigatórias para todos os sócios e por isso devem ter “(*)”"
+        },
+        {
+          "arquivo": "functional/proposal-form/guarantor/garantidor-pj.spec.ts",
+          "titulo": "GAR-PJ-08 | Telefone deve permitir apenas celular"
+        }
+      ],
+      "notaCobertura": "Não verificado automaticamente: não garante proposta sem sócio salvo, então o formulário pode aparecer por dado persistido e não isola o ajuste",
+      "nota": "Apontamento sem número na planilha original (s/n).",
+      "planilha": {
+        "desenv": {
+          "status": "ok",
+          "obs": null
+        },
+        "ht": {
+          "status": "ok",
+          "obs": null
+        }
+      }
+    },
+    {
+      "id": "CORE-01",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Persistência: rascunho parcial é salvo, recarregado, reaberto, removido e restaurado; HTTP 500 no salvamento não mostra sucesso falso, preserva o dado e persiste no retry.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/persistence/persistence.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-02",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Concorrência: duplo clique durante salvamento lento gera uma única ação; timeout libera a interface para nova tentativa; refresh com salvamento pendente não corrompe a proposta; duas páginas isolam edições e respostas fora de ordem.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/concurrency/concurrency.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-03",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Documentos: limite de tamanho configurado aplicado nos extremos; arquivo vazio e extensão não permitida rejeitados sem request; 413, 415 e conteúdo inválido sem confirmação falsa; upload lento bloqueia duplicidade e permite retry após erro.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/documents/documents.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-04",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Documentos (gaps imediatos): preserva nomes de arquivo válidos, rejeita seleções inválidas sem upload e recupera a interface após abort antes e durante o upload.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/documents/immediate-gaps.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-05",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "CEP e contrato frontend → API: CEP inválido, serviço indisponível e resposta incompleta tratados; troca de CEP durante consulta lenta não aplica resposta antiga; payload real envia false e não reaproveita valor removido; endereço válido persiste com complemento vazio.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/fields/cep-api-contract.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-06",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Campos essenciais: texto obrigatório, limite real de caracteres, Unicode, trim e calendário; campo monetário normaliza caracteres, sinal, zero, decimal e conteúdo colado.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/fields/essential-fields.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-07",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Cadastro A/B restaurável: deep link autenticado preserva a proposta no reload; payloads, seção ativa e marcadores ficam isolados entre duas propostas e são restaurados.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/isolation/restorable-cadastro.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-08",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Navegação: continuidade após troca rápida de seção e uso do histórico do navegador; HTTP 403 no salvamento e no upload sem sucesso falso.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/navigation/immediate-gaps.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-09",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Sessão: deep link sem sessão é negado; 401 no rascunho e no upload não confirma nem persiste; propostas A e B do mesmo usuário mantêm identidade e estado isolados; resposta atrasada de A não atualiza B.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/session/session-isolation.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-10",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Autorização horizontal: a sessão de um cliente não acessa a proposta real de outro cliente.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/session/authorization.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-11",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Mobile e acessibilidade: navegação, formulário e combobox por toque e teclado; ação, erro e modal dentro da viewport; lista e controle documental acessíveis no celular.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/mobile/mobile-accessibility.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "CORE-12",
+      "secao": "Robustez do Portal (Portal Core)",
+      "regra": "Lote documental consumível: preflight somente leitura das massas A/B e envio D1–D5 com ledger de consumo (só roda com PW_INCLUDE_CONSUMABLE=true).",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "core/consumable/document-batch.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SMOKE-01",
+      "secao": "Smoke",
+      "regra": "A sessão autenticada do Portal é reutilizável entre os testes.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "smoke/auth.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "SMOKE-02",
+      "secao": "Smoke",
+      "regra": "A proposta padrão configurada para o ambiente abre corretamente.",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "smoke/open-proposal.spec.ts"
+        }
+      ]
+    }
+  ]
+}

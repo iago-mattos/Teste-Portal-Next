@@ -1,5 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
+
+const target = loadC6ProvisioningTarget();
 
 const externalStateSlots = [
   "EXPIRED",
@@ -9,7 +12,7 @@ const externalStateSlots = [
 const playwrightArguments = process.argv.slice(2);
 
 for (const slotId of externalStateSlots) {
-  console.log(`\n=== Provisionando ${slotId} no C6 HT ===`);
+  console.log(`\n=== Provisionando ${slotId} no C6 ${target.profile} ===`);
   const result = spawnSync(
     process.execPath,
     [
@@ -18,7 +21,7 @@ for (const slotId of externalStateSlots) {
       ...playwrightArguments,
     ],
     {
-      env: { ...process.env, PW_PROFILE: "ht" },
+      env: { ...process.env, PW_PROFILE: target.profile },
       stdio: "inherit",
     },
   );

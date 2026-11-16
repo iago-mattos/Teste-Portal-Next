@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import slots from "../tests/test-data/provisioning-slots.json" with { type: "json" };
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
+
+const target = loadC6ProvisioningTarget();
 
 const slotId = process.argv[2]?.trim().toUpperCase();
 const playwrightArguments = process.argv.slice(3);
@@ -15,8 +18,7 @@ if (!slotId || !slot || slot.stateOwner !== "c6-document-preparation") {
   );
 }
 
-const registryPath = resolve(".playwright/generated-c6-simulations/ht.json");
-const registry = JSON.parse(readFileSync(registryPath, "utf8"));
+const registry = JSON.parse(readFileSync(target.registryPath, "utf8"));
 const entry = registry.entries?.find((candidate) => candidate.slotId === slotId);
 if (!entry?.protocol || !entry?.applicant?.cpfDigits) {
   throw new Error(`${slotId} ainda não possui operação e CPF provisionados.`);
@@ -35,7 +37,7 @@ const result = spawnSync(
   {
     env: {
       ...process.env,
-      PW_PROFILE: "ht",
+      PW_PROFILE: target.profile,
       PORTAL_PROVISION_PROVIDER: "c6",
       PORTAL_PROVISION_SLOT: slotId,
     },

@@ -1,0 +1,2749 @@
+{
+  "titulo": "Casos de teste do Simulador",
+  "versao": 1,
+  "descricao": "Um caso por teste Playwright do Simulador público e das jornadas Simulador → SCCI. Gerado por `npm run casos:simulador:sincronizar` a partir de `playwright test --list`; os IDs dos testes existentes são preservados. 'notaCobertura' e 'nota' podem ser editados à mão e sobrevivem à sincronização.",
+  "ambientes": {
+    "desenv": "Desenv",
+    "ht": "HT",
+    "esteira-ht": "Esteira HT"
+  },
+  "ambientesExibidos": [
+    "desenv",
+    "esteira-ht"
+  ],
+  "escopo": [
+    "simulator/",
+    "integrations/simulator-journeys/",
+    "integrations/scci-reference/",
+    "integrations/portal-aejs/create-and-validate-simulation.spec.ts"
+  ],
+  "casos": [
+    {
+      "id": "SIM-JOR-01",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Modalidade",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Modalidade",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-02",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-03",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-04",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Residencial",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Residencial",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-05",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-06",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Comercial",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Comercial",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-07",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-08",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-09",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-10",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-11",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Crédito Garantia de Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Crédito Garantia de Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-12",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Crédito Garantia de Imóvel > Pessoa Física",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Crédito Garantia de Imóvel > Pessoa Física",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-13",
+      "secao": "Jornadas e navegação",
+      "contexto": "Menu de jornadas",
+      "regra": "Oferece exatamente as opções esperadas em Crédito Garantia de Imóvel > Pessoa Jurídica",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | menu de jornadas › oferece exatamente as opções esperadas em Crédito Garantia de Imóvel > Pessoa Jurídica",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-14",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-15",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-16",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-17",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-18",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-19",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-20",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-21",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-22",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-23",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-24",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-25",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-26",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-27",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-28",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-29",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-30",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-31",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-32",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-33",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-34",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-35",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "depende-decisao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-36",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-37",
+      "secao": "Jornadas e navegação",
+      "contexto": "Chegada à tela Dados por jornada",
+      "regra": "Leva aos Dados com os rótulos da jornada: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | chegada à tela Dados por jornada › leva aos Dados com os rótulos da jornada: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-38",
+      "secao": "Jornadas e navegação",
+      "contexto": "Voltar e trocar escolhas",
+      "regra": "Voltar retorna uma etapa por vez até a modalidade, preservando as opções de cada etapa",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | voltar e trocar escolhas › Voltar retorna uma etapa por vez até a modalidade, preservando as opções de cada etapa",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-JOR-39",
+      "secao": "Jornadas e navegação",
+      "contexto": "Voltar e trocar escolhas",
+      "regra": "Trocar PF por PJ depois de voltar não carrega rótulos nem escolhas da jornada anterior",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/journeys.spec.ts",
+          "titulo": "Simulador | voltar e trocar escolhas › trocar PF por PJ depois de voltar não carrega rótulos nem escolhas da jornada anterior",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-01",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | envio vazio",
+      "regra": "Mostra todas as validações obrigatórias e não calcula: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | envio vazio › mostra todas as validações obrigatórias e não calcula: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-02",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | envio vazio",
+      "regra": "Mostra todas as validações obrigatórias e não calcula: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | envio vazio › mostra todas as validações obrigatórias e não calcula: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-03",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | envio vazio",
+      "regra": "Mostra todas as validações obrigatórias e não calcula: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | envio vazio › mostra todas as validações obrigatórias e não calcula: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-04",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | envio vazio",
+      "regra": "Mostra todas as validações obrigatórias e não calcula: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | envio vazio › mostra todas as validações obrigatórias e não calcula: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-05",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | regras com mensagem explícita",
+      "regra": "Bloqueia financiamento superior ao valor do imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | regras com mensagem explícita › bloqueia financiamento superior ao valor do imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-06",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | regras com mensagem explícita",
+      "regra": "Idade mínima — menor de idade (17 anos e 364 dias) é recusada",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | regras com mensagem explícita › idade mínima — menor de idade (17 anos e 364 dias) é recusada",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-07",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | regras com mensagem explícita",
+      "regra": "Idade mínima — data de nascimento futura é recusada",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | regras com mensagem explícita › idade mínima — data de nascimento futura é recusada",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-08",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | regras com mensagem explícita",
+      "regra": "Idade mínima — maior de idade (19 anos) não é recusada pela regra de idade",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | regras com mensagem explícita › idade mínima — maior de idade (19 anos) não é recusada pela regra de idade",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-09",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | regras com mensagem explícita",
+      "regra": "Data de nascimento incompleta é recusada sem chamar o cálculo",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | regras com mensagem explícita › data de nascimento incompleta é recusada sem chamar o cálculo",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-10",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | data inexistente (31/02/2001)",
+      "regra": "Não avança e o usuário vê um erro",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | data inexistente (31/02/2001) › não avança e o usuário vê um erro",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-11",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | data inexistente (31/02/2001)",
+      "regra": "É recusada no formulário, sem enviar a data inexistente ao backend",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | data inexistente (31/02/2001) › é recusada no formulário, sem enviar a data inexistente ao backend",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-DADOS-12",
+      "secao": "Tela Dados: validações",
+      "contexto": "Dados | composição de renda",
+      "regra": "Co-adquirente exige data e renda e some ao desmarcar",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/data-step.spec.ts",
+          "titulo": "Simulador | Dados | composição de renda › co-adquirente exige data e renda e some ao desmarcar",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-01",
+      "secao": "Regras do admin",
+      "contexto": "Admin | valor mínimo do imóvel",
+      "regra": "Um centavo abaixo do mínimo é recusado",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | valor mínimo do imóvel › um centavo abaixo do mínimo é recusado",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-02",
+      "secao": "Regras do admin",
+      "contexto": "Admin | valor mínimo do imóvel",
+      "regra": "Exatamente o mínimo é aceito",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | valor mínimo do imóvel › exatamente o mínimo é aceito",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-03",
+      "secao": "Regras do admin",
+      "contexto": "Admin | valor mínimo do imóvel",
+      "regra": "Um centavo acima do mínimo é aceito",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | valor mínimo do imóvel › um centavo acima do mínimo é aceito",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-04",
+      "secao": "Regras do admin",
+      "contexto": "Admin | prazo customizado",
+      "regra": "Limites do admin — caso abaixo do mínimo",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | prazo customizado › limites do admin — caso abaixo do mínimo",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-05",
+      "secao": "Regras do admin",
+      "contexto": "Admin | prazo customizado",
+      "regra": "Limites do admin — caso no mínimo",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | prazo customizado › limites do admin — caso no mínimo",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-06",
+      "secao": "Regras do admin",
+      "contexto": "Admin | prazo customizado",
+      "regra": "Limites do admin — caso no máximo",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | prazo customizado › limites do admin — caso no máximo",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-07",
+      "secao": "Regras do admin",
+      "contexto": "Admin | prazo customizado",
+      "regra": "Limites do admin — caso acima do máximo",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | prazo customizado › limites do admin — caso acima do máximo",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-ADMIN-08",
+      "secao": "Regras do admin",
+      "contexto": "Admin | opções de prazo e carência",
+      "regra": "Os botões de prazo (e a lista de carência, quando exibida) coincidem com o admin",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/admin-rules.spec.ts",
+          "titulo": "Simulador | admin | opções de prazo e carência › os botões de prazo (e a lista de carência, quando exibida) coincidem com o admin",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-01",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento igual ao mínimo do tipo (20000) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento igual ao mínimo do tipo (20000) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-02",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento um centavo abaixo do mínimo do tipo é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento um centavo abaixo do mínimo do tipo é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-03",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento igual ao mínimo do tipo (20000) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento igual ao mínimo do tipo (20000) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-04",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento um centavo abaixo do mínimo do tipo é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento um centavo abaixo do mínimo do tipo é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-05",
+      "secao": "Limites do tipo de operação",
+      "regra": "Imóvel igual ao máximo do tipo (15000000) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "imóvel igual ao máximo do tipo (15000000) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-06",
+      "secao": "Limites do tipo de operação",
+      "regra": "Imóvel um centavo acima do máximo do tipo é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "imóvel um centavo acima do máximo do tipo é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-07",
+      "secao": "Limites do tipo de operação",
+      "regra": "Imóvel igual ao máximo do tipo (15000000) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "imóvel igual ao máximo do tipo (15000000) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-08",
+      "secao": "Limites do tipo de operação",
+      "regra": "Imóvel um centavo acima do máximo do tipo é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "imóvel um centavo acima do máximo do tipo é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-09",
+      "secao": "Limites do tipo de operação",
+      "regra": "Idade acima da máxima do tipo (80 anos e 3 meses) é recusada",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "idade acima da máxima do tipo (80 anos e 3 meses) é recusada",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-10",
+      "secao": "Limites do tipo de operação",
+      "regra": "Idade 70 anos + prazo 123 meses (= limite idade+prazo do tipo) é aceito",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "idade 70 anos + prazo 123 meses (= limite idade+prazo do tipo) é aceito",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-11",
+      "secao": "Limites do tipo de operação",
+      "regra": "Idade 70 anos + prazo 124 meses (acima do limite idade+prazo) é recusado",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "idade 70 anos + prazo 124 meses (acima do limite idade+prazo) é recusado",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-12",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento no LTV máximo do tipo (90%) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento no LTV máximo do tipo (90%) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-13",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento um centavo acima do LTV máximo do tipo (90%) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento um centavo acima do LTV máximo do tipo (90%) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-14",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento no LTV máximo do tipo (70%) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento no LTV máximo do tipo (70%) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-LIM-15",
+      "secao": "Limites do tipo de operação",
+      "regra": "Financiamento um centavo acima do LTV máximo do tipo (70%) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-limits.spec.ts",
+          "titulo": "financiamento um centavo acima do LTV máximo do tipo (70%) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-01",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo máximo do tipo (180 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo máximo do tipo (180 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-02",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo acima do máximo (181 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo acima do máximo (181 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-03",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-04",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-05",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo máximo do tipo (120 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo máximo do tipo (120 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-06",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo acima do máximo (121 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo acima do máximo (121 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-07",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-08",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-09",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo máximo do tipo (420 meses) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo máximo do tipo (420 meses) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-10",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo acima do máximo (421 meses) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo acima do máximo (421 meses) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-11",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo mínimo do tipo (36 meses) é aceito: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PRAZO-12",
+      "secao": "Prazo mínimo e máximo",
+      "regra": "Prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/term-limits.spec.ts",
+          "titulo": "prazo abaixo do mínimo (35 meses) é recusado: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-01",
+      "secao": "Escolha do tipo de operação",
+      "regra": "Imóvel no teto do tipo menor (1500000) usa o tipo 060",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "imóvel no teto do tipo menor (1500000) usa o tipo 060",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-02",
+      "secao": "Escolha do tipo de operação",
+      "regra": "Imóvel um centavo acima do teto do tipo menor usa o tipo 100",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "imóvel um centavo acima do teto do tipo menor usa o tipo 100",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-03",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 10% usa o tipo 400 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 10% usa o tipo 400 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-04",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 30% usa o tipo 400 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 30% usa o tipo 400 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-05",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 31% usa o tipo 401 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 31% usa o tipo 401 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-06",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 40% usa o tipo 401 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 40% usa o tipo 401 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-07",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 50% usa o tipo 401 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 50% usa o tipo 401 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-08",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 51% usa o tipo 402 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 51% usa o tipo 402 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-09",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV de 60% usa o tipo 402 (menor teto de LTV que comporta)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV de 60% usa o tipo 402 (menor teto de LTV que comporta)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-TIPO-10",
+      "secao": "Escolha do tipo de operação",
+      "regra": "LTV acima do maior teto (60%) é recusado citando o percentual correto",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/operation-type-selection.spec.ts",
+          "titulo": "LTV acima do maior teto (60%) é recusado citando o percentual correto",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-AMORT-01",
+      "secao": "Sistema de amortização",
+      "regra": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/amortization.spec.ts",
+          "titulo": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-AMORT-02",
+      "secao": "Sistema de amortização",
+      "regra": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/amortization.spec.ts",
+          "titulo": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-AMORT-03",
+      "secao": "Sistema de amortização",
+      "regra": "Tabela Price é aceita no cálculo: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/amortization.spec.ts",
+          "titulo": "Tabela Price é aceita no cálculo: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-AMORT-04",
+      "secao": "Sistema de amortização",
+      "regra": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/amortization.spec.ts",
+          "titulo": "Tabela Price é aceita no cálculo: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-CAR-01",
+      "secao": "Carência",
+      "regra": "O campo Carência só aparece quando o tipo da jornada tem carência cadastrada no SCCI",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/grace-visibility.spec.ts",
+          "titulo": "o campo Carência só aparece quando o tipo da jornada tem carência cadastrada no SCCI",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-CAR-02",
+      "secao": "Carência",
+      "regra": "Lê a Evolução da Simulação da operação com carência de 60 dias",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/grace-values-in-scci.spec.ts",
+          "titulo": "lê a Evolução da Simulação da operação com carência de 60 dias",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-CAR-03",
+      "secao": "Carência",
+      "regra": "Lê a Evolução da Simulação da operação sem carência",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/grace-values-in-scci.spec.ts",
+          "titulo": "lê a Evolução da Simulação da operação sem carência",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-CAR-04",
+      "secao": "Carência",
+      "regra": "Os valores da Evolução da Simulação no SCCI saem iguais com e sem carência (observação)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/grace-values-in-scci.spec.ts",
+          "titulo": "os valores da Evolução da Simulação no SCCI saem iguais com e sem carência (observação)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-01",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-02",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-03",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-04",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-05",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-06",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-07",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-08",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-09",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-10",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-11",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-12",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-13",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-14",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-15",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-16",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-17",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-18",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-19",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-20",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-21",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-22",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-23",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-24",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras por jornada",
+      "regra": "Exibe as seguradoras do cadastro do SCCI: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras por jornada › exibe as seguradoras do cadastro do SCCI: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-25",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-26",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-27",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-28",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-29",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SEG-30",
+      "secao": "Seguradoras",
+      "contexto": "Seguradoras | nome repetido (hipótese de Produto)",
+      "regra": "Não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/insurers.spec.ts",
+          "titulo": "Simulador | seguradoras | nome repetido (hipótese de Produto) › não repete o nome de uma seguradora em dois cards: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-01",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-02",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-03",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-04",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-05",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-06",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-07",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-08",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel da Esteira Digital > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-09",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-10",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel da Esteira Digital > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-11",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-12",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-13",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Residencial > Imóvel Particular > Poupança",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-14",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Taxa Referencial (TR)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-15",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Física > Imóvel Comercial > Imóvel Particular > Índice de Preços ao Consumidor Amplo (IPCA)",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-16",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-17",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-18",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Comercial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-19",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Empreendimento Financiado pela Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-20",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Esteira Digital",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-21",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Imóvel Particular",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-22",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Financiamento Imobiliário > Pessoa Jurídica > Imóvel Residencial > Holding Familiar",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-23",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Crédito Garantia de Imóvel > Pessoa Física > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-GRAV-24",
+      "secao": "Gravação da simulação no SCCI",
+      "contexto": "Simulação gravada e seguradoras x banco do SCCI",
+      "regra": "Grava a simulação digitada e exibe as seguradoras do cadastro: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "scci-db",
+        "grava-simulacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/simulation-database.spec.ts",
+          "titulo": "Simulador | simulação gravada e seguradoras x banco do SCCI › grava a simulação digitada e exibe as seguradoras do cadastro: Crédito Garantia de Imóvel > Pessoa Jurídica > Imóvel",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SUSP-01",
+      "secao": "Modalidades suspensas",
+      "regra": "Jornadas com grupo suspenso no SCCI não podem ser percorridas no Simulador",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/suspended-modalities.spec.ts",
+          "titulo": "jornadas com grupo suspenso no SCCI não podem ser percorridas no Simulador",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SCCI-01",
+      "secao": "Cadastro do SCCI",
+      "regra": "Todo sistema de amortização oferecido tem faixa de LTV no SCCI em todas as jornadas",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "simulator/scci-config.spec.ts",
+          "titulo": "todo sistema de amortização oferecido tem faixa de LTV no SCCI em todas as jornadas",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-SCCI-02",
+      "secao": "Cadastro do SCCI",
+      "regra": "SCCI | referência de grupos, tipos e seguradoras das jornadas do Simulador",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "vinculos": [
+        {
+          "arquivo": "integrations/scci-reference/scci-reference.spec.ts",
+          "titulo": "SCCI | referência de grupos, tipos e seguradoras das jornadas do Simulador",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-01",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta PF-SFI-ACIMA-TETO-SFH",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta PF-SFI-ACIMA-TETO-SFH",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-02",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta PJ-COMERCIAL-PARTICULAR",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta PJ-COMERCIAL-PARTICULAR",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-03",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta CREDITO-GARANTIA-PF",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta CREDITO-GARANTIA-PF",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-04",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-CARENCIA60",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-CARENCIA60",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-05",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-SEM-CARENCIA",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-SEM-CARENCIA",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-06",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria e verifica a proposta PF-PRAZO-35",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation",
+        "investigacao"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+          "titulo": "Simulador → SCCI | cria e verifica a proposta PF-PRAZO-35",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-07",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Nome da empresa acima de 40 caracteres é limitado ou recusado sem expor erro do banco",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation",
+        "pendente-produto"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/simulator-journeys/applicant-name-length.spec.ts",
+          "titulo": "nome da empresa acima de 40 caracteres é limitado ou recusado sem expor erro do banco",
+          "exato": true
+        }
+      ]
+    },
+    {
+      "id": "SIM-PROP-08",
+      "secao": "Criação de propostas no SCCI",
+      "regra": "Simulador → SCCI | cria uma proposta e valida os dados integrados",
+      "origem": "suite",
+      "automacao": "automatizado",
+      "tags": [
+        "mutation"
+      ],
+      "vinculos": [
+        {
+          "arquivo": "integrations/portal-aejs/create-and-validate-simulation.spec.ts",
+          "titulo": "Simulador → SCCI | cria uma proposta e valida os dados integrados",
+          "exato": true
+        }
+      ]
+    }
+  ]
+}

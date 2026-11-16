@@ -80,7 +80,7 @@ O fluxo atual do simulador:
 Também já existem:
 
 - autenticação do Portal por CPF/operação;
-- registro manual de uma segunda proposta que compartilha o CPF de um slot existente (`manual-shared`);
+- criação excepcional pelo SCCI de uma segunda proposta que compartilha o CPF de um slot existente (`scci-shared`), limitada ao `TIMELINE_DOCUMENTS`;
 - preparação completa de Cadastro e transição para Documentos nos fluxos de integração;
 - Page Objects para Cadastro e Documentos;
 - captura exata de `PUT /cadastro`, `POST /finalizar` e `POST /documentos`;
@@ -94,7 +94,7 @@ O simulador, isoladamente, **não** atende às três capacidades solicitadas:
 - ele cria uma proposta em Cadastro, não em Documentos nem em pré-finalização;
 - uma nova criação usa CPF diferente;
 - o Portal rejeita nova proposta pelo simulador quando já existe proposta para o mesmo CPF;
-- o segundo membro de um par do mesmo usuário precisa hoje ser criado fora do simulador e registrado como `manual-shared`;
+- o segundo membro de um par do mesmo usuário é uma exceção criada pelo simulador interno do SCCI e registrada como `scci-shared`; a criação continua dependente de captura inequívoca do protocolo real;
 - o registro atual possui slots fixos e devolve a operação já associada ao slot; ele não cria gerações descartáveis sucessivas;
 - `mark-ready` registra uma declaração operacional, mas não verifica automaticamente etapa, slots vazios ou conteúdo persistido;
 - não existe no projeto ação legítima de DELETE/reset de documento nem retorno de proposta finalizada para Cadastro.
@@ -108,11 +108,11 @@ Assim, o simulador é reutilizável como **semeador do primeiro membro e de prop
 #### Criação e identidade
 
 - criar a proposta documental A pelo simulador, com CPF válido novo;
-- criar a proposta documental B com o mesmo CPF por um mecanismo legítimo externo já aceito pelo projeto;
-- registrar B como `manual-shared` de A;
+- criar a proposta documental B pelo fluxo excepcional do simulador interno do SCCI, com o mesmo CPF de A;
+- criar B pelo fluxo SCCI compartilhado e registrá-la como `scci-shared` de A;
 - não publicar CPF completo em documentação ou logs de relatório.
 
-O projeto não possui hoje automação para criar B. O Admin automatizado apenas gera o link de acesso; ele não cria propostas.
+O projeto possui agora um fluxo isolado para criar B pelo SCCI. Ele não substitui o simulador React: é uma exceção para o slot `TIMELINE_DOCUMENTS`, pois o Portal bloqueia a segunda proposta com CPF compartilhado.
 
 #### Estado produzido e preparação
 
@@ -349,7 +349,7 @@ Depois do cenário:
 | Reutilizar operação documental já preenchida | Colisão com arquivo anterior | Exigir slots vazios e geração exclusiva |
 | Rodar dois consumidores sobre a mesma seed | Estado irreversível e resultados não determinísticos | Lock por perfil + geração e workers serializados |
 | Reutilizar slot fixo já associado a protocolo | O provisionador devolve operação antiga | Geração/run ID para consumíveis; não sobrescrever histórico |
-| Criar automaticamente o segundo membro do mesmo CPF | Portal rejeita duplicidade | Manter `manual-shared` até existir mecanismo legítimo automatizado |
+| Criar automaticamente o segundo membro do mesmo CPF | Portal rejeita duplicidade | Usar a exceção `scci-shared`; se a captura do protocolo ficar incerta, bloquear e recuperar somente a operação real antes da revalidação |
 | Quantidade documental variar por configuração | Menos slots que o cenário espera | Descoberta no setup; exigir mínimo e provisionar novo batch quando necessário |
 | Tentar restaurar documento sem DELETE legítimo | Teardown fictício | Classificar como consumível e descartar a operação |
 | Finalização avançar a fase | Seed não reutilizável | Uma proposta nova por execução |

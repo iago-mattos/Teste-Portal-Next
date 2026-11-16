@@ -16,6 +16,7 @@ import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningSlotId,
 } from "../types/provisioning";
+import { assertC6ProvisioningTarget } from "../config/c6-provisioning-target";
 
 test.use({ skipPortalSessionBootstrap: true });
 
@@ -25,20 +26,6 @@ function resolveSlot(): ProvisioningSlotId {
     throw new Error("Defina PORTAL_PROVISION_SLOT com um slot válido.");
   }
   return value as ProvisioningSlotId;
-}
-
-function assertC6HtTarget(): void {
-  const profile = process.env.PW_PROFILE?.trim().toLowerCase();
-  const portalHost = new URL(process.env.PORTAL_URL ?? "").host;
-  if (
-    profile !== "ht" ||
-    portalHost !== "minhaproposta-dev.prognum.com.br" ||
-    process.env.PORTAL_PROVISION_PROVIDER !== "c6"
-  ) {
-    throw new Error(
-      "Preparação do imóvel bloqueada: use exclusivamente o Portal C6 HT.",
-    );
-  }
 }
 
 async function attachEntry(
@@ -52,10 +39,10 @@ async function attachEntry(
 }
 
 test(
-  "C6 HT | comprova no Portal o endereço do imóvel preparado no SCCI",
+  "C6 | comprova no Portal o endereço do imóvel preparado no SCCI",
   { tag: ["@provisioning", "@readonly"] },
   async ({ page, portalConfig, proposalPage }, testInfo) => {
-    assertC6HtTarget();
+    assertC6ProvisioningTarget();
     const slotId = resolveSlot();
     const slot = getProvisioningSlot(slotId);
     let entry = await getGeneratedSimulationForSlot(slotId);

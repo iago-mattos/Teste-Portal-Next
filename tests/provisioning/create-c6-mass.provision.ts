@@ -25,6 +25,7 @@ import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningSlotId,
 } from "../types/provisioning";
+import { assertC6ProvisioningTarget } from "../config/c6-provisioning-target";
 
 function resolveProvisioningSlot(): ProvisioningSlotId {
   const value = process.env.PORTAL_PROVISION_SLOT?.trim().toUpperCase();
@@ -34,30 +35,6 @@ function resolveProvisioningSlot(): ProvisioningSlotId {
     );
   }
   return value as ProvisioningSlotId;
-}
-
-function assertC6HtTarget(): void {
-  const profile = process.env.PW_PROFILE?.trim().toLowerCase();
-  const aejsHost = new URL(process.env.AEJS_URL ?? "").host;
-  const usePlatformAccess = process.env.AEJS_USE_PLATFORM_ACCESS;
-  const path = process.env.AEJS_PATH?.trim() ?? "";
-
-  if (profile !== "ht") {
-    throw new Error(`Provisionamento C6 bloqueado no perfil ${profile || "vazio"}.`);
-  }
-  if (aejsHost !== "c6ht.prognum.com.br") {
-    throw new Error(
-      `Provisionamento C6 bloqueado: AEJS_URL aponta para ${aejsHost || "host vazio"}.`,
-    );
-  }
-  if (usePlatformAccess !== "true" || path) {
-    throw new Error(
-      "Provisionamento C6 HT exige AEJS_USE_PLATFORM_ACCESS=true e AEJS_PATH vazio.",
-    );
-  }
-  if (process.env.PORTAL_PROVISION_PROVIDER !== "c6") {
-    throw new Error("Provisionamento C6 exige PORTAL_PROVISION_PROVIDER=c6.");
-  }
 }
 
 async function attachEntry(
@@ -71,10 +48,10 @@ async function attachEntry(
 }
 
 test(
-  "C6 HT | cria a proposta e prepara endereços no SCCI",
+  "C6 | cria a proposta e prepara endereços no SCCI",
   { tag: ["@provisioning", "@mutation"] },
   async ({ aejsPage, aejsConfig }, testInfo) => {
-    assertC6HtTarget();
+    assertC6ProvisioningTarget();
 
     const slotId = resolveProvisioningSlot();
     const slot = getProvisioningSlot(slotId);
@@ -92,7 +69,7 @@ test(
         await test.step("simula e grava a proposta no C6", async () => {
           const simulation = new AejsC6SimulationPage(aejsPage);
           await simulation.open();
-          const usesSharedCpf = slot.creationMode === "simulator-shared";
+          const usesSharedCpf = slot.creationMode === "scci-shared";
           const expectedCreatedOperation = usesSharedCpf
             ? await getExpectedNextOperationForActiveRun()
             : undefined;

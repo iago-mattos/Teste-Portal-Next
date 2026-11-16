@@ -8,6 +8,9 @@ import {
 import { normalizeWhitespace } from "../../helpers/strings";
 
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const externalStateReadonly = {
+  tag: ["@functional", "@readonly", "@external-state"],
+};
 
 test.describe("Minhas Propostas", () => {
   test.beforeEach(async ({ proposalsPage, portalConfig, portalSession }, testInfo) => {
@@ -169,7 +172,7 @@ test.describe("Minhas Propostas", () => {
 
   test(
     "PROP-07 | Deverá aparecer em “Etapa” “proposta expirada” de forma automática quando atingir parametrizado em uma das tarefas sem atuação do cliente.",
-    functionalReadonly,
+    externalStateReadonly,
     async ({ proposalsPage, portalConfig }) => {
       const proposalId = portalConfig.testData.propostaExpiradaId;
       if (!proposalId) {
@@ -223,7 +226,7 @@ test.describe("Minhas Propostas", () => {
 
   test(
     "PROP-10 | Simulações canceladas acimas de 30 dias não veremos no resumo",
-    functionalReadonly,
+    externalStateReadonly,
     async ({ proposalsPage, portalConfig }) => {
       const proposalId = portalConfig.testData.propostaCanceladaMais30DiasId;
       if (!proposalId) {
@@ -238,7 +241,7 @@ test.describe("Minhas Propostas", () => {
 
   test(
     "PROP-11 | Simulações canceladas até e igual 30 dias deverão constar em tela",
-    functionalReadonly,
+    externalStateReadonly,
     async ({ proposalsPage, portalConfig }) => {
       const proposalId = portalConfig.testData.propostaCanceladaAte30DiasId;
       if (!proposalId) {
@@ -254,7 +257,7 @@ test.describe("Minhas Propostas", () => {
 
   test(
     "PROP-12 | Simulações canceladas na Prognum, também precisam estar canceladas no portal, tem que refletir exatamente o que está na Prognum em relação a proposta",
-    functionalReadonly,
+    externalStateReadonly,
     async ({ proposalsPage, portalConfig }) => {
       const proposalId = portalConfig.testData.propostaCanceladaAte30DiasId;
       if (!proposalId) {

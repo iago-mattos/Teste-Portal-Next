@@ -19,6 +19,7 @@ import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningSlotId,
 } from "../types/provisioning";
+import { assertProvisioningTarget } from "../config/provisioning-target";
 
 test.use({ skipPortalSessionBootstrap: true });
 
@@ -36,21 +37,6 @@ function resolveDocumentSlot(): ProvisioningSlotId {
   return slotId;
 }
 
-function assertC6HtTarget(): void {
-  const profile = process.env.PW_PROFILE?.trim().toLowerCase();
-  const portalHost = new URL(process.env.PORTAL_URL ?? "").host;
-
-  if (
-    profile !== "ht" ||
-    portalHost !== "minhaproposta-dev.prognum.com.br" ||
-    process.env.PORTAL_PROVISION_PROVIDER !== "c6"
-  ) {
-    throw new Error(
-      "Preparação documental bloqueada: use exclusivamente o Portal C6 HT.",
-    );
-  }
-}
-
 async function attachEntry(
   testInfo: TestInfo,
   entry: GeneratedSimulationEntry,
@@ -62,10 +48,10 @@ async function attachEntry(
 }
 
 test(
-  "C6 HT | confirma a proposta e comprova a etapa Documentos",
+  "C6 | confirma a proposta e comprova a etapa Documentos",
   { tag: ["@provisioning", "@mutation"] },
   async ({ page, portalConfig, proposalPage }, testInfo) => {
-    assertC6HtTarget();
+    assertProvisioningTarget();
     const slotId = resolveDocumentSlot();
     let entry = await getGeneratedSimulationForSlot(slotId);
     if (!entry?.protocol) {

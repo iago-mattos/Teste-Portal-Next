@@ -1,0 +1,129 @@
+{
+  "versao": 1,
+  "atualizadoEm": "2026-11-16T17:17:07.031Z",
+  "execucoes": [
+    {
+      "id": "2026-11-16T17:17:06.979Z-esteira-ht",
+      "ambiente": "esteira-ht",
+      "portal": "portal-desenv.prognum.com.br",
+      "inicio": "2026-11-16T17:14:05.603Z",
+      "fim": "2026-11-16T17:17:06.979Z",
+      "duracaoMs": 181389,
+      "status": "failed",
+      "maquina": "local",
+      "projetos": [
+        "simulator-journeys"
+      ],
+      "testes": 6,
+      "casos": 1,
+      "totais": {
+        "falhou": 1
+      }
+    },
+    {
+      "id": "2026-11-16T17:06:39.827Z-esteira-ht",
+      "ambiente": "esteira-ht",
+      "portal": "portal-desenv.prognum.com.br",
+      "inicio": "2026-11-16T17:04:46.198Z",
+      "fim": "2026-11-16T17:06:39.827Z",
+      "duracaoMs": 113661,
+      "status": "failed",
+      "maquina": "local",
+      "projetos": [
+        "simulator-integration",
+        "simulator-journeys"
+      ],
+      "testes": 7,
+      "casos": 1,
+      "totais": {
+        "ok": 1
+      }
+    }
+  ],
+  "casos": {
+    "INTEG-33": {
+      "esteira-ht": {
+        "atual": {
+          "status": "falhou",
+          "obs": "1 de 6 testes falharam.\n“Simulador → SCCI | cria e verifica a proposta PF-IPCA-CARENCIA60”: Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela.",
+          "data": "2026-11-16T17:17:06.979Z",
+          "origem": "automatico",
+          "execucao": "2026-11-16T17:17:06.979Z-esteira-ht",
+          "testes": [
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta PF-SFI-ACIMA-TETO-SFH",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "ok",
+              "duracaoMs": 29809
+            },
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta PJ-COMERCIAL-PARTICULAR",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "ok",
+              "duracaoMs": 31363
+            },
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta CREDITO-GARANTIA-PF",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "ok",
+              "duracaoMs": 31036
+            },
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-CARENCIA60",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "falhou",
+              "duracaoMs": 9343,
+              "erro": "Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela.",
+              "falha": {
+                "motivo": "Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela."
+              }
+            },
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta PF-IPCA-SEM-CARENCIA",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "ok",
+              "duracaoMs": 30698
+            },
+            {
+              "titulo": "Simulador → SCCI | cria e verifica a proposta PF-PRAZO-35",
+              "arquivo": "integrations/simulator-journeys/create-and-verify-proposals.spec.ts",
+              "linha": 93,
+              "projeto": "simulator-journeys",
+              "status": "ok",
+              "duracaoMs": 29518
+            }
+          ]
+        },
+        "historico": [
+          {
+            "status": "falhou",
+            "data": "2026-11-16T17:17:06.979Z",
+            "origem": "automatico",
+            "obs": "1 de 6 testes falharam.\n“Simulador → SCCI | cria e verifica a proposta PF-IPCA-CARENCIA60”: Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela.",
+            "execucao": "2026-11-16T17:17:06.979Z-esteira-ht"
+          },
+          {
+            "status": "ok",
+            "data": "2026-11-16T17:06:39.827Z",
+            "origem": "automatico",
+            "obs": "Passou nos 7 testes automatizados (1 min 23 s). investigacao: Telefone da PJ (final 98078467) NÃO encontrado nas abas varridas (Identificação Pessoa Jurídica, Sócios/Representantes, Outras Informações); local de gravação a confirmar com Produto. · investigacao: PF-PRAZO-35: prazo digitado 35; prazo gravado no SCCI 35. Produto ainda não definiu se o prazo mínimo do tipo (36) deve ser exigido ou vale só o do admin (12): o teste registra se o envio é recusado ou o que o SCCI grava.",
+            "execucao": "2026-11-16T17:06:39.827Z-esteira-ht"
+          }
+        ]
+      }
+    }
+  },
+  "semCaso": {
+    "esteira-ht": []
+  }
+}

@@ -5,6 +5,7 @@ import slots from "../tests/test-data/provisioning-slots.json" with { type: "jso
 const phaseSlots = slots.filter(
   (slot) => slot.stateOwner === "c6-phase-preparation",
 );
+const playwrightArguments = process.argv.slice(2);
 
 for (const slot of phaseSlots) {
   console.log(
@@ -12,7 +13,11 @@ for (const slot of phaseSlots) {
   );
   let result = spawnSync(
     process.execPath,
-    [resolve("scripts/run-c6-phase-preparation.mjs"), slot.id],
+    [
+      resolve("scripts/run-c6-phase-preparation.mjs"),
+      slot.id,
+      ...playwrightArguments,
+    ],
     { env: process.env, stdio: "inherit" },
   );
   if (result.error) throw result.error;
@@ -22,7 +27,11 @@ for (const slot of phaseSlots) {
     );
     result = spawnSync(
       process.execPath,
-      [resolve("scripts/run-c6-phase-preparation.mjs"), slot.id],
+      [
+        resolve("scripts/run-c6-phase-preparation.mjs"),
+        slot.id,
+        ...playwrightArguments,
+      ],
       {
         env: { ...process.env, C6_PHASE_VERIFY_ONLY: "true" },
         stdio: "inherit",

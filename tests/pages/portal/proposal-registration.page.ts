@@ -11,6 +11,19 @@ export interface ProposalFinalizationResponses {
   readonly finalizeResponse: Response;
 }
 
+export interface PropertyPostalCodeContract {
+  readonly postalCode: string;
+  readonly streetNumber?: string;
+  readonly complement?: string;
+}
+
+export interface PersistedPropertyAddress {
+  readonly postalCode: string;
+  readonly addressLine: string;
+  readonly state?: string;
+  readonly municipality?: string;
+}
+
 /** Jornada reutilizável do Cadastro sem composição de renda ou garantidor. */
 export class ProposalRegistrationPage {
   constructor(
@@ -128,6 +141,123 @@ export class ProposalRegistrationPage {
       addressField,
       "O Portal manteve o endereço do imóvel desabilitado e não forneceu um valor vindo da simulação.",
     ).toHaveValue(/\S/);
+  }
+
+  /**
+   * Preenche o CEP do imóvel na aba Imóvel e aguarda a consulta real de CEP
+   * (GET /api/portal/cep) preencher o endereço. Não salva sozinho — combine
+   * com {@link persistPropertyWithoutFinalizing} ou {@link finalize} para
+   * provocar o PUT real de cadastro.
+   */
+  async fillPropertyPostalCode(
+    operationNumber: string,
+    contract: PropertyPostalCodeContract,
+  ): Promise<PersistedPropertyAddress> {
+    await this.ensureTabSelected(operationNumber, "Imóvel");
+
+    const postalCodeField = this.proposalPage.getVisibleFieldByName(
+      "IMOVEL_OPERACAO.NU_CEP",
+    );
+    await expect(
+      postalCodeField,
+      "O Portal deve exibir o CEP do imóvel na aba Imóvel.",
+    ).toBeVisible();
+
+    const cepResponsePromise = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === "GET" &&
+        new URL(response.url()).pathname === "/api/portal/cep" &&
+        new URL(response.url()).searchParams.get("cep") === contract.postalCode,
+      { timeout: 30_000 },
+    );
+    await postalCodeField.fill(contract.postalCode);
+    await postalCodeField.blur();
+    const cepResponse = await cepResponsePromise;
+    if (!cepResponse.ok()) {
+      throw new Error(
+        `A consulta real de CEP do imóvel respondeu HTTP ${cepResponse.status()}.`,
+      );
+    }
+    const cepPayload = (await cepResponse.json().catch(() => ({}))) as Record<
+      string,
+      string
+    >;
+
+    const addressField = this.proposalPage.getVisibleFieldByName(
+      "IMOVEL_OPERACAO.NO_ENDERECO",
+    );
+    await expect(
+      addressField,
+      "O Portal deve preencher o endereço do imóvel após a consulta real de CEP.",
+    ).toHaveValue(/\S/, { timeout: 30_000 });
+
+    // O imóvel não tem um campo separado de número (diferente de PESSOA/
+    // CONJUGE, que têm NU_APTO): o número compõe o próprio NO_ENDERECO,
+    // igual ao fluxo já usado no SCCI (ver c6-provisioning-data.ts).
+    const returnedAddressLine = (await addressField.inputValue()).trim();
+    if (!returnedAddressLine) {
+      throw new Error(
+        "A consulta de CEP do imóvel não retornou um logradouro para compor o endereço.",
+      );
+    }
+    const addressLine = contract.streetNumber
+      ? `${returnedAddressLine}, ${contract.streetNumber}`
+      : returnedAddressLine;
+
+    if (contract.streetNumber) {
+      await addressField.fill(addressLine);
+      await addressField.blur();
+      await expect(addressField).toHaveValue(addressLine);
+    }
+
+    if (contract.complement !== undefined) {
+      await this.fillField("IMOVEL_OPERACAO.NO_COMPLEMENTO", contract.complement);
+    }
+
+    const state = cepPayload["IMOVEL_OPERACAO.CO_UF"]?.trim();
+    const municipality = cepPayload["IMOVEL_OPERACAO.CO_MUNICIPIO"]?.trim();
+
+    return {
+      postalCode: contract.postalCode,
+      addressLine,
+      ...(state ? { state } : {}),
+      ...(municipality ? { municipality } : {}),
+    };
+  }
+
+  /**
+   * Comprova, após reload/reabertura, que CEP, endereço completo (com
+   * número) e complemento do imóvel persistiram de verdade.
+   */
+  async expectPersistedPropertyPostalCode(
+    operationNumber: string,
+    contract: PropertyPostalCodeContract,
+    expectedAddressLine: string,
+  ): Promise<void> {
+    await this.ensureTabSelected(operationNumber, "Imóvel");
+
+    const postalCodeField = this.proposalPage.getVisibleFieldByName(
+      "IMOVEL_OPERACAO.NU_CEP",
+    );
+    await expect(
+      postalCodeField,
+      "O CEP do imóvel não persistiu após o reload.",
+    ).toHaveValue(new RegExp(contract.postalCode));
+
+    const addressField = this.proposalPage.getVisibleFieldByName(
+      "IMOVEL_OPERACAO.NO_ENDERECO",
+    );
+    await expect(
+      addressField,
+      "O endereço completo do imóvel (com número) não persistiu após o reload.",
+    ).toHaveValue(expectedAddressLine);
+
+    if (contract.complement !== undefined) {
+      await expect(
+        this.proposalPage.getVisibleFieldByName("IMOVEL_OPERACAO.NO_COMPLEMENTO"),
+        "O complemento do imóvel não persistiu após o reload.",
+      ).toHaveValue(contract.complement);
+    }
   }
 
   async fillParticipantResidentialAddress(

@@ -13,6 +13,7 @@ import { parseEnv } from "node:util";
 const playwrightBin = resolve("node_modules/.bin/playwright");
 const outputRoot = resolve(".playwright/all-report");
 const collectedBlobs = resolve(outputRoot, "blobs");
+const provisioningBlobRoot = resolve(outputRoot, "provisioning-blobs");
 const forwardedArgs = process.argv.slice(2);
 
 function resolveSelectedProfile() {
@@ -61,26 +62,97 @@ function printReportLocations({ provisioningOnly = false } = {}) {
   console.log("Relatorio PDF: output/pdf/playwright-report.pdf");
 }
 
-const selectedProfile = resolveSelectedProfile();
-const reusePreparedC6Batch =
-  process.env.PW_REUSE_C6_PROVISIONING?.trim().toLowerCase() === "true";
-const sessionSwitchingReadonlyCases =
-  "PROP-07|PROP-08|PROP-09|PROP-10|PROP-11|PROP-12|PROP-17|TIMELINE-05|TIMELINE-06";
-const postWorkflowFunctionalCases = "PROP-03";
+// Cada invocação de `playwright test` feita pelo provisionamento grava seu
+// próprio blob em `provisioning-blobs/<etapa>-<slot>/`. Aqui eles são
+// recolhidos para `collectedBlobs` com nomes únicos, sem apagar nada, para
+// que a criação pelo simulador entre no relatório consolidado final mesmo se
+// o lote falhar no meio.
+function collectProvisioningBlobs() {
+  if (!existsSync(provisioningBlobRoot)) return;
 
-if (selectedProfile === "ht" && !reusePreparedC6Batch) {
+  for (const stepDirectory of readdirSync(provisioningBlobRoot, {
+    withFileTypes: true,
+  })) {
+    if (!stepDirectory.isDirectory()) continue;
+    const stepPath = resolve(provisioningBlobRoot, stepDirectory.name);
+    for (const file of readdirSync(stepPath, { withFileTypes: true })) {
+      if (!file.isFile() || !file.name.endsWith(".zip")) continue;
+      copyFileSync(
+        resolve(stepPath, file.name),
+        resolve(collectedBlobs, `provisioning-${stepDirectory.name}-${file.name}`),
+      );
+    }
+  }
+}
+
+function mergeReports() {
+  const mergeResult = spawnSync(
+    playwrightBin,
+    [
+      "merge-reports",
+      "--reporter=html,@prognum/playwright-report/reporter,./scripts/casos-de-teste/reporter.mjs",
+      collectedBlobs,
+    ],
+    {
+      env: {
+        ...process.env,
+        PLAYWRIGHT_HTML_OPEN: "never",
+      },
+      stdio: "inherit",
+    },
+  );
+  if (mergeResult.status !== 0) return false;
+  return buildPortalReport();
+}
+
+const selectedProfile = resolveSelectedProfile();
+const reusePreparedBatch =
+  process.env.PW_REUSE_C6_PROVISIONING?.trim().toLowerCase() === "true" ||
+  process.env.PW_REUSE_PROVISIONING?.trim().toLowerCase() === "true";
+const usesFreshC6Provisioning = selectedProfile === "ht";
+const usesFreshEsteiraHtProvisioning = selectedProfile === "esteira-ht";
+const usesFreshProvisioning =
+  usesFreshC6Provisioning || usesFreshEsteiraHtProvisioning;
+const freshProvisioningScript = usesFreshC6Provisioning
+  ? "scripts/run-c6-fresh-provisioning.mjs"
+  : "scripts/run-esteira-ht-fresh-provisioning.mjs";
+const sessionSwitchingReadonlyCases =
+  "PROP-08|PROP-09|PROP-17|TIMELINE-05";
+const postWorkflowFunctionalCases = "PROP-03";
+const externalStateTag = "@external-state";
+const parallelReadonlyExclusions = `${sessionSwitchingReadonlyCases}|${externalStateTag}`;
+
+// A suíte principal cria e valida somente estados reproduzíveis. Expiração e
+// cancelamento continuam em um comando separado porque dependem de preparação
+// externa de banco/SSH.
+process.env.PW_EXCLUDE_EXTERNAL_STATES = "true";
+
+// O diretório de blobs é inicializado antes do provisionamento (e não
+// apagado depois) para que a criação das massas pelo simulador — o foco do
+// fluxo — entre no relatório consolidado final, inclusive se o lote falhar
+// no meio do caminho.
+rmSync(outputRoot, { recursive: true, force: true });
+mkdirSync(collectedBlobs, { recursive: true });
+mkdirSync(provisioningBlobRoot, { recursive: true });
+process.env.PW_PROVISIONING_BLOB_ROOT = provisioningBlobRoot;
+
+if (usesFreshProvisioning && !reusePreparedBatch) {
   try {
     runNodeStep(
-      "provisionar e preparar massas frescas do C6 HT",
-      "scripts/run-c6-fresh-provisioning.mjs",
+      `provisionar e preparar massas frescas do perfil ${selectedProfile}`,
+      freshProvisioningScript,
+      forwardedArgs,
     );
   } catch (error) {
-    if (buildPortalReport()) printReportLocations({ provisioningOnly: true });
+    collectProvisioningBlobs();
+    const reportBuilt = mergeReports();
+    if (reportBuilt) printReportLocations({ provisioningOnly: true });
     throw error;
   }
-} else if (selectedProfile === "ht") {
+  collectProvisioningBlobs();
+} else if (usesFreshProvisioning) {
   console.log(
-    "\n=== reutilizar lote C6 HT previamente preparado e publicado ===",
+    `\n=== reutilizar lote ${selectedProfile} previamente preparado e publicado ===`,
   );
 }
 runNodeStep(
@@ -98,7 +170,7 @@ const phases = [
       "--project=smoke",
       "--project=functional-readonly",
       "--grep-invert",
-      sessionSwitchingReadonlyCases,
+      parallelReadonlyExclusions,
     ],
     env: { PW_FUNCTIONAL_READONLY_WORKERS: "3" },
   },
@@ -122,11 +194,6 @@ const phases = [
       "--grep-invert",
       postWorkflowFunctionalCases,
     ],
-  },
-  {
-    name: "simulator",
-    description: "provisionamento Simulador -> SCCI",
-    args: ["test", "--project=simulator-integration"],
   },
   {
     name: "integration-mutation",
@@ -153,13 +220,17 @@ const phases = [
   {
     name: "integration-readonly",
     description: "validacoes SCCI apos as preparacoes",
-    args: ["test", "--project=integration", "--grep", "@readonly"],
+    args: [
+      "test",
+      "--project=integration",
+      "--grep",
+      "@readonly",
+      "--grep-invert",
+      externalStateTag,
+    ],
     env: { PW_INTEGRATION_WORKERS: "1" },
   },
 ];
-
-rmSync(outputRoot, { recursive: true, force: true });
-mkdirSync(collectedBlobs, { recursive: true });
 
 let failed = false;
 for (const phase of phases) {
@@ -182,13 +253,13 @@ for (const phase of phases) {
   if (result.status !== 0) failed = true;
 
   if (
-    selectedProfile === "ht" &&
+    usesFreshProvisioning &&
     phase.name === "integration-mutation" &&
     result.status === 0
   ) {
     runNodeStep(
       "republicar contratos capturados durante as integrações",
-      "scripts/run-c6-fresh-provisioning.mjs",
+      freshProvisioningScript,
       ["--publish-only"],
     );
   }
@@ -203,26 +274,7 @@ for (const phase of phases) {
   }
 }
 
-const mergeResult = spawnSync(
-  playwrightBin,
-  [
-    "merge-reports",
-    "--reporter=html,@prognum/playwright-report/reporter",
-    collectedBlobs,
-  ],
-  {
-    env: {
-      ...process.env,
-      PLAYWRIGHT_HTML_OPEN: "never",
-    },
-    stdio: "inherit",
-  },
-);
-if (mergeResult.status !== 0) failed = true;
-
-if (mergeResult.status === 0) {
-  if (!buildPortalReport()) failed = true;
-}
+if (!mergeReports()) failed = true;
 
 printReportLocations();
 process.exitCode = failed ? 1 : 0;

@@ -7,26 +7,11 @@ import {
 } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import slots from "../tests/test-data/provisioning-slots.json" with { type: "json" };
-import { loadEnvironmentProfile } from "./environment-profile.mjs";
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
 
 const dryRun = process.argv.includes("--dry-run");
-const profile = loadEnvironmentProfile().name;
-const aejsHost = new URL(process.env.AEJS_URL ?? "").host;
-
-if (profile !== "ht") {
-  throw new Error(`Execução C6 fresca exige PW_PROFILE=ht; recebido ${profile}.`);
-}
-if (aejsHost !== "c6ht.prognum.com.br") {
-  throw new Error(
-    `Execução C6 fresca bloqueada para o host ${aejsHost || "vazio"}.`,
-  );
-}
-
-const registryPath = resolve(".playwright/generated-c6-simulations/ht.json");
-const historyDirectory = resolve(
-  ".playwright/generated-c6-simulations/history/ht",
-);
-const currentRunPath = resolve(".playwright/c6-runs/ht/current.json");
+const target = loadC6ProvisioningTarget();
+const { profile, registryPath, historyDirectory, currentRunPath } = target;
 
 async function readExistingRegistry() {
   try {
@@ -58,7 +43,7 @@ const archivePath = existingRegistry
 
 const run = {
   id: runId,
-  profile: "ht",
+  profile,
   provider: "c6",
   createdAt,
   status: "initialized",
@@ -73,7 +58,7 @@ const run = {
     .map((slot) => slot.id),
 };
 
-console.log(`Nova execução C6: ${run.id}`);
+console.log(`Nova execução C6 ${profile}: ${run.id}`);
 console.log(`Massas frescas: ${run.freshSlotIds.join(", ")}`);
 console.log(`Massas externas preservadas: ${run.externalSlotIds.join(", ")}`);
 console.log(`Massas sob demanda: ${run.onDemandSlotIds.join(", ")}`);

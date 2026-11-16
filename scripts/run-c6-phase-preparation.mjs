@@ -1,6 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import slots from "../tests/test-data/provisioning-slots.json" with { type: "json" };
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
+
+const target = loadC6ProvisioningTarget();
 
 const slotId = process.argv[2]?.trim().toUpperCase();
 const playwrightArguments = process.argv.slice(3);
@@ -27,7 +30,7 @@ const result = spawnSync(
   {
     env: {
       ...process.env,
-      PW_PROFILE: "ht",
+      PW_PROFILE: target.profile,
       PORTAL_PROVISION_PROVIDER: "c6",
       PORTAL_PROVISION_SLOT: slotId,
     },

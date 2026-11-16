@@ -56,7 +56,7 @@ async function openCancellationSummary(
 test.describe("Portal → SCCI | idade das propostas canceladas", () => {
   test(
     "cancelada há até 30 dias permanece visível e possui data coerente no SCCI",
-    { tag: ["@integration", "@readonly"] },
+    { tag: ["@integration", "@readonly", "@external-state"] },
     async ({ aejsPage, portalConfig, portalSession, proposalsPage }) => {
       const operation = portalConfig.testData.propostaCanceladaAte30DiasId;
       if (!operation) {
@@ -83,7 +83,7 @@ test.describe("Portal → SCCI | idade das propostas canceladas", () => {
 
   test(
     "cancelada há mais de 30 dias não aparece, mas sua existência e data são comprovadas no SCCI",
-    { tag: ["@integration", "@readonly"] },
+    { tag: ["@integration", "@readonly", "@external-state"] },
     async ({ aejsPage, portalConfig, portalSession, proposalsPage }) => {
       const operation = portalConfig.testData.propostaCanceladaMais30DiasId;
       if (!operation) {

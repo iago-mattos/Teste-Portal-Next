@@ -10,12 +10,16 @@ import {
   reserveProvisioningSlot,
   type GeneratedSimulationEntry,
 } from "../../services/generated-simulation-registry";
-import { getDigitalMortgageSimulation } from "../../test-data/simulator-data";
+import {
+  getDigitalMortgageSimulation,
+  SIMULATOR_INITIAL_PROCESS_STATE,
+} from "../../test-data/simulator-data";
 import { getProvisioningSlot } from "../../test-data/provisioning-data";
 import {
   PROVISIONING_SLOT_IDS,
   type ProvisioningSlotId,
 } from "../../types/provisioning";
+import { assertEsteiraHtProvisioningTarget } from "../../config/esteira-ht-provisioning-target";
 
 function resolveProvisioningSlot(): ProvisioningSlotId {
   const value =
@@ -26,29 +30,6 @@ function resolveProvisioningSlot(): ProvisioningSlotId {
     );
   }
   return value as ProvisioningSlotId;
-}
-
-function assertEsteiraHtProvisioningTarget(): void {
-  const portalHost = new URL(process.env.PORTAL_URL ?? "").host;
-  const aejsHost = new URL(process.env.AEJS_URL ?? "").host;
-  const usePlatformAccess = process.env.AEJS_USE_PLATFORM_ACCESS;
-  const path = process.env.AEJS_PATH?.trim() ?? "";
-
-  if (portalHost !== "portal-desenv.prognum.com.br") {
-    throw new Error(
-      `Provisionamento bloqueado: PORTAL_URL aponta para ${portalHost || "host vazio"}.`,
-    );
-  }
-  if (aejsHost !== "esteiradigital-ht.prognum.com.br") {
-    throw new Error(
-      `Provisionamento bloqueado: AEJS_URL aponta para ${aejsHost || "host vazio"}.`,
-    );
-  }
-  if (usePlatformAccess !== "false" || path) {
-    throw new Error(
-      "Provisionamento bloqueado: a EsteiraHT exige login direto, AEJS_USE_PLATFORM_ACCESS=false e AEJS_PATH vazio.",
-    );
-  }
 }
 
 function formatCurrencyFromCents(value: string): string {
@@ -116,6 +97,13 @@ test(
     const scenario = getDigitalMortgageSimulation();
     const slotId = resolveProvisioningSlot();
     const slot = getProvisioningSlot(slotId);
+    if (slot.creationMode === "scci-shared") {
+      throw new Error(
+        `${slotId} usa CPF compartilhado e não pode ser criado pelo simulador React ` +
+          "— a execução real comprovou que o Portal recusa a segunda proposta. Use " +
+          "scripts/run-esteira-ht-scci-shared-creation.mjs (ou o dispatcher do lote).",
+      );
+    }
     const reservation = await reserveProvisioningSlot(slotId, scenario);
     const simulator = new PortalSimulatorPage(page);
     let generatedEntry = reservation;
@@ -245,6 +233,28 @@ test(
           .poll(async () => (await control.inputValue()).trim())
           .toBe(expectedValue);
       }
+    });
+
+    await test.step("valida a fase inicial e o andamento do processo", async () => {
+      await operationsPage.openProcessProgress();
+
+      for (const task of SIMULATOR_INITIAL_PROCESS_STATE.tasks) {
+        const row = operationsPage.getProcessTaskRow(task.code);
+        await expect(row).toHaveCount(1);
+        await expect(
+          row.getByRole("gridcell", { name: task.title, exact: true }),
+        ).toBeVisible();
+        await expect(
+          row.getByRole("gridcell", { name: task.status, exact: true }),
+        ).toBeVisible();
+      }
+      // Somente as tarefas esperadas: a criação não pode avançar o fluxo nem duplicá-lo.
+      await expect(
+        operationsPage.processProgressGrid.getByRole("row"),
+      ).toHaveCount(SIMULATOR_INITIAL_PROCESS_STATE.tasks.length + 1);
+      await expect(operationsPage.openedCurrentPhase).toHaveValue(
+        SIMULATOR_INITIAL_PROCESS_STATE.phase,
+      );
     });
 
     generatedEntry = await markGeneratedSimulationValidated(reservation.id);

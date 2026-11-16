@@ -191,14 +191,9 @@ vez de criar propostas duplicadas. Dos 15 papéis, 14 são criados pelo simulado
 `TIMELINE_DOCUMENTS` é ignorado deliberadamente porque precisa compartilhar o
 CPF de `DEFAULT` para validar várias propostas no mesmo login.
 
-Depois de criar manualmente a segunda proposta com o CPF exibido para
-`Playwright BASE`, use o nome `Playwright BASE 02`, registre sua operação e
-avance-a para Documentos:
-
-```bash
-npm run pw:provision:register-manual -- TIMELINE_DOCUMENTS 000000000
-npm run pw:provision:mark-ready -- TIMELINE_DOCUMENTS
-```
+`TIMELINE_DOCUMENTS` não é criado por este lote genérico porque precisa
+compartilhar o CPF de `DEFAULT`. No perfil EsteiraHT, o lote fresco automático
+trata essa exceção pelo fluxo `scci-shared` descrito abaixo.
 
 Propostas que exigem estado externo — cancelada, expirada, crédito ou
 documentos — devem ser preparadas no SCCI/Admin e somente então confirmadas no
@@ -224,13 +219,163 @@ existe apenas para reposição e não é publicado como massa oficial.
 Um lote menor que 14 pode ser usado em validações focadas, mas não publica a
 configuração completa porque faltariam aliases obrigatórios para `pw:test:all`.
 
+#### Lote fresco automático da EsteiraHT
+
+`PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:test:all` provisiona
+sozinho os 11 papéis `fresh-per-run` antes de rodar a suíte funcional. Dez
+deles nascem exclusivamente pelo simulador público do Portal React
+(`PortalSimulatorPage.completeSimulation()`) — a mesma jornada e as mesmas
+validações de `create-and-validate-simulation.spec.ts` já usadas na criação
+manual. Cada protocolo apresentado pelo React é então localizado e comprovado
+no SCCI EsteiraHT (`esteiradigital-ht.prognum.com.br`) antes de seguir para a
+próxima etapa.
+
+**Exceção necessária após bloqueio comprovado no Portal:** `TIMELINE_DOCUMENTS` precisa
+compartilhar o CPF de `DEFAULT` para comprovar múltiplas propostas reais no
+mesmo login — o caso `PROP-18` depende dessa massa. A primeira execução
+supervisionada mostrou que o simulador React **não permite** criar uma
+segunda proposta para um CPF que já tem outra em análise: o Portal exibe
+"Atenção: existe uma proposta cadastrada para este mesmo CPF... contate a
+instituição", sem botão de continuidade e sem protocolo novo. Por isso
+`TIMELINE_DOCUMENTS` é o único slot com `creationMode: "scci-shared"` no
+catálogo — é criado excepcionalmente pelo simulador interno do SCCI EsteiraHT
+(`AejsEsteiraHtSimulationPage`, isolado do fluxo C6), usando o CPF resolvido
+dinamicamente a partir da entrada `DEFAULT` do `runId` ativo (nunca hardcoded)
+e o nome `Playwright BASE 02`. O protocolo deve ser identificado de forma
+inequívoca nas respostas HTTP reais da gravação — nunca calculado como
+"última operação + 1" nem inventado. Se essa captura falhar, a tentativa fica
+bloqueada para recuperação controlada, sem repetir a gravação. Depois de criada,
+a mesma preparação relê a operação no SCCI e
+confirma no Portal que `DEFAULT` e `TIMELINE_DOCUMENTS` aparecem como duas
+propostas distintas antes de marcar a criação como validada. Os outros 9 papéis recebem CPFs sintéticos próprios e independentes; se o
+Portal exibir o mesmo aviso de "proposta já cadastrada" para qualquer um
+deles, `PortalSimulatorPage.submitProposal()` continua tratando isso como
+falha (o opt-in `allowExistingCpfNotice` existe na página, mas nenhum slot do
+catálogo o aciona mais, já que a única massa que precisava dele passou a
+nascer no SCCI).
+
+O lote é sequencial, roda com um worker durante o provisionamento e é
+fail-fast: a primeira falha interrompe a criação sem tocar nos papéis
+seguintes. Ele é orquestrado por `scripts/run-esteira-ht-fresh-provisioning.mjs`
+nesta ordem:
+
+1. `start-esteira-ht-fresh-run.mjs` — gera um `runId`, arquiva com segurança o
+   registro anterior em `.playwright/generated-simulations/history/esteira-ht/`
+   e cria um registro vazio vinculado ao novo lote.
+2. `run-esteira-ht-provisioning-batch.mjs` — despacha a criação por
+   `creationMode`: `simulator` reaproveita `scripts/run-provisioning-slot.mjs`
+   (Portal React); `scci-shared` (só `TIMELINE_DOCUMENTS`) reaproveita
+   `scripts/run-esteira-ht-scci-shared-creation.mjs`. Os dois validam a
+   operação no SCCI antes de seguir.
+3. `run-esteira-ht-property-preparation-batch.mjs` — o simulador público não
+   coleta CEP, então este passo abre cada proposta (`DEFAULT`,
+   `TIMELINE_REGISTRATION` e os papéis de integração) no Portal, preenche o
+   CEP do imóvel na aba Imóvel, aguarda a consulta real de
+   `GET /api/portal/cep`, preenche número/complemento quando os campos
+   existirem, salva trocando de aba (`PUT /cadastro`) e recarrega a proposta
+   para comprovar que os dados realmente persistiram antes de registrá-los.
+   Nada é preenchido diretamente no SCCI. `CREDIT_REJECTED`/`CREDIT_APPROVED`
+   não passam por este passo porque seu contrato depende só da fase SCCI, e os
+   papéis documentais têm seu próprio preenchimento no passo 5.
+4. `run-esteira-ht-phase-preparation-batch.mjs` — altera no SCCI EsteiraHT
+   somente as fases `101` (`CREDIT_REJECTED`) e `50` (`CREDIT_APPROVED`),
+   reaproveitando `AejsOperationConditionsPage` e o locator
+   `OPERACAO_CREDITO$NU_FASE_ATUAL`.
+5. `run-esteira-ht-document-preparation-batch.mjs` — confirma pelo Portal o
+   cadastro de `TIMELINE_DOCUMENTS`, `DOCUMENT_PERSISTENCE` e `DOCUMENT_SIZE`
+   até a etapa Documentos, reaproveitando `ProposalRegistrationPage`.
+6. `manage-provisioning-registry.mjs publish` — publica
+   `.env.esteira-ht.masses.local` somente depois que todos os 11 papéis
+   estiverem com `status: "ready"`, pertencerem ao mesmo `runId`, sem
+   protocolos duplicados e sem CPF compartilhado fora do par
+   `DEFAULT`/`TIMELINE_DOCUMENTS`.
+
+O CEP e o número/complemento gravados no passo 3 vêm de
+`PORTAL_PROVISION_PROPERTY_POSTAL_CODE`, `PORTAL_PROVISION_PROPERTY_NUMBER` e
+`PORTAL_PROVISION_PROPERTY_COMPLEMENT` (veja `.env.example`).
+
+As evidências de cada etapa do provisionamento (criação, comprovação no SCCI,
+preenchimento do imóvel, fases e documentos) entram no relatório consolidado
+final de `pw:test:all`: cada invocação de teste feita pelo provisionamento
+grava um blob próprio, com nome único por etapa e por slot, coletado para
+`.playwright/all-report/blobs` antes da mesclagem final
+(`playwright merge-reports`). Se o lote falhar no meio, as evidências dos
+slots já executados são preservadas e um relatório parcial é gerado
+apontando onde a criação parou — nenhum slot posterior é criado e o lote não
+reinicia sozinho.
+
+Se o provisionamento falhar depois de criar algumas propostas, retome o
+mesmo lote — protocolos já registrados são reaproveitados (o teste apenas
+revalida a operação no SCCI) e somente os papéis pendentes são criados:
+
+```bash
+PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:provision:esteira-ht:resume
+```
+
+A retomada não exige que todos os 11 papéis já tenham protocolo — aceita um
+lote parcialmente criado. Ela bloqueia somente quando não há manifesto ativo,
+quando o registro pertence a outro perfil/provedor, quando alguma entrada
+pertence a outro `runId` ou quando há protocolos duplicados; nesses casos o
+registro precisa ser corrigido manualmente antes de retomar. Para validar essa
+lógica sem tocar em nada, use o dry-run dedicado:
+
+```bash
+PW_PROFILE=esteira-ht node scripts/run-esteira-ht-fresh-provisioning.mjs --dry-run --resume
+```
+
+Se a gravação de `TIMELINE_DOCUMENTS` tiver sido enviada, mas o protocolo não
+puder ser capturado de forma inequívoca, a retomada bloqueia esse slot para não
+criar uma proposta duplicada. Depois de localizar no SCCI a operação realmente
+criada, associe-a somente à tentativa pendente e retome o mesmo lote:
+
+```bash
+PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:provision:esteira-ht:recover-scci-shared -- TIMELINE_DOCUMENTS 000000000
+PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:provision:esteira-ht:resume
+```
+
+O primeiro comando não aceita slots sem tentativa registrada, não substitui
+protocolo existente e não marca a massa como validada. A retomada ainda precisa
+reabrir a operação no SCCI e comprovar no Portal as duas propostas antes da
+publicação.
+
+Um lote completo também pode ser criado e preparado manualmente, fora do `pw:test:all`:
+
+```bash
+PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:provision:esteira-ht:fresh-suite
+```
+
+A criação excepcional de `TIMELINE_DOCUMENTS` pelo SCCI também pode ser
+executada isoladamente (por exemplo para reprocessar só ela após uma
+correção), desde que `DEFAULT` já tenha protocolo no `runId` ativo:
+
+```bash
+PW_PROFILE=esteira-ht ALLOW_TEST_MUTATION=true npm run pw:provision:esteira-ht:create-scci-shared -- TIMELINE_DOCUMENTS
+```
+
+Dentro de `pw:test:all`, o projeto `simulator-integration` não roda mais como
+fase separada — o próprio provisionamento já criou e validou as 11 massas
+frescas, e uma fase extra criaria uma proposta `RESERVE` excedente. A execução
+direta do teste isolado continua disponível
+(`npm run pw:provision:create -- DEFAULT` ou
+`playwright test --project=simulator-integration`).
+
+As massas que dependem de banco ou SSH — expirada e canceladas — continuam de
+fora deste lote. Elas ficam marcadas com a tag `@external-state`, não fazem
+parte de `pw:test:all` e têm comando próprio:
+
+```bash
+PW_PROFILE=esteira-ht npm run pw:test:external-states
+```
+
 ### Provisionamento de massas no C6 HT
 
 O C6 possui um segundo provisionador, isolado do simulador público da
 EsteiraHT. Ele autentica diretamente no SCCI/AEJS do perfil `ht`, executa
 `Originação → Realizar nova simulação`, grava a proposta com CPF válido e nome
 do catálogo e conclui a preparação preenchendo e relendo o CEP residencial do
-pretendente. Não são usados `force`, espera fixa ou IDs dinâmicos do ExtJS.
+pretendente. Não são usados `force`, espera fixa ou IDs dinâmicos do ExtJS. As
+proteções de host impedem que o provisionador rode fora do C6 HT autorizado —
+em particular, ele nunca aponta para o Portal ou o SCCI da EsteiraHT.
 
 O contrato da simulação fica parametrizado no perfil:
 
@@ -419,11 +564,12 @@ essas mesmas operações depois da primeira preparação bem-sucedida.
 | Variável | Estado exigido | Responsabilidade |
 | --- | --- | --- |
 | `PORTAL_PROPOSAL_DEFAULT` | Visível e em Cadastro | Smokes, formulários e validações gerais. |
-| `PORTAL_PROPOSAL_CANCELED` | Cancelada no SCCI | Deve aparecer cancelada e sem ação de preenchimento. |
+| `PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS` | Cancelada há até 30 dias | Deve aparecer cancelada e sem ação de preenchimento. |
+| `PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS` | Cancelada há mais de 30 dias | Não deve aparecer; sua existência e data são comprovadas no SCCI. |
 | `PORTAL_PROPOSAL_CREDIT_REJECTED` | Crédito Reprovado | Deve exibir a orientação de contato/e-mail. |
 | `PORTAL_PROPOSAL_CREDIT_APPROVED` | Crédito ou fase posterior | Deve estar com o cadastro concluído. |
 | `PORTAL_PROPOSAL_EXPIRED` | Expirada há no máximo 30 dias | Deve permanecer visível em modo de consulta. |
-| `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada há mais de 30 dias | Não deve aparecer; se aparecer, `PROP-10` deve falhar. |
+| `PORTAL_PROPOSAL_EXPIRED_OVER_30_DAYS` | Expirada há mais de 30 dias | Alias legado; não substitui a massa cancelada canônica em novos perfis. |
 | `PORTAL_PROPOSAL_TIMELINE_CADASTRO` | Parada em Cadastro | Jornada de cadastro pela timeline. |
 | `PORTAL_PROPOSAL_TIMELINE_DOCUMENTS` | Parada em Documentos | Jornada de documentos; não pode ter avançado para a tarefa seguinte configurada no ambiente. |
 
@@ -509,10 +655,24 @@ npm run pw:test:all -- --headed
 ```
 
 No perfil `ht`, `pw:test:all` começa criando e preparando automaticamente um
-novo lote C6 para todos os slots `fresh-per-run`. As massas de expiração e
-cancelamento continuam externas porque dependem de ajuste controlado de banco;
-o lote só é publicado quando elas já estiverem configuradas e os novos slots
-estiverem prontos. Nos demais perfis, o comando preserva as massas configuradas.
+novo lote C6 (simulador interno do SCCI) para todos os slots `fresh-per-run`.
+No perfil `esteira-ht`, o mesmo comando cria o lote fresco pelo simulador
+público do Portal React e valida cada operação no SCCI EsteiraHT — veja
+"Lote fresco automático da EsteiraHT" acima. Em ambos, as massas de expiração e
+cancelamento continuam externas porque dependem de ajuste controlado de banco.
+Seus casos possuem a tag `@external-state`, não participam de `pw:test:all` e
+podem ser executados separadamente quando as pré-condições estiverem prontas:
+
+```bash
+PW_PROFILE=esteira-ht npm run pw:test:external-states
+```
+
+O lote fresco preserva as operações externas configuradas, mas não declara que
+seus estados foram validados. Elas também não são pré-condição de configuração
+para `pw:test:all`; já `pw:test:external-states` falha no preflight quando as
+operações externas não estiverem informadas. Nos demais perfis, `pw:test:all`
+mantém o comportamento de usar as massas publicadas pelo provisionador
+correspondente.
 
 Depois do provisionamento, o comando valida a configuração publicada e executa
 os blocos na ordem funcional: Portal, simulador, preparações mutáveis Portal →
@@ -621,6 +781,49 @@ Não use a branch `main` como dependência. A URL da release mantém a versão
 reprodutível no `package-lock.json`. Após validar visual, screenshots, vídeos e
 traces, versione juntos `package.json` e `package-lock.json`.
 
+### Documento de casos de teste (OK / Obs)
+
+São dois documentos, ambos com as colunas **OK** e **Obs** por ambiente e uma
+versão em Markdown ao lado do HTML:
+
+- `Docs/CasosDeTeste/CASOS_DE_TESTE.html` substitui a planilha "Testes Portal
+  Next": regras da planilha, robustez do Portal Core e smoke.
+- `Docs/CasosDeTeste/CASOS_DE_TESTE_SIMULADOR.html` traz só o Simulador: um
+  caso por teste Playwright do Simulador público e das jornadas Simulador →
+  SCCI, com as tags de hipótese (`@pendente-produto`, `@depende-decisao`,
+  `@investigacao`) visíveis. Quando entrar ou sair teste do Simulador, rode
+  `npm run casos:simulador:sincronizar`; os IDs dos testes existentes são
+  preservados.
+
+O preenchimento é automático: o reporter `scripts/casos-de-teste/reporter.mjs`
+roda em toda execução do Playwright (inclusive no merge do `pw:test:all`),
+liga cada teste ao caso pelo ID no título (`PROP-14 | ...`) ou pelos `vinculos`
+do catálogo e grava OK, Falhou, Defeito conhecido ou Não executado, com a
+observação (motivo da falha, do skip ou anotações do teste). O ambiente é o
+`PW_PROFILE` ativo. Só os casos que rodaram são atualizados; os demais mantêm
+o último resultado e a data. Para desligar numa execução, use
+`PW_CASOS_DE_TESTE=off`.
+
+Casos sem automação (ou verificados à mão) são registrados pelo terminal:
+
+```bash
+npm run casos:registrar -- INTEG-CEN-03 --ambiente ht --status ok --obs "Proposta 000436014 conferida no SCCI"
+npm run casos:registrar -- PROP-14 --ambiente desenv --nota "SCCI não grava em dias úteis"
+npm run casos:resumo
+npm run casos:gerar
+```
+
+Status aceitos: `ok`, `falhou`, `defeito-conhecido`, `nao-executado`, `scci`,
+`alterado`, `duvida` e `pendente`. `--nota` grava um lembrete fixo que continua
+na Obs mesmo depois das próximas execuções automáticas.
+
+Os casos do Portal ficam em `Docs/CasosDeTeste/catalogo.json` (regra, seção, vínculo com
+os testes e o status original da planilha) e os resultados em
+`Docs/CasosDeTeste/resultados.json`, com o histórico das últimas execuções.
+Teste novo com título `ID | regra` entra sozinho no caso de mesmo ID; teste
+sem caso aparece na seção "Testes executados sem caso no catálogo" do
+documento. Depois de editar o catálogo, rode `npm run casos:validar`.
+
 ## Integração Portal → SCCI/AEJS
 
 Cada cenário usa uma operação própria definida no perfil ativo:
@@ -641,6 +844,49 @@ As três etapas verificadas em **Andamento do Processo** são parametrizadas por
 ambiente: cadastro concluído, documentos concluídos e próxima validação. Cada
 etapa possui `TASK_CODE`, `TASK_TITLE` e `TASK_STATUS`; assim, uma Esteira com
 códigos ou descrições diferentes não exige alteração nas specs.
+
+## Banco do SCCI (consulta somente leitura)
+
+Para conferir no Oracle o que o Simulador gravou, as specs usam a fixture
+`scciDb` (`tests/fixtures/scci-db.fixture.ts`). A consulta roda **no servidor
+da aplicação** (`ssh <host> bash -s` + `sqlplus`), que lê usuário e senha do
+próprio `db.ini` de lá: nenhuma credencial do banco fica neste repositório.
+
+O que o Simulador grava:
+
+| Etapa | Tabelas |
+| --- | --- |
+| Gravar simulação (`GravaSimulacaoOriginacao`) | `SIMULACAO_ORIGINACAO` (chave `NU_SIMULACAO` + `NU_SESSAO`) |
+| Enviar proposta (`OperacaoSalvaSimulacaoInternet`) | `PRETENDENTE`, `PESSOA_PRETENDENTE`, `OPERACAO_CREDITO` (com `NU_SIMULACAO`), `IMOVEL_OPERACAO` |
+
+Configuração (uma vez):
+
+1. Host SSH sem senha no `~/.ssh/config` (ex.: `cef-mip2`, com `ProxyJump` pela
+   desenv) e a chave instalada no servidor com `ssh-copy-id`.
+2. `SCCI_DB_SSH_HOST=cef-mip2` no `.env.<perfil>.local` do ambiente cujo
+   Portal grava nesse banco. Os demais `SCCI_DB_*` têm default para a cef-mip2.
+
+```bash
+npx playwright test --project=unit      # helpers, sem rede
+npx playwright test --project=scci-db   # conexão real de leitura
+```
+
+Uso numa spec:
+
+```ts
+import { scciDbTest as test, expect } from "../fixtures/scci-db.fixture";
+
+test("proposta enviada grava a simulação", async ({ scciDb }) => {
+  const proposal = await scciDb.getProposal(protocolo);
+  const simulation = await scciDb.getSimulation(proposal!.nuSimulacao!);
+  expect(simulation?.vaFinanciamento).toBe(400000);
+});
+```
+
+Proteções: só aceita um único `SELECT`/`WITH` (sem `;`, DML, DDL ou PL/SQL), a
+sessão roda `SET TRANSACTION READ ONLY` e termina em `ROLLBACK`. CPF e demais
+valores entram como literais validados e o script vai por stdin, nunca na
+linha de comando.
 
 ## Arquitetura Playwright
 
@@ -665,6 +911,12 @@ Projetos definidos em [`playwright.config.ts`](playwright.config.ts):
 - `smoke`: fundação autenticada;
 - `functional-readonly`: casos funcionais sem alteração persistente;
 - `functional-mutation`: casos funcionais que alteram estado;
+- `simulator-readonly`: Simulador público (portal-desenv), **sem proposta**: a fixture
+  bloqueia qualquer escrita HTTP fora da consulta de cálculo. **Atenção:** cada
+  "Avançar" na tela Dados **grava uma linha em `SIMULACAO_ORIGINACAO`** no SCCI
+  (medido em 12/11/2026); os casos que conferem isso no banco levam a tag
+  `@grava-simulacao` (`tests/simulator/simulation-database.spec.ts`, exige
+  `SCCI_DB_SSH_HOST`);
 - `integration`: cenários Portal → SCCI/AEJS.
 
 `pw:test:all` usa paralelismo somente onde o isolamento foi comprovado:

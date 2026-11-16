@@ -18,6 +18,7 @@ demo-results/
 .env.local
 .env.*.local
 .codex-tmp/
+.claude/
 evidencias/
 .DS_Store
 

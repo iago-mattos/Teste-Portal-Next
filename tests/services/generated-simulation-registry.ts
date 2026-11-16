@@ -12,6 +12,7 @@ import type { ProvisioningStateOwner } from "../types/provisioning";
 
 export type GeneratedSimulationStatus =
   | "reserved"
+  | "submission-in-progress"
   | "submitted"
   | "scci-validated"
   | "state-prepared"
@@ -32,8 +33,10 @@ export interface GeneratedSimulationEntry {
   readonly scenario: ProvisioningSimulationScenario;
   readonly createdAt: string;
   readonly protocol?: string;
+  readonly submissionAttemptedAt?: string;
   readonly submittedAt?: string;
   readonly scciValidatedAt?: string;
+  readonly portalListValidatedAt?: string;
   readonly statePreparedAt?: string;
   readonly propertyPreparedAt?: string;
   readonly documentNames?: readonly string[];
@@ -56,8 +59,20 @@ export interface C6FreshRunMetadata {
   readonly onDemandSlotIds: readonly ProvisioningSlotId[];
 }
 
+export interface PortalFreshRunMetadata {
+  readonly id: string;
+  readonly profile: "esteira-ht";
+  readonly provider: "portal";
+  readonly createdAt: string;
+  readonly status: "initialized" | "ready";
+  readonly publishedAt?: string;
+  readonly freshSlotIds: readonly ProvisioningSlotId[];
+  readonly externalSlotIds: readonly ProvisioningSlotId[];
+  readonly onDemandSlotIds: readonly ProvisioningSlotId[];
+}
+
 interface GeneratedSimulationRegistry {
-  run?: C6FreshRunMetadata;
+  run?: C6FreshRunMetadata | PortalFreshRunMetadata;
   nextSequence: number;
   entries: GeneratedSimulationEntry[];
 }
@@ -96,7 +111,7 @@ async function readRegistry(profile: string): Promise<GeneratedSimulationRegistr
     }
 
     return {
-      run: parsed.run as C6FreshRunMetadata | undefined,
+      run: parsed.run,
       nextSequence: Number(parsed.nextSequence),
       entries: parsed.entries as GeneratedSimulationEntry[],
     };
@@ -152,7 +167,7 @@ function buildApplicantForSlot(
   usedCpfs: ReadonlySet<string>,
 ): SimulationApplicantInput {
   const slot = getProvisioningSlot(slotId);
-  if (slot.creationMode !== "simulator-shared") {
+  if (slot.creationMode !== "scci-shared") {
     return buildApplicant(scenario, slot.applicantName, usedCpfs);
   }
 
@@ -166,7 +181,7 @@ function buildApplicantForSlot(
   }
   if (registry.run?.id && sharedEntry.runId !== registry.run.id) {
     throw new Error(
-      `${slot.sharedCpfWith} não pertence ao lote C6 ativo ${registry.run.id}.`,
+      `${slot.sharedCpfWith} não pertence ao lote ativo ${registry.run.id}.`,
     );
   }
 
@@ -193,6 +208,13 @@ export async function reserveProvisioningSlot(
     const existing = registry.entries[existingIndex];
     if (!existing) throw new Error(`Reserva inválida para o slot ${slotId}.`);
     if (existing.protocol) return existing;
+    if (existing.submissionAttemptedAt) {
+      throw new Error(
+        `${slotId} possui uma tentativa de criação iniciada em ${existing.submissionAttemptedAt}, ` +
+          "mas nenhum protocolo foi registrado. A proposta pode ter sido criada no SCCI. " +
+          "Recupere e registre a operação real antes de retomar; a automação não criará outra proposta.",
+      );
+    }
 
     const usedCpfs = new Set(
       registry.entries
@@ -286,12 +308,29 @@ export function markGeneratedSimulationSubmitted(
   });
 }
 
+export function markGeneratedSimulationSubmissionStarted(
+  id: string,
+): Promise<GeneratedSimulationEntry> {
+  return updateGeneratedSimulation(id, {
+    submissionAttemptedAt: new Date().toISOString(),
+    status: "submission-in-progress",
+  });
+}
+
 export function markGeneratedSimulationValidated(
   id: string,
 ): Promise<GeneratedSimulationEntry> {
   return updateGeneratedSimulation(id, {
     scciValidatedAt: new Date().toISOString(),
     status: "scci-validated",
+  });
+}
+
+export function markGeneratedSimulationPortalListValidated(
+  id: string,
+): Promise<GeneratedSimulationEntry> {
+  return updateGeneratedSimulation(id, {
+    portalListValidatedAt: new Date().toISOString(),
   });
 }
 

@@ -18,7 +18,7 @@ const validStateOwners = new Set<ProvisioningStateOwner>([
 ]);
 const validCreationModes = new Set<ProvisioningCreationMode>([
   "simulator",
-  "simulator-shared",
+  "scci-shared",
   "manual-shared",
 ]);
 const validLifecycles = new Set<ProvisioningLifecycle>([
@@ -56,8 +56,7 @@ function parseSlot(entry: (typeof rawSlots)[number]): ProvisioningSlotDefinition
     !validLifecycles.has(lifecycle) ||
     (stateOwner === "c6-phase-preparation" && !validPhaseTarget) ||
     (stateOwner !== "c6-phase-preparation" && phaseTarget !== undefined) ||
-    ((creationMode === "manual-shared" ||
-      creationMode === "simulator-shared") &&
+    ((creationMode === "manual-shared" || creationMode === "scci-shared") &&
       (!sharedCpfWith ||
         !validSlotIds.has(sharedCpfWith) ||
         sharedCpfWith === entry.id))

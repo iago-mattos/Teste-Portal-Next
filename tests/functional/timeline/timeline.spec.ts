@@ -6,6 +6,9 @@ import {
 } from "../../helpers/dates";
 
 const functionalReadonly = { tag: ["@functional", "@readonly"] };
+const externalStateReadonly = {
+  tag: ["@functional", "@readonly", "@external-state"],
+};
 
 function formatBrazilianDateWithShortMonth(value: string): string {
   const [day, month, year] = value.split("/");
@@ -145,7 +148,7 @@ test.describe("Portal Cadastro: Linha do Tempo e Alertas", () => {
 
   test(
     "TIMELINE-06 | Se proposta expirada tela disponível para visualização, mas edição inabilitada",
-    functionalReadonly,
+    externalStateReadonly,
     async ({ proposalsPage, portalConfig, authenticatedPage }) => {
       const propostaExpiradaId = portalConfig.testData.propostaExpiradaId;
       if (!propostaExpiradaId) {

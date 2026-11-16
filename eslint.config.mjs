@@ -27,6 +27,7 @@ export default tseslint.config(
       "test-results/**",
       "demo-results/**",
       "Portal-antigo/**",
+      ".claude/**",
     ],
   },
   eslint.configs.recommended,

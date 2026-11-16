@@ -1,10 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import slots from "../tests/test-data/provisioning-slots.json" with { type: "json" };
-import { loadEnvironmentProfile } from "./environment-profile.mjs";
+import { loadC6ProvisioningTarget } from "./c6-provisioning-target.mjs";
 
-process.env.PW_PROFILE = "ht";
-loadEnvironmentProfile();
+const target = loadC6ProvisioningTarget();
 
 const rawTargetCount = process.env.C6_PROVISION_TARGET_COUNT?.trim();
 const freshSlots = slots.filter((slot) => slot.lifecycle === "fresh-per-run");
@@ -16,8 +15,9 @@ if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > freshSlot
 }
 
 const selectedSlots = freshSlots.slice(0, targetCount);
+const playwrightArguments = process.argv.slice(2);
 console.log(
-  `Provisionando ${selectedSlots.length} massa(s) no C6 HT: ${selectedSlots.map((slot) => slot.id).join(", ")}.`,
+  `Provisionando ${selectedSlots.length} massa(s) no C6 ${target.profile}: ${selectedSlots.map((slot) => slot.id).join(", ")}.`,
 );
 
 for (const [index, slot] of selectedSlots.entries()) {
@@ -25,7 +25,11 @@ for (const [index, slot] of selectedSlots.entries()) {
 
   const result = spawnSync(
     process.execPath,
-    [resolve("scripts/run-c6-provisioning-slot.mjs"), slot.id],
+    [
+      resolve("scripts/run-c6-provisioning-slot.mjs"),
+      slot.id,
+      ...playwrightArguments,
+    ],
     { env: process.env, stdio: "inherit" },
   );
   if (result.error) throw result.error;

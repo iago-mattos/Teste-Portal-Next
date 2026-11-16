@@ -38,6 +38,8 @@ export default defineConfig({
       "@prognum/playwright-report/reporter",
       { outputDir: ".playwright/prognum-report-data" },
     ],
+    // Preenche OK/Obs de cada caso em Docs/CasosDeTeste a cada execução.
+    ["./scripts/casos-de-teste/reporter.mjs"],
   ],
   use: {
     baseURL: portalBaseUrl,
@@ -48,6 +50,23 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   projects: [
+    {
+      // Testes de unidade dos helpers (sem browser, sem rede).
+      name: "unit",
+      testDir: "./tests/unit",
+      testMatch: "**/*.unit.spec.ts",
+      use: { screenshot: "off", trace: "off", video: "off" },
+    },
+    {
+      // Consultas SOMENTE LEITURA ao Oracle do SCCI via `ssh <host> sqlplus`.
+      // Desligado sem SCCI_DB_SSH_HOST no perfil. Veja tests/services/scci-db.
+      name: "scci-db",
+      testDir: "./tests/scci-db",
+      testMatch: "**/*.spec.ts",
+      workers: 1,
+      timeout: 2 * 60_000,
+      use: { screenshot: "off", trace: "off", video: "off" },
+    },
     {
       name: "setup",
       testDir: "./tests/setup",
@@ -82,6 +101,26 @@ export default defineConfig({
       workers: 1,
       dependencies: ["setup"],
       use: { ...desktopChromium, storageState: PORTAL_AUTH_STATE_PATH },
+    },
+    {
+      // Simulador público: sem login e SEM PROPOSTA. Exige um PORTAL_URL com
+      // "Realizar nova simulação" (ex.: PW_PROFILE=desenv). A fixture
+      // tests/simulator/simulator.fixture.ts bloqueia qualquer escrita HTTP
+      // fora da consulta de cálculo, então nenhuma proposta pode ser enviada.
+      // ATENÇÃO: cada "Avançar" grava uma linha em SIMULACAO_ORIGINACAO no SCCI
+      // (tag @grava-simulacao nos casos que conferem isso no banco).
+      name: "simulator-readonly",
+      testDir: "./tests/simulator",
+      testMatch: "**/*.spec.ts",
+      grep: /@readonly/,
+      workers: functionalReadonlyWorkers,
+      use: {
+        ...desktopChromium,
+        storageState: { cookies: [], origins: [] },
+        // page.route não intercepta requisições de service worker: bloqueá-los
+        // mantém a trava de escrita efetiva.
+        serviceWorkers: "block",
+      },
     },
     {
       name: "functional-readonly",
@@ -134,8 +173,28 @@ export default defineConfig({
       name: "integration",
       testDir: "./tests/integrations",
       testMatch: "**/*.spec.ts",
-      testIgnore: "**/create-and-validate-simulation.spec.ts",
+      testIgnore: [
+        "**/create-and-validate-simulation.spec.ts",
+        "**/simulator-journeys/**",
+      ],
       workers: integrationWorkers,
+      retries: 0,
+      timeout: 15 * 60_000,
+      dependencies: ["aejs-setup"],
+      use: {
+        ...desktopChromium,
+        storageState: { cookies: [], origins: [] },
+        screenshot: "off",
+        trace: "off",
+      },
+    },
+    {
+      // Criação real de propostas por jornada do Simulador (esteira-ht) e
+      // verificação no SCCI. Mutável: exige ALLOW_TEST_MUTATION=true.
+      name: "simulator-journeys",
+      testDir: "./tests/integrations/simulator-journeys",
+      testMatch: "**/*.spec.ts",
+      workers: 1,
       retries: 0,
       timeout: 15 * 60_000,
       dependencies: ["aejs-setup"],

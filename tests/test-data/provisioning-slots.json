@@ -88,7 +88,7 @@
     "id": "TIMELINE_DOCUMENTS",
     "sequence": 8,
     "applicantName": "Playwright BASE 02",
-    "creationMode": "simulator-shared",
+    "creationMode": "scci-shared",
     "sharedCpfWith": "DEFAULT",
     "lifecycle": "fresh-per-run",
     "environmentKey": "PORTAL_PROPOSAL_TIMELINE_DOCUMENTS",
