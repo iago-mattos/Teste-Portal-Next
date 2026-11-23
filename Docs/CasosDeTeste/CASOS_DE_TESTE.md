@@ -2,7 +2,7 @@
 
 > Gerado automaticamente — não edite à mão. As colunas **OK** e **Obs** são preenchidas a cada execução do Playwright (reporter `scripts/casos-de-teste/reporter.mjs`); casos manuais entram com `npm run casos:registrar`. Versão interativa: [CASOS_DE_TESTE.html](CASOS_DE_TESTE.html).
 
-Gerado em 16/11/2026, 14:17. 231 casos — 162 automatizados, 41 com automação parcial e 28 manuais.
+Gerado em 23/11/2026, 15:23. 231 casos — 162 automatizados, 41 com automação parcial e 28 manuais.
 
 ## Resumo
 
@@ -10,7 +10,7 @@ Gerado em 16/11/2026, 14:17. 231 casos — 162 automatizados, 41 com automação
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Desenv | — | 188 | 0 | 0 | 0 | 2 | 1 | 24 | 16 |
 | HT | — | 187 | 0 | 0 | 0 | 2 | 2 | 24 | 16 |
-| Esteira HT | 16/11/2026, 14:17 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 230 |
+| Esteira HT | 19/11/2026, 10:24 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 230 |
 
 ## Login
 
@@ -221,7 +221,7 @@ Gerado em 16/11/2026, 14:17. 231 casos — 162 automatizados, 41 com automação
 | INTEG-30 | Encontrar na prognum em tela campo Finalidade do Crédito, Originação> Finalidade do Crédito> Finalidade = Finalidade do Crédito | Automatizado | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
 | INTEG-31 | Encontrar na prognum em tela campo Descrição profissional/ Defesa para o crédito, Originação> Finalidade do Crédito> Defesa para o crédito= Descrição profissional/ Defesa para o crédito | Automatizado | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
 | INTEG-32 | O campo endereço do imóvel deve vir preenchido sem permissão de alteração e deve refletir o mesmo na tela da prognum Originação>Imóvel Operação> Dados do Imóvel<br>_Cobertura: Não verificado automaticamente: nenhuma asserção de que o campo é não editável no Portal (ensurePropertyAddress aceita editável e não editável); não compara o valor exibido no Portal com o da Prognum; asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos_ | Automação parcial | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
-| INTEG-33 | Encontrar na prognum em tela campo Valor Estimado do Imóvel, em Originação > Simulação> Valor Estimado/Avaliação do Imóvel = Valor Estimado do Imóvel | Automatizado | ✅ OK<br><sub>Planilha original</sub> | Vamos bloquear por questões da simulação | ✅ OK<br><sub>Planilha original</sub> | — | ❌ Falhou<br><sub>16/11/2026, 14:17</sub> | 1 de 6 testes falharam.<br>“Simulador → SCCI \| cria e verifica a proposta PF-IPCA-CARENCIA60”: Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela. |
+| INTEG-33 | Encontrar na prognum em tela campo Valor Estimado do Imóvel, em Originação > Simulação> Valor Estimado/Avaliação do Imóvel = Valor Estimado do Imóvel | Automatizado | ✅ OK<br><sub>Planilha original</sub> | Vamos bloquear por questões da simulação | ✅ OK<br><sub>Planilha original</sub> | — | ❌ Falhou<br><sub>19/11/2026, 10:24</sub> | 1 de 7 testes falharam.<br>“Simulador → SCCI \| cria e verifica a proposta PF-IPCA-CARENCIA60”: Carência de 60 dias exigida pelo cenário, mas a tela Dados não exibe o campo Carência; a proposta não será criada sem ela. |
 | INTEG-34 | Encontrar na prognum em tela campo Tipo de Imóvel, em Originação>Imóvel Operação> Dados do Imóvel> Tipo do Imóvel = Tipo de Imóvel | Automatizado | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
 | INTEG-35 | Encontrar na prognum em tela campo Uso do imóvel, em Originação>Imóvel Operação> Dados do Imóvel> Uso do Imóvel = Uso do Imóvel | Automatizado | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
 | INTEG-36 | Encontrar na prognum em tela campo CEP, em Originação>Imóvel Operação> Dados do Imóvel> CEP = CEP<br>_Cobertura: Não verificado automaticamente: asserção dentro de if (!scenario.provisionedMass) (l.876): é pulada quando a execução usa massa provisionada (PORTAL_MASS_OPERATION_METADATA_JSON, exigido em execuções com PORTAL_MASS_RUN_ID); o valor esperado é fixo em aejsReflection (integration-data.ts), não lido do Portal; imóveis dos cenários PF/quitado não são conferidos_ | Automação parcial | ✅ OK<br><sub>Planilha original</sub> | — | ✅ OK<br><sub>Planilha original</sub> | — | ⚪ Pendente | — |
@@ -352,5 +352,7 @@ Gerado em 16/11/2026, 14:17. 231 casos — 162 automatizados, 41 com automação
 
 | Data | Ambiente | Projetos | Casos | Resultado | Duração |
 |---|---|---|---:|---|---|
+| 19/11/2026, 10:24 | Esteira HT | simulator-integration, simulator-journeys | 1 | 1 falhou | 3 min 33 s |
+| 19/11/2026, 10:05 | Esteira HT | simulator-integration, simulator-journeys | 1 | 1 falhou | 1,6 s |
 | 16/11/2026, 14:17 | Esteira HT | simulator-journeys | 1 | 1 falhou | 3 min 1 s |
 | 16/11/2026, 14:06 | Esteira HT | simulator-integration, simulator-journeys | 1 | 1 ok | 1 min 54 s |

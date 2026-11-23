@@ -41,6 +41,7 @@ export const DOCUMENTS = {
     resultados: "resultados.json",
     html: "CASOS_DE_TESTE.html",
     markdown: "CASOS_DE_TESTE.md",
+    xlsx: "CASOS_DE_TESTE.xlsx",
   },
   simulador: {
     id: "simulador",
@@ -48,6 +49,7 @@ export const DOCUMENTS = {
     resultados: "resultados-simulador.json",
     html: "CASOS_DE_TESTE_SIMULADOR.html",
     markdown: "CASOS_DE_TESTE_SIMULADOR.md",
+    xlsx: "CASOS_DE_TESTE_SIMULADOR.xlsx",
   },
 };
 
@@ -59,6 +61,8 @@ export function documentPaths(documentId) {
     results: join(DOCS_DIR, document.resultados),
     html: join(DOCS_DIR, document.html),
     markdown: join(DOCS_DIR, document.markdown),
+    xlsx: join(DOCS_DIR, document.xlsx),
+    xlsxName: document.xlsx,
     htmlName: document.html,
     markdownName: document.markdown,
   };

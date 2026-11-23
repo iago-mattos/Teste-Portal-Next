@@ -175,7 +175,7 @@ export function syncSimulatorCatalog(tests = listSimulatorTests()) {
     descricao:
       "Um caso por teste Playwright do Simulador público e das jornadas Simulador → SCCI. Gerado por `npm run casos:simulador:sincronizar` a partir de `playwright test --list`; os IDs dos testes existentes são preservados. 'notaCobertura' e 'nota' podem ser editados à mão e sobrevivem à sincronização.",
     ambientes: { desenv: "Desenv", ht: "HT", "esteira-ht": "Esteira HT" },
-    ambientesExibidos: ["desenv", "esteira-ht"],
+    ambientesExibidos: ["esteira-ht"],
     escopo: SIMULATOR_SCOPE,
     casos,
   });

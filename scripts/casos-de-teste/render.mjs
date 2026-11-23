@@ -11,6 +11,7 @@ import {
   visibleEnvironments,
   writeFileAtomic,
 } from "./lib.mjs";
+import { renderWorkbook } from "./render-xlsx.mjs";
 
 const ORIGIN_LABELS = {
   automatico: "Playwright",
@@ -30,7 +31,8 @@ export function renderDocuments(documentId, catalog, results) {
   };
   writeFileAtomic(paths.html, renderHtml(model));
   writeFileAtomic(paths.markdown, renderMarkdown(model));
-  return { html: paths.html, markdown: paths.markdown };
+  writeFileAtomic(paths.xlsx, renderWorkbook(model));
+  return { html: paths.html, markdown: paths.markdown, xlsx: paths.xlsx };
 }
 
 function relativeDocPath(path) {

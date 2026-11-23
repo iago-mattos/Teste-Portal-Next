@@ -783,8 +783,9 @@ traces, versione juntos `package.json` e `package-lock.json`.
 
 ### Documento de casos de teste (OK / Obs)
 
-São dois documentos, ambos com as colunas **OK** e **Obs** por ambiente e uma
-versão em Markdown ao lado do HTML:
+São dois documentos, ambos com as colunas **OK** e **Obs** por ambiente. Cada
+um sai em HTML (consulta com filtros), Markdown e Excel (`.xlsx`, para enviar
+ou arquivar, com as abas Resumo, Cenários, Testes executados e Execuções):
 
 - `Docs/CasosDeTeste/CASOS_DE_TESTE.html` substitui a planilha "Testes Portal
   Next": regras da planilha, robustez do Portal Core e smoke.
