@@ -3,9 +3,7 @@
 Suíte E2E principal em **Playwright + TypeScript**, baseada nos casos oficiais de
 [`Docs/TestesPortalC6(1).xlsx`](Docs/TestesPortalC6(1).xlsx).
 
-O Cypress permanece no repositório apenas como legado temporário e referência
-histórica. Novos testes, correções e execuções oficiais devem utilizar
-Playwright.
+O Cypress foi removido em novembro de 2026; o histórico dele continua no git.
 
 ## Estado atual
 
@@ -14,7 +12,6 @@ Playwright.
 - batch documental consumível isolado da coleta regular e de `pw:test:all`;
 - integrações Portal → SCCI/AEJS disponíveis com massas dedicadas;
 - execução protegida por tags `@readonly` e `@mutation`;
-- Cypress preservado, mas fora do fluxo principal e da CI.
 
 A coleta é a fonte atual do total de testes:
 
@@ -938,30 +935,13 @@ massas e ausência de troca concorrente de sessão.
 
 O GitHub Actions executa em `push` e `pull_request`:
 
-1. `npm ci` sem baixar o binário do Cypress;
+1. `npm ci`;
 2. `npm run check`;
 3. coleta completa do Playwright;
 4. publicação da lista coletada como artefato.
 
 A CI inicial não abre navegador nem executa cenários autenticados ou mutáveis.
 Falhas de TypeScript, ESLint, contrato ou coleta quebram corretamente o job.
-
-## Cypress legado
-
-O diretório `cypress/`, seus scripts e dependências permanecem apenas para
-consulta histórica e coexistência temporária. Eles não são a arquitetura
-principal, não recebem novos casos e não são executados pela CI atual.
-
-Quando uma comparação histórica for necessária:
-
-```bash
-npm run cy:open
-npm run cy:run:smoke
-npm run cy:run:functional
-```
-
-A remoção definitiva ocorrerá somente mediante decisão específica, depois de
-confirmado que nenhum consumidor depende dos relatórios ou comandos legados.
 
 ## Regras de segurança
 
@@ -970,6 +950,4 @@ confirmado que nenhum consumidor depende dos relatórios ou comandos legados.
 - nunca versione `.env.local` ou `.env.*.local`;
 - nunca use credenciais ou dados de clientes reais;
 - não aumente workers nem retries para mascarar colisões ou instabilidade;
-- não use números de operações diretamente nas specs: altere somente o perfil;
-- preserve o Cypress apenas como baseline histórica, não como modelo para novas
-  implementações.
+- não use números de operações diretamente nas specs: altere somente o perfil.

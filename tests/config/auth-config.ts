@@ -1,9 +1,6 @@
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
-import {
-  loadLocalPortalCompatibilityConfig,
-  loadPortalRuntimeConfig,
-} from "./runtime-config";
+import { loadPortalRuntimeConfig } from "./runtime-config";
 
 export interface PortalAdminAuthConfig {
   url: string;
@@ -82,16 +79,10 @@ export function loadPortalAuthConfig(
   env: NodeJS.ProcessEnv = process.env,
   testCpfOverride?: string,
 ): PortalAuthConfig {
-  const local = loadLocalPortalCompatibilityConfig(env);
   const runtime = loadPortalRuntimeConfig(env);
 
-  const accessUrl = env.PORTAL_ACCESS_URL?.trim() || local?.accessUrl?.trim();
-  const testCpf = (
-    testCpfOverride ??
-    env.PORTAL_TEST_CPF ??
-    local?.testData?.cpfComPropostas ??
-    ""
-  ).replace(/\D/g, "");
+  const accessUrl = env.PORTAL_ACCESS_URL?.trim();
+  const testCpf = (testCpfOverride ?? env.PORTAL_TEST_CPF ?? "").replace(/\D/g, "");
 
   return {
     portalUrl: runtime.portalUrl,

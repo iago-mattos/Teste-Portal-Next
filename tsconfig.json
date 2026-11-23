@@ -4,15 +4,13 @@
     "module": "Node16",
     "moduleResolution": "Node16",
     "strict": true,
-    "types": ["cypress", "node"],
+    "types": ["node"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
   "include": [
-    "cypress/**/*.ts",
     "tests/**/*.ts",
-    "cypress.config.ts",
     "playwright.config.ts",
     "playwright.c6-provision.config.ts",
     "playwright.demo.config.ts"

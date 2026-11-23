@@ -1,40 +1,4 @@
-import { existsSync } from "node:fs";
-import { createRequire } from "node:module";
-import { resolve } from "node:path";
-
 export type PortalEnvironment = "dev" | "ht";
-
-export interface LocalPortalCompatibilityConfig {
-  portalUrl?: string;
-  accessUrl?: string;
-  externalSimulationUrl?: string;
-  caseProposalIds?: Record<string, string>;
-  paths?: {
-    login?: string;
-    propostas?: string;
-  };
-  testData?: {
-    cpfComPropostas?: string;
-    cpfInvalido?: string;
-    propostaExpiradaId?: string;
-    propostaCanceladaAte30DiasId?: string;
-    propostaCanceladaMais30DiasId?: string;
-    propostaExpiradaMais30DiasId?: string;
-    propostaCanceladaId?: string;
-    expectedProposal?: {
-      visibleNumber?: string;
-      proponentName?: string;
-      cpfEnding?: string;
-      registrationDate?: string;
-      propertyValue?: string;
-      financedValue?: string;
-      term?: string;
-      currentPhase?: string;
-      interestType?: string;
-      propertyAddress?: string;
-    };
-  };
-}
 
 export interface PortalRuntimeConfig {
   readonly environment: PortalEnvironment;
@@ -80,30 +44,10 @@ export interface PortalRuntimeConfig {
   }>;
 }
 
-const loadLocalModule = createRequire(resolve("package.json"));
-
 export function resolvePortalEnvironment(
   env: NodeJS.ProcessEnv = process.env,
 ): PortalEnvironment {
   return env.PORTAL_ENV?.trim().toLowerCase() === "ht" ? "ht" : "dev";
-}
-
-export function loadLocalPortalCompatibilityConfig(
-  env: NodeJS.ProcessEnv = process.env,
-): LocalPortalCompatibilityConfig | undefined {
-  const environment = resolvePortalEnvironment(env);
-  const configPath = resolve(
-    environment === "ht"
-      ? "cypress/config/connect.ht.ts"
-      : "cypress/config/connect.ts",
-  );
-
-  if (!existsSync(configPath)) return undefined;
-
-  const localModule = loadLocalModule(configPath) as {
-    portalConnect?: LocalPortalCompatibilityConfig;
-  };
-  return localModule.portalConnect;
 }
 
 function normalizeUrl(value: string, field: string): string {
@@ -116,7 +60,6 @@ function normalizeUrl(value: string, field: string): string {
 
 function resolveExpectedProposal(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): Readonly<{
   visibleNumber: string;
   proponentName: string;
@@ -147,71 +90,28 @@ function resolveExpectedProposal(
     }
   }
 
-  const localExpected = local?.testData?.expectedProposal ?? {};
-
-  const getString = (
-    key: string,
-    envKey: string,
-    fallback: string | undefined,
-  ): string => {
+  const getString = (key: string, envKey: string): string => {
     const explicitValue = env[envKey]?.trim();
-    const val = explicitValue || (parsed[key] !== undefined ? parsed[key] : fallback);
+    const val = explicitValue || parsed[key];
     return val !== undefined ? String(val).trim() : "";
   };
 
   return Object.freeze({
-    visibleNumber: getString(
-      "visibleNumber",
-      "PORTAL_PROPOSAL_DEFAULT",
-      localExpected.visibleNumber,
-    ),
-    proponentName: getString(
-      "proponentName",
-      "PORTAL_EXPECTED_PROPONENT_NAME",
-      localExpected.proponentName,
-    ),
-    cpfEnding: getString(
-      "cpfEnding",
-      "PORTAL_EXPECTED_CPF_ENDING",
-      localExpected.cpfEnding,
-    ),
-    registrationDate: getString(
-      "registrationDate",
-      "PORTAL_EXPECTED_REGISTRATION_DATE",
-      localExpected.registrationDate,
-    ),
-    propertyValue: getString(
-      "propertyValue",
-      "PORTAL_EXPECTED_PROPERTY_VALUE",
-      localExpected.propertyValue,
-    ),
-    financedValue: getString(
-      "financedValue",
-      "PORTAL_EXPECTED_FINANCED_VALUE",
-      localExpected.financedValue,
-    ),
-    term: getString("term", "PORTAL_EXPECTED_TERM", localExpected.term),
-    currentPhase: getString(
-      "currentPhase",
-      "PORTAL_EXPECTED_CURRENT_PHASE",
-      localExpected.currentPhase,
-    ),
-    interestType: getString(
-      "interestType",
-      "PORTAL_EXPECTED_INTEREST_TYPE",
-      localExpected.interestType,
-    ),
-    propertyAddress: getString(
-      "propertyAddress",
-      "PORTAL_EXPECTED_PROPERTY_ADDRESS",
-      localExpected.propertyAddress,
-    ),
+    visibleNumber: getString("visibleNumber", "PORTAL_PROPOSAL_DEFAULT"),
+    proponentName: getString("proponentName", "PORTAL_EXPECTED_PROPONENT_NAME"),
+    cpfEnding: getString("cpfEnding", "PORTAL_EXPECTED_CPF_ENDING"),
+    registrationDate: getString("registrationDate", "PORTAL_EXPECTED_REGISTRATION_DATE"),
+    propertyValue: getString("propertyValue", "PORTAL_EXPECTED_PROPERTY_VALUE"),
+    financedValue: getString("financedValue", "PORTAL_EXPECTED_FINANCED_VALUE"),
+    term: getString("term", "PORTAL_EXPECTED_TERM"),
+    currentPhase: getString("currentPhase", "PORTAL_EXPECTED_CURRENT_PHASE"),
+    interestType: getString("interestType", "PORTAL_EXPECTED_INTEREST_TYPE"),
+    propertyAddress: getString("propertyAddress", "PORTAL_EXPECTED_PROPERTY_ADDRESS"),
   });
 }
 
 function resolveCaseProposalIds(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): Readonly<Record<string, string>> {
   let parsedRecord: Record<string, string> = {};
   const rawRecord = env.PORTAL_CASE_PROPOSAL_IDS_JSON?.trim();
@@ -232,10 +132,7 @@ function resolveCaseProposalIds(
     }
   }
 
-  const configured = {
-    ...(local?.caseProposalIds ?? {}),
-    ...parsedRecord,
-  };
+  const configured = { ...parsedRecord };
   const timelineCadastro = env.PORTAL_PROPOSAL_TIMELINE_CADASTRO?.trim();
   const timelineDocuments = env.PORTAL_PROPOSAL_TIMELINE_DOCUMENTS?.trim();
   if (timelineCadastro) configured.TIMELINE_04_CADASTRO = timelineCadastro;
@@ -246,22 +143,19 @@ function resolveCaseProposalIds(
 
 function resolveExternalSimulationUrl(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): string {
   return (
     env.PORTAL_EXTERNAL_SIMULATION_URL?.trim() ||
-    local?.externalSimulationUrl?.trim() ||
     "https://c6imobiliario.com.br"
   );
 }
 
 function resolveInvalidCpf(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): string {
   const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
   if (!rawTestData) {
-    return local?.testData?.cpfInvalido?.replace(/\D/g, "") || "11111111111";
+    return "11111111111";
   }
 
   try {
@@ -285,14 +179,13 @@ function resolveInvalidCpf(
 
 function resolvePropostaExpiradaId(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): string {
   const explicitValue = env.PORTAL_PROPOSAL_EXPIRED?.trim();
   if (explicitValue) return explicitValue;
 
   const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
   if (!rawTestData) {
-    return local?.testData?.propostaExpiradaId?.trim() || "";
+    return "";
   }
 
   try {
@@ -316,20 +209,16 @@ function resolvePropostaExpiradaId(
 
 function resolvePropostaCanceladaAte30DiasId(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): string {
   return resolveConfiguredProposalId(
     env,
     "PORTAL_PROPOSAL_CANCELED_WITHIN_30_DAYS",
-    env.PORTAL_PROPOSAL_CANCELED?.trim() ||
-      local?.testData?.propostaCanceladaAte30DiasId?.trim() ||
-      local?.testData?.propostaCanceladaId,
+    env.PORTAL_PROPOSAL_CANCELED?.trim(),
   );
 }
 
 function resolvePropostaCanceladaMais30DiasId(
   env: NodeJS.ProcessEnv,
-  local: LocalPortalCompatibilityConfig | undefined,
 ): string {
   const explicitValue =
     env.PORTAL_PROPOSAL_CANCELED_OVER_30_DAYS?.trim() ||
@@ -338,11 +227,7 @@ function resolvePropostaCanceladaMais30DiasId(
 
   const rawTestData = env.PORTAL_TEST_DATA_JSON?.trim();
   if (!rawTestData) {
-    return (
-      local?.testData?.propostaCanceladaMais30DiasId?.trim() ||
-      local?.testData?.propostaExpiradaMais30DiasId?.trim() ||
-      ""
-    );
+    return "";
   }
 
   try {
@@ -425,8 +310,7 @@ function resolveOperationCpfs(
 export function resolvePortalBaseUrl(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
-  const local = loadLocalPortalCompatibilityConfig(env);
-  const value = env.PORTAL_URL?.trim() || local?.portalUrl?.trim();
+  const value = env.PORTAL_URL?.trim();
 
   return value ? normalizeUrl(value, "PORTAL_URL") : undefined;
 }
@@ -434,42 +318,28 @@ export function resolvePortalBaseUrl(
 export function loadPortalRuntimeConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): PortalRuntimeConfig {
-  const local = loadLocalPortalCompatibilityConfig(env);
   const portalUrl = resolvePortalBaseUrl(env);
 
   if (!portalUrl) {
-    throw new Error(
-      "Configure PORTAL_URL ou o arquivo local de compatibilidade antes de executar o Portal.",
-    );
+    throw new Error("Configure PORTAL_URL no perfil antes de executar o Portal.");
   }
-
-  const proposalsPath = local?.paths?.propostas?.trim() || "/propostas";
-  const loginPath = local?.paths?.login?.trim() || "/login";
 
   return Object.freeze({
     environment: resolvePortalEnvironment(env),
     portalUrl,
-    externalSimulationUrl: resolveExternalSimulationUrl(env, local),
-    caseProposalIds: resolveCaseProposalIds(env, local),
+    externalSimulationUrl: resolveExternalSimulationUrl(env),
+    caseProposalIds: resolveCaseProposalIds(env),
     paths: Object.freeze({
       authMe: "/api/auth/me" as const,
-      login: loginPath.startsWith("/") ? loginPath : `/${loginPath}`,
-      proposals: proposalsPath.startsWith("/")
-        ? proposalsPath
-        : `/${proposalsPath}`,
+      login: "/login",
+      proposals: "/propostas",
     }),
     testData: Object.freeze({
-      invalidCpf: resolveInvalidCpf(env, local),
+      invalidCpf: resolveInvalidCpf(env),
       operationCpfs: resolveOperationCpfs(env),
-      propostaExpiradaId: resolvePropostaExpiradaId(env, local),
-      propostaCanceladaAte30DiasId: resolvePropostaCanceladaAte30DiasId(
-        env,
-        local,
-      ),
-      propostaCanceladaMais30DiasId: resolvePropostaCanceladaMais30DiasId(
-        env,
-        local,
-      ),
+      propostaExpiradaId: resolvePropostaExpiradaId(env),
+      propostaCanceladaAte30DiasId: resolvePropostaCanceladaAte30DiasId(env),
+      propostaCanceladaMais30DiasId: resolvePropostaCanceladaMais30DiasId(env),
       propostaCreditoReprovadoId: resolveConfiguredProposalId(
         env,
         "PORTAL_PROPOSAL_CREDIT_REJECTED",
@@ -522,7 +392,7 @@ export function loadPortalRuntimeConfig(
           ),
         }),
       }),
-      expectedProposal: resolveExpectedProposal(env, local),
+      expectedProposal: resolveExpectedProposal(env),
     }),
     pageErrors: Object.freeze({
       allowReact418Quarantine:
